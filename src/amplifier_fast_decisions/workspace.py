@@ -29,7 +29,7 @@ _ALLOWED = {".md", ".txt", ".py", ".rs", ".js", ".ts", ".tsx", ".jsx", ".json", 
 _BLOCKED = {"credentials", "secrets", "secret", "id_rsa", "id_ed25519", "token", "tokens", "passwords"}
 # Numbered window returned by ``read`` with ``line``: this many lines before
 # the target line and this many from it.
-WINDOW_BEFORE, WINDOW_AFTER = 40, 160
+WINDOW_BEFORE, WINDOW_AFTER = 15, 85
 _GIT_TIMEOUT_S = 5.0
 _GIT_BASE = ("git", "--no-pager", "--no-optional-locks", "-c", "core.fsmonitor=false",
              "-c", "core.untrackedCache=false", "-c", "color.ui=never")

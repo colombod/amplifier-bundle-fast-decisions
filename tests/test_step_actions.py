@@ -140,7 +140,7 @@ class WorkspaceAdditionsTests(unittest.TestCase):
     def test_window_read_and_find_line(self):
         self.assertEqual(self.ws.find_line("src/mod.py", ["target_function"]), 200)
         out = self.ws._read({"operation": "read", "path": "src/mod.py", "line": 200})
-        self.assertEqual((out["start_line"], out["end_line"], out["total_lines"]), (160, 300, 300))
+        self.assertEqual((out["start_line"], out["end_line"], out["total_lines"]), (185, 284, 300))
         self.assertIn("   200\tdef target_function(x):", out["text"])
         cand = self.ws.candidate_for_path("src/mod.py", 0, line=200)
         self.assertTrue(cand.id.startswith("win_"))
