@@ -241,7 +241,9 @@ def response_readonly(tool_calls: list[tuple[str, dict]]) -> bool:
 
 
 # --- request parsing -----------------------------------------------------------
-_REMINDER = re.compile(r"<system-reminder\b.*?</system-reminder>", re.S)
+# Injected context: ``<system-reminders>`` envelopes (with a preamble outside
+# the inner blocks) and bare ``<system-reminder ...>`` blocks.
+_REMINDER = re.compile(r"<system-reminders\b.*?</system-reminders>|<system-reminder\b.*?</system-reminder>", re.S)
 
 
 def _text_of(content: Any) -> str:

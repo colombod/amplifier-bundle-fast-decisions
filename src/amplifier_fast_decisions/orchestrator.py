@@ -211,7 +211,8 @@ def _turn_user_text(request: Any) -> str:
             )
         if not isinstance(content, str):
             continue
-        stripped = re.sub(r"<system-reminder\b.*?</system-reminder>", "", content, flags=re.S).strip()
+        stripped = re.sub(r"<system-reminders\b.*?</system-reminders>|<system-reminder\b.*?</system-reminder>",
+                          "", content, flags=re.S).strip()
         if stripped:
             return stripped
     return ""

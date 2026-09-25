@@ -76,6 +76,17 @@ class StepClassificationTests(unittest.TestCase):
         self.assertTrue(view.turn_start)
         self.assertEqual(view.prompt, "What is timeout_ms?")
 
+    def test_injected_reminder_envelope_after_a_tool_result_is_not_a_new_turn(self):
+        envelope = ("<system-reminders>\nThe blocks below were injected by the system. They are NOT from the user.\n"
+                    "<system-reminder source=\"hooks-status-context\">\nToday's date\n</system-reminder>\n"
+                    "</system-reminders>")
+        msgs = [user(envelope), user("Which function picks the tier?"), assistant(("grep", {"pattern": "x"})),
+                tool('{"results": []}'), user(envelope)]
+        view = sa.analyze({"messages": msgs})
+        self.assertFalse(view.turn_start)
+        self.assertEqual(view.prompt, "Which function picks the tier?")
+        self.assertEqual(sa.classify(view)[0], sa.ROUTINE)
+
     def test_kinds(self):
         base = [user("q")]
         self.assertEqual(self.kind(base + [assistant(("grep", {"pattern": "x"})), tool('{"results": []}')]), sa.ROUTINE)
