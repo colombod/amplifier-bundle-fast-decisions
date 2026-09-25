@@ -360,6 +360,11 @@
     "s1/reval-s1-dev-batch2/runs/plain-sonnet-s1-dev-r1/runs/amplifier/plain-sonnet-s1-dev-r1-repair_parse_duration-amplifier-plain-a1/result.json": "82ce0fbb328f2dbade4ff61d36f17b9430a7ed81b6d965e443ced2b7f1c06aa9",
     "s1/reval-s1-dev-batch2/runs/plain-sonnet-s1-dev-r1/runs/amplifier/plain-sonnet-s1-dev-r1-repair_semver_compare-amplifier-plain-a1/result.json": "4e014e815374006f4b9ba0efccf07a8bfe13e093f7af6198d32866c62031834e",
     "startup/startup-profile.json": "1b4ee3b32a151789d65b2e1bf914a05a296f8b2ad96dd58fc2d5afa4ba559c59",
-    "surface-checks.json": "f7b54eeec5dc8757c4973fe8dfbde0a424bf2125c86b2340d9b8e4e50f172a24"
+    "step-opportunity/summary.json": "fbcc09a20e08c5ffb23c6c9f7daf65acf2e974578e6e2343e1be08bd06d14c73",
+    "surface-checks.json": "f7b54eeec5dc8757c4973fe8dfbde0a424bf2125c86b2340d9b8e4e50f172a24",
+    "waste-census/README.md": "c2b8b007fab307f759d3997909a5e1f7fa19ab1a09e21a61d0d2d9b18876703e",
+    "waste-census/summary.json": "5c955e08ee662c497ea49e51b1305a769731b0072066b997accab7a6d42087bf",
+    "waste-guards-ab/README.md": "12a4e7649208cd23d90b1e2fd6bbe5bc4baa4eb5e6b6ffffc16267e8427f8404",
+    "waste-guards-ab/summary.json": "76f9cb9a827e837622afa9ce039fdc2a572b0282cc04a2aa3dcf63b806d422b1"
   }
 }

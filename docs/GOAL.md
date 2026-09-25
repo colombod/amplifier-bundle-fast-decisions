@@ -83,11 +83,18 @@ Recompute independently by reading the event files and summing those three field
 
 Mechanisms emitting receipts today: `cheaper_model` (each cheaper-model step, the host's cache rebuild after a cheap
 turn as a loss, and judge time on judged turns kept on the host), `prepared_action` (when the read shortcut is
-enabled) and `cache_keepalive` (on by default in `behaviors/fast-decisions.yaml`: one receipt per long tool wait,
-refresh costs against the avoided cache re-write, confirmed from the next call's cache reads). `loop_stop` is built
-but off by default (its receipts did not yet reconcile with a measured A/B). `launch_blocked` and
-`context_rightsize` are reported as "not active yet" until their mechanisms ship; each will emit the same receipt
-shape.
+enabled), `cache_keepalive` (on by default in `behaviors/fast-decisions.yaml`: one receipt per long tool wait,
+refresh costs against the avoided cache re-write, confirmed from the next call's cache reads), and the waste guards
+(`docs/WASTE-GUARDS.md`, on by default): `loop_stop` (mechanisms `guard:identical_repeat`, `guard:error_retry`,
+`guard:poll_wait`) and `context_rightsize` (`guard:identical_result`), in Amplifier and, through the Claude Code
+hook, tagged `harness: "Claude Code"`. The older loop-stop nudges (`Policy.loop_stop`, mechanism `rule:*`) stay off
+by default (their receipts did not reconcile) and stand down whenever the waste guards are on, so one loop is never
+receipted twice. `launch_blocked` is reported as "not active yet"; it will emit the same receipt shape.
+
+Waste census (2026-09-25, `docs/evidence/2026-09-25/waste-census/`): deterministic step waste (repeats, error
+retries, sleep polls, re-reads, trivial helpers, rejected calls, unbatched reads) is about 6% of the last 30 days'
+spend, two thirds of it one runaway loop; the large recoverable items are prompt-cache rebuilds after tool waits
+over 5 minutes (~13%) and after user idle (~9%) and oversized helper context (up to ~12%).
 
 ## Status
 

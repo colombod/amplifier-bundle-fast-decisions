@@ -76,13 +76,16 @@
       const sum = k => Object.values(lv).reduce((a, v) => a + (v[k] || 0), 0);
       return { name, receipts: sum('receipts'), calls: sum('calls_saved'), usd: money(sum('usd_saved')), secs: signedTime(sum('seconds_saved')) };
     }).sort((a, b) => b.receipts - a.receipts);
+    const harnesses = Object.entries((r && r.by_harness) || {}).map(([name, v]) => ({ name, receipts: v.receipts,
+      calls: v.calls_saved, usd: money(v.usd_saved || 0), secs: signedTime(v.seconds_saved || 0) }))
+      .sort((a, b) => b.receipts - a.receipts);
     return {
       cost: t.receipts ? money(t.usd_saved || 0) : '—', time: t.receipts ? signedTime(t.seconds_saved || 0) : '—',
       calls: t.receipts ? String(t.calls_saved) : '—',
       costDetail: t.receipts ? t.receipts + ' receipts' + (t.usd_unknown ? ' · ' + t.usd_unknown + ' without a cost baseline' : '') : 'No efficiency receipts yet',
       timeDetail: t.receipts && t.seconds_unknown ? t.seconds_unknown + ' without a time baseline' : 'vs the same steps on the default model',
       callsDetail: 'model calls avoided (negative = added)',
-      levers, projects,
+      levers, projects, harnesses,
       note: 'Every number is a plain sum of stored receipts (fast_decisions:efficiency); each receipt fixed its baseline and savings when the decision was made. ' +
         ((r && r.excluded_test_receipts) ? r.excluded_test_receipts + ' test/benchmark receipts excluded. ' : '') + 'Recompute with: afast efficiency --json',
     };
@@ -619,6 +622,8 @@
       const row = (cells) => { const r = make('div', 'savings-project'); cells.forEach((c, i) => r.append(make(i ? 'span' : 'b', '', c))); return r; };
       $('effLevers').replaceChildren(row(['Lever', 'Receipts · calls', 'Cost', 'Time']), ...v.levers.map(l => row([l.name, l.active ? l.receipts + ' · ' + l.calls + ' calls' : 'not active yet', l.active ? l.usd : '—', l.active ? l.secs : '—'])));
       $('effProjects').replaceChildren(...(v.projects.length ? [row(['Project', 'Receipts · calls', 'Cost', 'Time'])] : []), ...v.projects.map(p => row([p.name, p.receipts + ' · ' + p.calls + ' calls', p.usd, p.secs])));
+      const byHarness = $('effHarness');
+      if (byHarness) byHarness.replaceChildren(...(v.harnesses.length > 1 || (v.harnesses[0] && v.harnesses[0].name !== 'Amplifier') ? [row(['Harness', 'Receipts · calls', 'Cost', 'Time']), ...v.harnesses.map(h => row([h.name, h.receipts + ' · ' + h.calls + ' calls', h.usd, h.secs]))] : []));
     } catch (_) { /* keep last values */ }
   }
   let lastSavingsPoll = 0;

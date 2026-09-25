@@ -104,6 +104,11 @@ was cheaper on a set of all-easy tasks because it kept fewer requests on the usu
   cheaper-model request as if your usual model had done it, assuming your usual model would already have the
   conversation cached after the first request and charging the cache rebuild when a hard request follows an easy
   one. Estimates, labeled as such; a negative number means routing cost more.
+- **Waste guards (on by default):** stop repeated identical calls and repeated identical failures, run
+  `sleep && check` polls in place, and replace duplicate outputs with a pointer; every firing leaves a receipt in
+  the Efficiency ledger (`afast efficiency`). `afast hooks install claude-code` applies the same guards in Claude
+  Code ([docs/WASTE-GUARDS.md](docs/WASTE-GUARDS.md)). Measured target:
+  [docs/evidence/2026-09-25/waste-census](docs/evidence/2026-09-25/waste-census/README.md).
 - **Quality grader:** `afast rubric requests.jsonl` scores answers against weighted yes/no questions using Jev.
 - **Watch-only mode:** `behaviors/fast-decisions-shadow.yaml` records what would have been decided without
   changing anything.

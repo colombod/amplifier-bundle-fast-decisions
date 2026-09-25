@@ -193,3 +193,9 @@ test('efficiency ledger shows totals, every lever and projects from receipts',()
  assert.equal(v.projects[0].name,'teaserkit'); assert.match(v.note,/5 test\/benchmark receipts excluded/);
  assert.equal(efficiencyView({totals:{receipts:0}}).cost,'—');
 });
+test('efficiency ledger lists receipts by harness (Claude Code hook)',()=>{
+ const {efficiencyView}=require('../src/amplifier_fast_decisions/static/app.js');
+ const v=efficiencyView({totals:{receipts:3,calls_saved:2,usd_saved:0.5,seconds_saved:0},
+  by_harness:{'Claude Code':{receipts:2,calls_saved:2,usd_saved:0.4,seconds_saved:0},Amplifier:{receipts:1,calls_saved:0,usd_saved:0.1,seconds_saved:0}}});
+ assert.equal(v.harnesses[0].name,'Claude Code'); assert.equal(v.harnesses[0].usd,'$0.40'); assert.equal(v.harnesses.length,2);
+});

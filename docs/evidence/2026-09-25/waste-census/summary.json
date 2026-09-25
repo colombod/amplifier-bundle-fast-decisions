@@ -1,0 +1,525 @@
+{
+  "generated": "2026-09-25T22:44:59Z",
+  "primary_window": "last_30_days",
+  "prices_per_mtok": {
+    "claude-fable-5-1": {
+      "input": 10.0,
+      "output": 50.0,
+      "cache_read": 0.25,
+      "cache_write": 12.5
+    },
+    "claude-fable-5": {
+      "input": 10.0,
+      "output": 50.0,
+      "cache_read": 1.0,
+      "cache_write": 12.5
+    },
+    "claude-sonnet-5": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_read": 0.3,
+      "cache_write": 3.75
+    },
+    "claude-sonnet-4-6": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_read": 0.3,
+      "cache_write": 3.75
+    },
+    "claude-opus-5-5": {
+      "input": 4.0,
+      "output": 20.0,
+      "cache_read": 0.2,
+      "cache_write": 5.0
+    },
+    "claude-opus-5": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_read": 0.5,
+      "cache_write": 6.25
+    },
+    "claude-opus-4-7": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_read": 0.5,
+      "cache_write": 6.25
+    },
+    "claude-haiku-4-5": {
+      "input": 1.0,
+      "output": 5.0,
+      "cache_read": 0.1,
+      "cache_write": 1.25
+    },
+    "claude-opus-4-8": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_read": 0.5,
+      "cache_write": 6.25
+    },
+    "claude-opus-4-6": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_read": 0.5,
+      "cache_write": 6.25
+    },
+    "claude-opus-4-5": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_read": 0.5,
+      "cache_write": 6.25
+    },
+    "claude-sonnet-4-5": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_read": 0.3,
+      "cache_write": 3.75
+    }
+  },
+  "exclusions": "project dirs or session cwd matching tmp|private|worktree|afast|experiment|eval|holdout|bench|swebench|smoke|pilot|test-session|overhead-check|/fd-|-fd-; test-session-* files; Amplifier projects without a path-derived name; duplicate Claude Code message ids",
+  "windows": {
+    "last_30_days": {
+      "window": {
+        "first": "2026-08-26T01:51:59.515555+00:00",
+        "last": "2026-09-25T22:43:15.915442+00:00"
+      },
+      "unpriced_model_calls": 1157,
+      "totals": {
+        "sessions": 1540,
+        "model_calls": 67555,
+        "usd": 13924.47,
+        "by_harness": {
+          "claude_code": {
+            "sessions": 207,
+            "helper_sessions": 172,
+            "model_calls": 26565,
+            "usd": 5398.76
+          },
+          "amplifier": {
+            "sessions": 1333,
+            "helper_sessions": 1134,
+            "model_calls": 40990,
+            "usd": 8525.71
+          }
+        },
+        "helpers": {
+          "helper_sessions": 1306,
+          "helper_cost": 7790.2925,
+          "trivial_helpers": 126,
+          "trivial_helper_gross_cost": 59.0282
+        }
+      },
+      "categories": {
+        "a_identical_repeat": {
+          "occurrences": 23,
+          "wasted_model_steps": 1235,
+          "usd": 554.15,
+          "pct_of_total_spend": 3.98,
+          "median_steps_per_occurrence": 1
+        },
+        "b_error_retry": {
+          "occurrences": 13,
+          "wasted_model_steps": 34,
+          "usd": 30.17,
+          "pct_of_total_spend": 0.22,
+          "median_steps_per_occurrence": 1
+        },
+        "c_sleep_poll": {
+          "occurrences": 63,
+          "wasted_model_steps": 144,
+          "usd": 12.8,
+          "pct_of_total_spend": 0.09,
+          "median_steps_per_occurrence": 2
+        },
+        "d_reread_in_context": {
+          "occurrences": 420,
+          "wasted_model_steps": 420,
+          "usd": 48.66,
+          "pct_of_total_spend": 0.35,
+          "median_steps_per_occurrence": 1.0
+        },
+        "e_trivial_helper": {
+          "occurrences": 126,
+          "wasted_model_steps": 229,
+          "usd": 38.99,
+          "pct_of_total_spend": 0.28,
+          "median_steps_per_occurrence": 2.0
+        },
+        "f_validation": {
+          "occurrences": 86,
+          "wasted_model_steps": 86,
+          "usd": 12.35,
+          "pct_of_total_spend": 0.09,
+          "median_steps_per_occurrence": 1.0
+        },
+        "f_denied": {
+          "occurrences": 10,
+          "wasted_model_steps": 10,
+          "usd": 1.09,
+          "pct_of_total_spend": 0.01,
+          "median_steps_per_occurrence": 1.0
+        },
+        "g_batchable_reads": {
+          "occurrences": 2095,
+          "wasted_model_steps": 2095,
+          "usd": 152.96,
+          "pct_of_total_spend": 1.1,
+          "median_steps_per_occurrence": 1
+        },
+        "h_oversized_helper_context": {
+          "occurrences": 700,
+          "wasted_model_steps": 36881,
+          "usd": 1678.73,
+          "pct_of_total_spend": 12.06,
+          "median_steps_per_occurrence": 19.0
+        },
+        "x_oversized_tool_output": {
+          "occurrences": 2347,
+          "wasted_model_steps": 0,
+          "usd": 188.71,
+          "pct_of_total_spend": 1.36,
+          "median_steps_per_occurrence": 0
+        },
+        "y_cache_rebuild_after_tool_wait": {
+          "occurrences": 669,
+          "wasted_model_steps": 669,
+          "usd": 1832.91,
+          "pct_of_total_spend": 13.16,
+          "median_steps_per_occurrence": 1
+        },
+        "y_cache_rebuild_after_user_idle": {
+          "occurrences": 445,
+          "wasted_model_steps": 445,
+          "usd": 1240.07,
+          "pct_of_total_spend": 8.91,
+          "median_steps_per_occurrence": 1
+        },
+        "y_cache_rewrite_churn": {
+          "occurrences": 3100,
+          "wasted_model_steps": 3100,
+          "usd": 578.75,
+          "pct_of_total_spend": 4.16,
+          "median_steps_per_occurrence": 1.0
+        }
+      },
+      "deterministic_waste_total_a_to_g": {
+        "usd": 851.17,
+        "pct": 6.12
+      },
+      "distributions": {
+        "error_retry_chain_attempts": {
+          "n": 13,
+          "mean": 3.615,
+          "median": 2,
+          "p75": 4,
+          "p90": 5,
+          "max": 14
+        },
+        "error_retry_extra_attempts_after_2_failures": {
+          "n": 6,
+          "mean": 3.5,
+          "median": 2.0,
+          "p75": 3,
+          "p90": 12,
+          "max": 12
+        },
+        "poll_run_polls": {
+          "n": 63,
+          "mean": 3.286,
+          "median": 3,
+          "p75": 3,
+          "p90": 5,
+          "max": 16
+        },
+        "poll_extra_polls_after_2": {
+          "n": 32,
+          "mean": 2.531,
+          "median": 1.0,
+          "p75": 3,
+          "p90": 5,
+          "max": 14
+        },
+        "poll_sleep_seconds": {
+          "n": 187,
+          "mean": 64.182,
+          "median": 9.0,
+          "p75": 28.0,
+          "p90": 90.0,
+          "max": 1800.0
+        },
+        "identical_repeat_result_tokens": {
+          "n": 1234,
+          "mean": 11.151,
+          "median": 7.75,
+          "p75": 7.75,
+          "p90": 7.75,
+          "max": 2192.5
+        },
+        "identical_repeat_chain_repeats": {
+          "n": 23,
+          "mean": 53.696,
+          "median": 1,
+          "p75": 1,
+          "p90": 15,
+          "max": 607
+        },
+        "identical_repeat_extra_after_2": {
+          "n": 3,
+          "mean": 403.0,
+          "median": 591,
+          "p75": 605,
+          "p90": 605,
+          "max": 605
+        },
+        "identical_repeat_extra_after_3": {
+          "n": 3,
+          "mean": 402.0,
+          "median": 590,
+          "p75": 604,
+          "p90": 604,
+          "max": 604
+        }
+      },
+      "notes": [
+        "Each wasted tool call is priced at its issuing model step's list-price cost split over the calls that step issued.",
+        "g is priced without the step's cache writes; x, h and y are upper bounds (output capping, helper context right-sizing, cache reuse) and are not added to the deterministic waste total.",
+        "Detection is deterministic and conservative: any write, non-read-only command or helper launch resets the no-state-change conditions."
+      ],
+      "since": "2026-08-26"
+    },
+    "all_history": {
+      "window": {
+        "first": "2025-12-11T18:36:46.027+00:00",
+        "last": "2026-09-25T22:43:15.915442+00:00"
+      },
+      "unpriced_model_calls": 9894,
+      "totals": {
+        "sessions": 8263,
+        "model_calls": 190633,
+        "usd": 65232.49,
+        "by_harness": {
+          "claude_code": {
+            "sessions": 267,
+            "helper_sessions": 216,
+            "model_calls": 32352,
+            "usd": 7161.36
+          },
+          "amplifier": {
+            "sessions": 7996,
+            "helper_sessions": 6953,
+            "model_calls": 158281,
+            "usd": 58071.12
+          }
+        },
+        "helpers": {
+          "helper_sessions": 7169,
+          "helper_cost": 34267.5469,
+          "trivial_helpers": 994,
+          "trivial_helper_gross_cost": 299.5182
+        }
+      },
+      "categories": {
+        "a_identical_repeat": {
+          "occurrences": 298,
+          "wasted_model_steps": 1526,
+          "usd": 580.67,
+          "pct_of_total_spend": 0.89,
+          "median_steps_per_occurrence": 1.0
+        },
+        "b_error_retry": {
+          "occurrences": 50,
+          "wasted_model_steps": 96,
+          "usd": 37.54,
+          "pct_of_total_spend": 0.06,
+          "median_steps_per_occurrence": 1.0
+        },
+        "c_sleep_poll": {
+          "occurrences": 175,
+          "wasted_model_steps": 924,
+          "usd": 275.96,
+          "pct_of_total_spend": 0.42,
+          "median_steps_per_occurrence": 2
+        },
+        "d_reread_in_context": {
+          "occurrences": 1475,
+          "wasted_model_steps": 1475,
+          "usd": 234.4,
+          "pct_of_total_spend": 0.36,
+          "median_steps_per_occurrence": 1
+        },
+        "e_trivial_helper": {
+          "occurrences": 994,
+          "wasted_model_steps": 1967,
+          "usd": 142.93,
+          "pct_of_total_spend": 0.22,
+          "median_steps_per_occurrence": 2.0
+        },
+        "f_validation": {
+          "occurrences": 108,
+          "wasted_model_steps": 108,
+          "usd": 25.29,
+          "pct_of_total_spend": 0.04,
+          "median_steps_per_occurrence": 1.0
+        },
+        "f_denied": {
+          "occurrences": 34,
+          "wasted_model_steps": 34,
+          "usd": 18.47,
+          "pct_of_total_spend": 0.03,
+          "median_steps_per_occurrence": 1.0
+        },
+        "g_batchable_reads": {
+          "occurrences": 3848,
+          "wasted_model_steps": 3848,
+          "usd": 234.3,
+          "pct_of_total_spend": 0.36,
+          "median_steps_per_occurrence": 1.0
+        },
+        "h_oversized_helper_context": {
+          "occurrences": 1887,
+          "wasted_model_steps": 64392,
+          "usd": 2735.06,
+          "pct_of_total_spend": 4.19,
+          "median_steps_per_occurrence": 15
+        },
+        "x_oversized_tool_output": {
+          "occurrences": 9038,
+          "wasted_model_steps": 0,
+          "usd": 785.91,
+          "pct_of_total_spend": 1.2,
+          "median_steps_per_occurrence": 0.0
+        },
+        "y_cache_rebuild_after_tool_wait": {
+          "occurrences": 2101,
+          "wasted_model_steps": 2101,
+          "usd": 4441.69,
+          "pct_of_total_spend": 6.81,
+          "median_steps_per_occurrence": 1
+        },
+        "y_cache_rebuild_after_user_idle": {
+          "occurrences": 1256,
+          "wasted_model_steps": 1256,
+          "usd": 2716.09,
+          "pct_of_total_spend": 4.16,
+          "median_steps_per_occurrence": 1.0
+        },
+        "y_cache_rewrite_churn": {
+          "occurrences": 57311,
+          "wasted_model_steps": 57311,
+          "usd": 35023.85,
+          "pct_of_total_spend": 53.69,
+          "median_steps_per_occurrence": 1
+        }
+      },
+      "deterministic_waste_total_a_to_g": {
+        "usd": 1549.56,
+        "pct": 2.38
+      },
+      "distributions": {
+        "error_retry_chain_attempts": {
+          "n": 54,
+          "mean": 2.778,
+          "median": 2.0,
+          "p75": 3,
+          "p90": 4,
+          "max": 14
+        },
+        "error_retry_extra_attempts_after_2_failures": {
+          "n": 17,
+          "mean": 2.471,
+          "median": 1,
+          "p75": 3,
+          "p90": 5,
+          "max": 12
+        },
+        "poll_run_polls": {
+          "n": 175,
+          "mean": 6.28,
+          "median": 3,
+          "p75": 4,
+          "p90": 11,
+          "max": 96
+        },
+        "poll_extra_polls_after_2": {
+          "n": 88,
+          "mean": 8.511,
+          "median": 2.0,
+          "p75": 7,
+          "p90": 25,
+          "max": 94
+        },
+        "poll_sleep_seconds": {
+          "n": 1010,
+          "mean": 21.928,
+          "median": 0.0,
+          "p75": 20.0,
+          "p90": 30.0,
+          "max": 1800.0
+        },
+        "identical_repeat_result_tokens": {
+          "n": 1524,
+          "mean": 74.062,
+          "median": 7.75,
+          "p75": 7.75,
+          "p90": 149.25,
+          "max": 5727.0
+        },
+        "identical_repeat_chain_repeats": {
+          "n": 298,
+          "mean": 5.121,
+          "median": 1.0,
+          "p75": 1,
+          "p90": 1,
+          "max": 607
+        },
+        "identical_repeat_extra_after_2": {
+          "n": 9,
+          "mean": 135.444,
+          "median": 2,
+          "p75": 13,
+          "p90": 605,
+          "max": 605
+        },
+        "identical_repeat_extra_after_3": {
+          "n": 7,
+          "mean": 173.143,
+          "median": 5,
+          "p75": 590,
+          "p90": 604,
+          "max": 604
+        }
+      },
+      "notes": [
+        "Each wasted tool call is priced at its issuing model step's list-price cost split over the calls that step issued.",
+        "g is priced without the step's cache writes; x, h and y are upper bounds (output capping, helper context right-sizing, cache reuse) and are not added to the deterministic waste total.",
+        "Detection is deterministic and conservative: any write, non-read-only command or helper launch resets the no-state-change conditions."
+      ],
+      "since": null
+    }
+  },
+  "fast_decisions_events": {
+    "session_files": 1391,
+    "test_session_files_skipped": 2346,
+    "reason_codes": {
+      "model_routed:start_strong": 3419,
+      "model_routed:start_model": 2018,
+      "model_routed:escalated_max_requests": 402,
+      "model_routed:escalated_test_failure": 172,
+      "difficulty_judged:judge_cheap": 136,
+      "difficulty_judged:scope_strong": 135,
+      "difficulty_judged:judge_strong": 13,
+      "difficulty_judged:rules_cheap": 8,
+      "difficulty_judged:rules_strong": 1,
+      "difficulty_judged:user_model_strong": 1
+    },
+    "efficiency_receipts": 11
+  },
+  "parse_stats": {
+    "claude_projects_included": 49,
+    "claude_projects_excluded": 77,
+    "claude_duplicate_messages": 1907,
+    "claude_sessions_excluded_cwd": 12,
+    "amplifier_projects_included": 182,
+    "amplifier_unpriced_calls": 9894,
+    "amplifier_projects_excluded": 4196
+  }
+}

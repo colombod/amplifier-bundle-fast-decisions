@@ -727,6 +727,30 @@ def _since_day(value: str | None) -> str | None:
     return value
 
 
+def hooks_command(args) -> int:
+    """``afast hooks install|uninstall|show|run claude-code``."""
+    from . import hooks_install
+
+    if args.action == "run":
+        from .claude_hook import main as hook_main
+        return hook_main([args.mode or "pre"])
+    target = args.settings or str(hooks_install.DEFAULT_SETTINGS)
+    if args.action == "show":
+        settings = hooks_install.install(target, python=args.python, dry_run=True)
+        print(json.dumps({"hooks": settings.get("hooks", {})}, indent=2))
+        return 0
+    if args.action == "install":
+        hooks_install.install(target, python=args.python)
+        print(f"Installed the fast-decisions waste guards (PreToolUse, PostToolUse, Stop) in {target}.\n"
+              "Receipts go to ~/.amplifier/fast-decisions/events (harness: Claude Code); "
+              "see them with: afast efficiency. Remove with: afast hooks uninstall claude-code"
+              + (f" --settings {target}" if args.settings else ""))
+        return 0
+    hooks_install.uninstall(target)
+    print(f"Removed the fast-decisions hooks from {target} (other hooks kept).")
+    return 0
+
+
 def efficiency_command(args) -> int:
     from .efficiency import LEVER_LABELS, summarize
 
@@ -924,8 +948,20 @@ def main(argv=None) -> int:
     savings.add_argument("--since", default=None, help="YYYY-MM-DD, or Nd for the last N days")
     savings.add_argument("--host-model", default=None, help="Host model id (default: the recorded provider default model, else claude-fable-5-1)")
     savings.add_argument("--json", action="store_true")
+    hooks = commands.add_parser(
+        "hooks",
+        help="Install the waste guards into another harness (Claude Code) or run its hook",
+    )
+    hooks.add_argument("action", choices=("install", "uninstall", "show", "run"))
+    hooks.add_argument("harness", choices=("claude-code",))
+    hooks.add_argument("mode", nargs="?", choices=("pre", "post", "stop"), help="for run: which hook")
+    hooks.add_argument("--settings", default=None,
+                       help="settings.json to edit (default ~/.claude/settings.json; use .claude/settings.json for one project)")
+    hooks.add_argument("--python", default=None, help="interpreter the hook runs with (default: this one)")
     args = parser.parse_args(argv)
     try:
+        if args.command == "hooks":
+            return hooks_command(args)
         if args.command == "efficiency":
             return efficiency_command(args)
         if args.command == "savings":

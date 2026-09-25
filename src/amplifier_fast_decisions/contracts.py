@@ -68,6 +68,9 @@ EVENT_NAMES = tuple(
         # loop-stop notes (pattern kind and tool name only). See levers.py.
         "cache_refresh",
         "loop_note",
+        # Waste guards (guards.py): which guard acted on a tool call (block,
+        # pointer, poll_wait) -- tool name and reason code only.
+        "waste_guard",
     )
 )
 
@@ -701,6 +704,12 @@ class Policy:
     # sleep-as-timer polling get a short note in the next request (levers.py).
     # None (the default) is fully off.
     loop_stop: dict[str, Any] | None = None
+    # Waste guards (guards.py): identical-result pointers, repeated-failure
+    # stops and sleep-polls run in place. None/False: off (the code default,
+    # so tests and old profiles are unchanged); True or a dict of
+    # guards.GuardConfig fields: on. behaviors/fast-decisions.yaml turns
+    # them on. Independent of mode, routing and the scope gate.
+    waste_guards: Any = None
     version: str = "policy-v1"
 
     def __post_init__(self) -> None:
@@ -733,6 +742,8 @@ class Policy:
             raise ValueError("read_shortcut must be a bool")
         validate_cache_keepalive(self.cache_keepalive)
         validate_loop_stop(self.loop_stop)
+        if self.waste_guards is not None and not isinstance(self.waste_guards, (bool, dict)):
+            raise ValueError("waste_guards must be a bool or a mapping")
 
     @classmethod
     def from_config(cls, config: dict[str, Any]) -> Policy:

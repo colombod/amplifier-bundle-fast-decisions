@@ -75,6 +75,9 @@ SAFE_FIELDS = {
     "seconds_saved",
     "project",
     "traffic",
+    # Waste-guard receipts: the numeric inputs of the estimate (token and
+    # poll counts, step cost) -- never commands, paths or outputs.
+    "detail",
     "tool",
     "tool_call_id",
     "status",

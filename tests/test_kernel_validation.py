@@ -59,6 +59,20 @@ def _behavior_configs() -> tuple[dict, dict]:
 class KernelValidationTests(unittest.IsolatedAsyncioTestCase):
     """Validate our modules against amplifier_core's own protocol validators."""
 
+    def setUp(self):
+        # The shipped configs carry no events_dir: without this the mounted
+        # modules would record into ~/.amplifier/fast-decisions/events (the
+        # test-session-*.jsonl files seen there).
+        import os
+        import tempfile
+        from unittest import mock
+        self._events = tempfile.TemporaryDirectory()
+        patcher = mock.patch.dict(os.environ, {"AFAST_EVENTS_DIR": self._events.name,
+                                               "AFAST_OBSERVATORY": "off"})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.addCleanup(self._events.cleanup)
+
     @staticmethod
     def _format_errors(result) -> str:
         lines = [result.summary()]

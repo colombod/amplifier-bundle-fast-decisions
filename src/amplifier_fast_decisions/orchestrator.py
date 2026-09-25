@@ -87,6 +87,104 @@ def usage_fields(response: Any) -> dict:
     return fields
 
 
+def request_tool_ids(request: Any) -> set[str] | None:
+    """Tool-call ids whose results are still in this request's messages (the
+    waste guards only point the model at results it can still see). None
+    when the message shape carries no ids."""
+    ids: set[str] = set()
+    try:
+        messages = list(field_value(request, "messages") or [])
+    except Exception:  # noqa: BLE001
+        return None
+    for message in messages:
+        tid = field_value(message, "tool_call_id", None)
+        if isinstance(tid, str):
+            ids.add(tid)
+        content = field_value(message, "content", None)
+        if isinstance(content, list):
+            for block in content:
+                bid = field_value(block, "tool_use_id", None) or field_value(block, "tool_call_id", None)
+                if isinstance(bid, str):
+                    ids.add(bid)
+    return ids or None
+
+
+def waste_guard_for(service: Any):
+    """The session's WasteGuard (guards.py), created on first use, or None
+    when ``waste_guards`` is off. Independent of mode and model routing."""
+    config = getattr(service.policy, "waste_guards", None)
+    if not config:
+        return None
+    guard = getattr(service, "waste_guard", None)
+    if guard is None:
+        from .guards import GuardConfig, WasteGuard
+        wd = session_working_dir(service)
+        try:
+            from .observer import repo_context
+            project = repo_context(Path(wd)).get("repo") or Path(wd).name
+        except Exception:  # noqa: BLE001
+            project = Path(wd).name
+        guard = WasteGuard(GuardConfig.from_config(config), harness="Amplifier", project=project or "(unknown)",
+                           traffic=efficiency.classify_traffic(wd), cwd=wd)
+        if not guard.config.enabled:
+            return None
+        service.waste_guard = guard
+    return guard
+
+
+def _full_result_text(result: Any) -> str:
+    """What the model will see for this tool result (uncapped), for exact
+    comparison. Never raises."""
+    serialize = getattr(result, "get_serialized_output", None)
+    if callable(serialize):
+        try:
+            return str(serialize())
+        except Exception:  # noqa: BLE001
+            pass
+    output = field_value(result, "output", None)
+    if output is None:
+        output = field_value(result, "error", None)
+    try:
+        import json as _json
+        return output if isinstance(output, str) else _json.dumps(output, default=str, sort_keys=True)
+    except Exception:  # noqa: BLE001
+        return str(output)
+
+
+def _result_failed(result: Any) -> bool:
+    if field_value(result, "success", None) is False:
+        return True
+    output = field_value(result, "output", None)
+    rc = field_value(output, "returncode", None) if isinstance(output, dict) else None
+    return isinstance(rc, int) and rc != 0
+
+
+class _GuardResult:
+    """Minimal ToolResult stand-in when amplifier_core is not importable."""
+    def __init__(self, success: bool, output: Any):
+        self.success, self.output, self.error = success, output, None
+
+    def get_serialized_output(self) -> str:
+        return self.output if isinstance(self.output, str) else str(self.output)
+
+
+def guard_tool_result(success: bool, output: Any):
+    try:
+        from amplifier_core.models import ToolResult
+        return ToolResult(success=success, output=output)
+    except Exception:  # noqa: BLE001
+        return _GuardResult(success, output)
+
+
+def _with_note(result: Any, note: str):
+    """The same result with a short fast-decisions note attached."""
+    output = field_value(result, "output", None)
+    success = field_value(result, "success", True) is not False
+    if isinstance(output, dict):
+        return guard_tool_result(success, {**output, "fast_decisions_note": note})
+    return guard_tool_result(success, note + "\n" + (output if isinstance(output, str) else _full_result_text(result)))
+
+
 # HC04 ("opt-in model routing with escalation"): test-failure detection.
 # Conservative and text-pattern based -- never raises, never inspects
 # arguments, only the already-observed tool result text (capped at 20k
@@ -1093,7 +1191,41 @@ docs/UPSTREAM_CONTRACT.md.
         if self._levers is not None:
             await self._levers.after_call(self._provider, request, kwargs, usage_fields(response), mono_start,
                                           time.perf_counter() - start, provider_key=self._provider_key)
+        await self._guard_model_call(service, request, response, time.perf_counter() - start, decision_id)
         return response
+
+    async def _guard_model_call(self, service: Any, request: Any, response: Any, seconds: float,
+                                decision_id: Any) -> None:
+        """Feed the waste guards this model call (cost, served model, which
+        tool results are still in context, the tool calls it issued). Never raises."""
+        try:
+            guard = waste_guard_for(service)
+            if guard is None:
+                return
+            usage = usage_fields(response)
+            host = getattr(self._provider, "default_model", None)
+            model = usage.get("served_model") or field_value(request, "model", None) or host
+            guard.note_model_call(model=model if isinstance(model, str) else None, usage=usage,
+                                  cost_usd=usage.get("cost_usd"), seconds=seconds,
+                                  present_ids=request_tool_ids(request))
+            expected = getattr(service, "waste_guard_call_ids", None)
+            if expected is None:
+                expected = service.waste_guard_call_ids = {}
+            for call in field_value(response, "tool_calls", None) or []:
+                cid, name = field_value(call, "id", None), field_value(call, "name", None)
+                args = field_value(call, "arguments", None)
+                if isinstance(args, str):
+                    try:
+                        import json as _json
+                        args = _json.loads(args)
+                    except ValueError:
+                        args = {}
+                if isinstance(cid, str) and isinstance(name, str):
+                    expected.setdefault((name, digest(args if isinstance(args, dict) else {})), []).append(cid)
+            for data in guard.take_receipts():
+                await service.emit("efficiency", data, decision_id)
+        except Exception:  # noqa: BLE001
+            return
 
     def _eff_context(self, service: Any) -> dict:
         st = self._eff
@@ -1321,12 +1453,33 @@ class ObservedTool:
                     "backend": service.backend.name,
                     "mode": service.policy.mode,
                 }, decision_id)
+        guard = waste_guard_for(service) if turn else None
+        decision = None
+        call_id = None
+        if guard is not None:
+            expected = getattr(service, "waste_guard_call_ids", None) or {}
+            queue = expected.get((self._tool_key, digest(input if isinstance(input, dict) else {})))
+            call_id = queue.pop(0) if queue else None
+            decision = guard.before(self._tool_key, input)
+            for data in guard.take_receipts():
+                await service.emit("efficiency", data, decision_id)
+            if decision.action == "block":
+                await service.emit("waste_guard", {"action": "block", "reason_code": decision.guard,
+                                                   "tool": self._tool_key}, decision_id)
+                await service.emit("tool_end", {**fields, "status": "blocked", "success": False,
+                                                "reason_code": decision.guard, "duration_ms": 0.0}, decision_id)
+                if turn:
+                    turn.revision += 1
+                return guard_tool_result(False, decision.message)
         start = time.perf_counter()
         levers = self._levers
         if levers is not None:
             levers.tool_started(id(fields), self._tool_key)
         try:
-            result = await self._tool.execute(input, **kwargs)
+            if decision is not None and decision.action == "wait":
+                result = await self._poll_in_place(guard, decision, input, kwargs, call_id, decision_id)
+            else:
+                result = await self._tool.execute(input, **kwargs)
         except asyncio.CancelledError:
             await service.emit("tool_end", {**fields, "status": "cancelled", "success": False,
                 "duration_ms": (time.perf_counter() - start) * 1000}, decision_id)
@@ -1372,12 +1525,64 @@ class ObservedTool:
                 "success": success, "duration_ms": (time.perf_counter() - start) * 1000}, decision_id)
             if levers is not None:
                 await levers.tool_observed(self._tool_key, input, success)
+            if guard is not None and (decision is None or decision.action != "wait"):
+                replacement = guard.after(self._tool_key, input, _full_result_text(result), _result_failed(result),
+                                          call_id=call_id)
+                if replacement:
+                    await service.emit("waste_guard", {"action": "pointer", "reason_code": "identical_result",
+                                                       "tool": self._tool_key}, decision_id)
+                    return guard_tool_result(success is not False, replacement)
             return result
         finally:
             if levers is not None:
                 levers.tool_finished(id(fields))
             if turn:
                 turn.revision += 1
+
+    async def _poll_in_place(self, guard: Any, decision: Any, input: dict[str, Any], kwargs: dict,
+                             call_id: Any, decision_id: Any):
+        """Run a poll command repeatedly (it carries its own sleep; status
+        checks wait ``decision.interval_s`` between runs) until a new finish
+        word appears, progress output settles, or the wait budget is spent
+        (guards.poll_should_stop). Returns the last result with a short note.
+        Cancellation propagates."""
+        from .guards import poll_note, poll_should_stop, terminal_markers
+        from .waste import text_hash
+        started = time.perf_counter()
+        budget = guard.config.poll_max_wait_s
+        has_sleep = "sleep" in str(input.get("command", "")) if isinstance(input, dict) else False
+        polls, changed_once, streak = 0, False, 0
+        last_hash = decision.baseline_hash
+        result = None
+        while True:
+            if polls and not has_sleep:
+                await asyncio.sleep(decision.interval_s)
+            result = await self._tool.execute(input, **kwargs)
+            polls += 1
+            text = _full_result_text(result)
+            digest_now = text_hash(text)
+            if digest_now != last_hash:
+                changed_once, streak = True, 0
+            else:
+                streak += 1
+            last_hash = digest_now
+            if poll_should_stop(
+                    markers=terminal_markers(text), baseline_markers=decision.baseline_markers,
+                    changed_once=changed_once, unchanged_streak=streak):
+                break
+            elapsed = time.perf_counter() - started
+            if elapsed + elapsed / polls > budget:
+                break
+        changed = last_hash != decision.baseline_hash
+        waited = time.perf_counter() - started
+        guard.after_wait(self._tool_key, input, _full_result_text(result), _result_failed(result), polls=polls,
+                         waited_s=waited, changed=changed, call_id=call_id)
+        service = self._runtime.service
+        await service.emit("waste_guard", {"action": "poll_wait", "reason_code": "poll_wait",
+                                           "tool": self._tool_key, "event_count": polls}, decision_id)
+        for data in guard.take_receipts():
+            await service.emit("efficiency", data, decision_id)
+        return _with_note(result, poll_note(polls, waited, changed))
 
 
 def _import_upstream_loop(cache_root: "Path | None" = None):
@@ -1576,6 +1781,9 @@ class HybridOrchestrator:
                 "allow_external_state": service.policy.allow_external_state,
                 "effort_routing_enabled": bool(service.policy.effort_routing),
                 "model_routing_enabled": bool(service.policy.model_routing)})
+            guard = waste_guard_for(service)
+            if guard is not None:
+                guard.new_turn()
             # Provider keys and defaults are unchanged. Upstream pins and selections apply.
             workspace_tool = tools.get("fast_workspace")
             levers = Levers(service.policy, service, lambda: project_and_traffic(service), usage_fn=usage_fields,
@@ -1608,6 +1816,13 @@ class HybridOrchestrator:
                     self._shared_warm = levers.shared_warm
                     self._levers = None
                 await self._backfill_execution_end(hooks, response, status)
+                guard = getattr(service, "waste_guard", None)
+                if guard is not None:
+                    try:
+                        for data in guard.end_turn():
+                            await service.emit("efficiency", data)
+                    except Exception:  # noqa: BLE001
+                        pass
                 await service.emit("turn_end", {"fast_total": service.turn.fast_total,
                     "status": status, "duration_ms": (time.perf_counter() - started) * 1000,
                     "slow_total": service.slow_total,

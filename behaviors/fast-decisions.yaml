@@ -94,8 +94,32 @@ session:
         max_refreshes: 6
         min_prefix_tokens: 20000
         max_output_tokens: 1
-      # Loop-stop nudges stay off: their receipts did not reconcile with a
-      # measured A/B (evals/levers-2026-09-25).
+      # Loop-stop nudges (loop_stop) stay off: their receipts did not reconcile with a
+      # measured A/B (evals/levers-2026-09-25). The waste guards below replace
+      # them; with both on, the nudges stand down.
+      # Waste guards (docs/WASTE-GUARDS.md; measured in docs/evidence/
+      # 2026-09-25/waste-census): deterministic per-tool-call checks, on in
+      # every session regardless of repo size (the scope gate above decides
+      # model routing only). Each firing leaves an efficiency receipt.
+      #  - repeat stop: a call whose last 3 runs returned identical output
+      #    with nothing changed is not run a fourth time (the model is told
+      #    to use the earlier result; issuing it again runs it);
+      #  - retry stop: a command that failed twice with the same error and
+      #    nothing changed is not run a third time (transient errors exempt);
+      #  - poll wait: a repeated `sleep N && <read-only check>` is run in place
+      #    until a finish word appears or progress settles, at most 240 s;
+      #  - unchanged output: a second identical read/search/command output, or
+      #    a re-read of an unchanged file range already in context, is
+      #    returned as a one-line pointer instead of a second copy.
+      # Turn all off: waste_guards: {enabled: false}; one off, e.g.
+      # waste_guards: {enabled: true, poll_wait: false}.
+      waste_guards:
+        enabled: true
+        repeat_stop: true
+        retry_stop: true
+        poll_wait: true
+        identical_results: true
+        poll_max_wait_s: 240
       # Auto-observatory: on the top-level session's first session:start,
       # reuse-or-spawn a detached `afast serve` and open it. Skipped for
       # child sessions, when AFAST_OBSERVATORY=off or AMPLIFIER_NO_BROWSER=1,
