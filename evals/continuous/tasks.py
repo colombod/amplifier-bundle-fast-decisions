@@ -122,8 +122,8 @@ while [ $i -le 11 ]; do
   i=$((i + 1))
 done
 n=$(git ls-files | wc -l | tr -d ' ')
-tok=$(printf 'nightly-%s' "$n" | shasum | cut -c1-10)
-echo "NIGHTLY RESULT: status=green files=$n token=$tok"
+build=$(printf 'nightly-%s' "$n" | cksum | cut -d' ' -f1)
+echo "NIGHTLY RESULT: status=green files=$n build=$build"
 """
 
 
@@ -196,11 +196,12 @@ def _check_triage(ws, finals):
 
 
 def _check_nightly(ws, finals):
-    import hashlib
+    # (A hex "token=" was redacted as a secret by the host in round 1; a numeric build id is not.)
     n = len(_git(ws, "ls-files").splitlines())
-    tok = hashlib.sha1(f"nightly-{n}".encode()).hexdigest()[:10]
+    tok = subprocess.run(["sh", "-c", f"printf 'nightly-%s' {n} | cksum | cut -d' ' -f1"], capture_output=True,
+                         text=True).stdout.strip()
     text = "\n".join(f or "" for f in finals)
-    miss = _has(text, re.escape(tok), r"\b36\b")
+    miss = _has(text, rf"\b{re.escape(tok)}\b", r"\b36\b")
     changed = _since(ws, _base(ws))
     return not miss and not changed, f"token={tok}; missing={miss}; changed={sorted(changed)}"
 
