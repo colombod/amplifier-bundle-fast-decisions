@@ -48,11 +48,16 @@ def parse_candidate(value: Any) -> Candidate:
 
 
 async def _collect_groups(
-    coordinator: Any, request: Any, tools: dict[str, Any], configured: list[dict] | None
+    coordinator: Any, request: Any, tools: dict[str, Any], configured: list[dict] | None,
+    extra: list[Any] | None = None, workspace_paths: bool = True,
 ) -> list[list[Any] | None]:
     groups: list[list[Any] | None] = []
     if configured:
         groups.append(list(configured))
+    if extra:
+        # Per-step prepared actions (step_actions.py): built by the
+        # orchestrator from the step's own deterministic features.
+        groups.append(list(extra))
 
     supplier = capability(coordinator, CANDIDATES_CAPABILITY)
     if supplier is not None:
@@ -74,7 +79,7 @@ async def _collect_groups(
                 groups.append(None)
 
     workspace = tools.get("fast_workspace")
-    if workspace and hasattr(workspace, "candidate_for_path"):
+    if workspace_paths and workspace and hasattr(workspace, "candidate_for_path"):
         messages = field_value(request, "messages", []) or []
         user = next(
             (m for m in reversed(messages) if field_value(m, "role") == "user"), None
@@ -100,6 +105,9 @@ async def collect_candidates(
     tools: dict[str, Any],
     configured: list[dict] | None = None,
     max_candidates: int = 12,
+    *,
+    extra: list[Any] | None = None,
+    workspace_paths: bool = True,
 ) -> tuple[list[Candidate], list[str]]:
     """Returns ``(candidates, reject_reasons)``.
 
@@ -109,7 +117,7 @@ async def collect_candidates(
     never raised -- by the caller.
     """
     reasons: list[str] = []
-    groups = await _collect_groups(coordinator, request, tools, configured)
+    groups = await _collect_groups(coordinator, request, tools, configured, extra, workspace_paths)
 
     by_id: dict[str, Candidate] = {}
     for group in groups:

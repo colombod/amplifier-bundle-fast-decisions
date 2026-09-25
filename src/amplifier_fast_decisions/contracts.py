@@ -64,6 +64,9 @@ EVENT_NAMES = tuple(
         # Efficiency receipts (docs/GOAL.md): one per optimization decision,
         # with the baseline and the savings fixed at decision time.
         "efficiency",
+        # Per-step decision point (step_actions.py): the step's class, the
+        # action taken (prepared / cheaper model / full) and who decided.
+        "step_decided",
     )
 )
 
@@ -642,6 +645,11 @@ class Policy:
     # routing knob, expanded into model_routing/effort_routing by
     # routing_levers.apply_profile() in from_config. Recorded for receipts.
     profile: str | None = None
+    # Per-step action set (step_actions.py, all opt-in): before each model call
+    # inside a turn, classify the step and pick a prepared action, a cheaper
+    # model for this step only (when price- and cache-aware math says so), or
+    # the full model. None = off (the loop behaves exactly as before).
+    step_actions: dict[str, Any] | None = None
     version: str = "policy-v1"
 
     def __post_init__(self) -> None:
@@ -672,6 +680,8 @@ class Policy:
             raise ValueError("tool_risk_shadow must be a bool")
         if not isinstance(self.read_shortcut, bool):
             raise ValueError("read_shortcut must be a bool")
+        from .step_actions import validate as validate_step_actions
+        validate_step_actions(self.step_actions)
         if self.profile is not None:
             from .routing_levers import PROFILES
             if self.profile not in PROFILES:

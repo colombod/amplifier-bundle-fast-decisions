@@ -154,7 +154,8 @@ def forge_e2e_ts(ts):
 
 
 def fd_receipts(events_dir: Path) -> dict:
-    out = {"difficulty_judged": [], "model_routed": [], "slow_end_served": [], "jev_ms": []}
+    out = {"difficulty_judged": [], "model_routed": [], "slow_end_served": [], "jev_ms": [],
+           "step_decided": [], "efficiency": []}
     if not events_dir.is_dir():
         return out
     for path in sorted(events_dir.glob("**/*.jsonl")):
@@ -175,6 +176,16 @@ def fd_receipts(events_dir: Path) -> dict:
                                                                   "requested_effort")})
             elif name.endswith("slow_end") and d.get("status") == "ok":
                 out["slow_end_served"].append([d.get("served_model"), d.get("served_model_source")])
+            elif name.endswith("step_decided"):
+                out["step_decided"].append({k: d.get(k) for k in (
+                    "step_class", "step_reason", "step_action", "mechanism", "step_index", "candidate_count",
+                    "expected_saving_s", "judge_asked", "candidate_origin", "reason_code", "cheap_model")})
+            elif name.endswith("efficiency"):
+                out["efficiency"].append({k: d.get(k) for k in (
+                    "lever", "mechanism", "decision", "calls_saved", "usd_saved", "seconds_saved", "baseline",
+                    "actual", "traffic")})
+            elif name.endswith("scored") and d.get("duration_ms"):
+                out.setdefault("next_action_ms", []).append(d["duration_ms"])
     return out
 
 
@@ -190,7 +201,8 @@ def run_one(item, args, source: Path, pinned: Path):
     build_profile(run_dir, ws, item["config"], source)
     slug = str(ws.resolve()).replace("/", "-").replace("\\", "-").replace(":", "")
     sessions = Path.home() / ".amplifier/projects" / slug / "sessions"
-    env = dict(os.environ, AFAST_OBSERVATORY="off", AMPLIFIER_NO_BROWSER="1", PYTHONPATH=str(source / "src"))
+    env = dict(os.environ, AFAST_OBSERVATORY="off", AMPLIFIER_NO_BROWSER="1", PYTHONPATH=str(source / "src"),
+               AFAST_TRAFFIC="test", AFAST_EVENTS_DIR=str(run_dir / "events"))
     cmd = ["amplifier", "run", "--bundle", (run_dir / "profile.md").as_uri(), "--mode", "single",
            "--provider", "anthropic", "--model", args.model, "--output-format", "json", task["prompt"]]
     started_at = _now()

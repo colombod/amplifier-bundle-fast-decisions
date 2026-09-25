@@ -196,6 +196,64 @@ def prepared_action(*, tool: str, decision_seconds: float, host_model: str | Non
                    method="session average host call", project=project, traffic=traffic)
 
 
+def judge_only(*, lever: str, mechanism: str, decision: str, judge_seconds: float, host_model: str | None,
+               project: str | None, traffic: str) -> dict:
+    """Receipt for a judge call whose answer changed nothing (it abstained,
+    or kept the step on the host): its latency is pure overhead."""
+    return receipt(lever=lever, mechanism=mechanism, decision=decision,
+                   baseline=_side(host_model, 0, 0.0, 0.0),
+                   actual=_side(host_model, 0, 0.0, judge_seconds, judge_calls=1),
+                   method="judge latency only", project=project, traffic=traffic)
+
+
+def prepared_step(*, tool: str, decision_seconds: float, host_model: str | None, skipped_prompt_tokens: int,
+                  skipped_output_tokens: int, skipped_seconds: float | None, mechanism: str, project: str | None,
+                  traffic: str, repeated: bool = False, prepared_tokens: int = 0, rates: dict | None = None) -> dict:
+    """Receipt for one model call replaced by a prepared action, priced once
+    the next model call is known (per-step decision point).
+
+    The skipped call is the same step on the default (host) model: its prompt
+    is the next call's prompt minus the prepared result, all of it a cache
+    read (the conversation prefix was already cached or is written by the next
+    call either way), plus a typical tool-call step's output. When the model
+    re-fetched what the prepared action fetched (``repeated``), nothing was
+    saved: the prepared result was extra context, charged as one host cache
+    write, and the decision time is lost."""
+    rates = rates or DEFAULT_RATES
+    if repeated:
+        extra = price(host_model, {"input": prepared_tokens, "cache_write": prepared_tokens}, rates) \
+            if prepared_tokens else 0.0
+        return receipt(lever="prepared_action", mechanism=mechanism, decision="prepared_repeated_by_model",
+                       baseline=_side(host_model, 0, 0.0, 0.0),
+                       actual=_side(None, 0, extra, decision_seconds),
+                       method="model re-fetched the prepared result; its tokens charged as a host cache write",
+                       project=project, traffic=traffic)
+    tokens = {"input": max(0, skipped_prompt_tokens), "cache_read": max(0, skipped_prompt_tokens),
+              "output": max(0, skipped_output_tokens)}
+    return receipt(lever="prepared_action", mechanism=mechanism, decision="prepared_" + tool,
+                   baseline=_side(host_model, 1, price(host_model, tokens, rates), skipped_seconds,
+                                  prompt_tokens=tokens["input"], output_tokens=tokens["output"]),
+                   actual=_side(None, 0, 0.0, decision_seconds),
+                   method=("skipped host call: next call's prompt minus the prepared result as cache reads, "
+                           "typical tool-step output; seconds from the next call's latency"),
+                   project=project, traffic=traffic)
+
+
+def discarded_cheap_step(*, usage: dict, seconds: float | None, served_model: str | None, host_model: str | None,
+                         mechanism: str, reason: str, project: str | None, traffic: str,
+                         rates: dict | None = None) -> dict:
+    """Receipt for a cheaper-model step whose response was discarded (it
+    edited or ended the turn) and re-run on the host: the cheap call is a
+    pure loss."""
+    rates = rates or DEFAULT_RATES
+    cost = _num(usage.get("cost_usd"))
+    if cost is None:
+        cost = price(served_model, _tokens(usage), rates)
+    return receipt(lever="cheaper_model", mechanism=mechanism, decision="cheap_step_discarded_" + reason,
+                   baseline=_side(host_model, 0, 0.0, 0.0), actual=_side(served_model, 1, cost, seconds),
+                   method="discarded cheaper-model call (host re-ran the step)", project=project, traffic=traffic)
+
+
 def _empty() -> dict:
     return {"receipts": 0, "calls_saved": 0, "usd_saved": 0.0, "seconds_saved": 0.0,
             "usd_unknown": 0, "seconds_unknown": 0}

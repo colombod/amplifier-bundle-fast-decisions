@@ -21,6 +21,8 @@ TIERS = [
     {"max_p_complex": 0.5, "model": "claude-sonnet-5", "effort": "medium", "label": "sonnet"},
 ]
 
+STEPS = {"prepared": True, "cheaper_model": True}
+
 OVERRIDES: dict[str, dict | None] = {
     "plain": None,
     # Today's shipped default: scope gate -> host model, no judge call.
@@ -38,6 +40,14 @@ OVERRIDES: dict[str, dict | None] = {
     "L2-both-L3": {"model_routing": {"large_repo": {"max_p_complex": 0.3, "non_editing_max_p_edit": 0.5,
                                                     "require": "both"},
                                      "strong_effort": {"max_p_complex": 0.8, "effort": "medium"}}},
+    # Per-step action set (step_actions.py): prepared read/status actions at
+    # predictable steps (judge next_action) + price/cache-aware cheaper model
+    # for routine read-only steps. Turn-start routing unchanged (scope gate).
+    "steps": {"step_actions": STEPS},
+    # Per-step actions on top of the large-repo read-only lever (L2-both).
+    "steps-L2": {"step_actions": STEPS,
+                 "model_routing": {"large_repo": {"max_p_complex": 0.3, "non_editing_max_p_edit": 0.5,
+                                                  "require": "both"}}},
 }
 
 

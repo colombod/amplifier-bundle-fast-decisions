@@ -75,6 +75,20 @@ SAFE_FIELDS = {
     "seconds_saved",
     "project",
     "traffic",
+    # Per-step decision point (step_decided): the step's class and reason
+    # (tool names only), the action taken, the judge's expected saving, and
+    # the per-step price math -- never arguments, paths or results.
+    "step_class",
+    "step_reason",
+    "step_action",
+    "step_index",
+    "expected_saving_s",
+    "judge_asked",
+    "candidate_origin",
+    "prompt_tokens_est",
+    "cheap_model",
+    "host_saving_usd",
+    "cheap_cost_usd",
     # Routing levers: where served_model came from ("response" | "requested"),
     # the chosen tier label and the user-facing profile name.
     "served_model_source",
