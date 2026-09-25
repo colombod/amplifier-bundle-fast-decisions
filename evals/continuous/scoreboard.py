@@ -2,8 +2,13 @@
 
     python3 evals/continuous/scoreboard.py [--out /tmp/ampup/continuous-eval]
 
-Reads ``<out>/runs/r*/<task>/<config>/result.json`` and writes
-``<out>/scoreboard.md`` and ``<out>/scoreboard.json``.
+Reads ``<out>/runs/<batch>-r<N>/<task>/<config>/result.json`` and writes
+``<out>/scoreboard.md`` and ``<out>/scoreboard.json``. Batches are never
+pooled (a batch boundary marks a change outside the configs, e.g. global
+Amplifier settings). Within a batch, tasks are split into tiers ("heavy":
+shaped like the owner's costly requests; "light": short everyday requests) and
+reported separately; the headline combines tier ratios weighted by the real
+workload's cost share (HEADLINE_WEIGHTS).
 
 Ratios (config / plain, same default model): per task, the median over the
 config's valid runs divided by the median over plain's valid runs; aggregated
@@ -31,19 +36,37 @@ from pathlib import Path
 
 TARGETS = {"cost": 0.50, "full_model_calls": 0.60, "wall": 0.70}
 METRICS = {"cost": "cost_usd", "full_model_calls": "full_model_calls", "wall": "wall_time_s",
-           "exec": "exec_time_s", "model_calls": "model_calls"}
+           "exec": "exec_time_s", "model_calls": "model_calls", "startup": "startup_s"}
+# Cost share of heavy vs light requests in the owner's real sessions (docs/evidence/2026-09-25/
+# step-opportunity/summary.json: helper sessions are 67% of cost; main turns have a median of 29.5 model
+# calls, p90 85; the light, few-call requests this suite's light tier models are a small share of cost).
+HEADLINE_WEIGHTS = {"heavy": 0.9, "light": 0.1}
+BATCH_NOTES = {
+    "A": "Before the 17:51 global ~/.amplifier/settings.yaml change; light-tier tasks only (plus a long "
+         "command task whose round-1 answers were redacted and discarded). Metrics rescored to drop stale "
+         "sessions from killed attempts (3 runs).",
+    "B": "After the 17:51 global settings change (hooks-status-context include_session=false, "
+         "hooks-memory-interject prompt_enabled=false, hooks-deprecation fork fix); heavy + light tiers; "
+         "candidate shas pinned for the whole batch; `current` runs on the light tier only (in a >300-file "
+         "repo it routes exactly like plain -- scope gate, no receipts -- confirmed in batch A).",
+}
 LEVERS = ("prepared_action", "cache_keepalive", "cheaper_model", "launch_blocked", "loop_stop",
           "context_rightsize")
 
 
 def load(out: Path) -> list[dict]:
     rows = []
-    for p in sorted(out.glob("runs/r*/*/*/result.json")):
+    for p in sorted(out.glob("runs/*-r*/*/*/result.json")):
         try:
             r = json.loads(p.read_text())
         except ValueError:
             continue
+        if r.get("error"):
+            continue
         r["_path"] = str(p.parent)
+        batch, _, rnd = p.parent.parent.parent.name.rpartition("-r")
+        r["batch"], r["round"] = batch, int(rnd)
+        r.setdefault("tier", _tier(r["task"]))
         rows.append(r)
     # A config whose source moved between rounds (a candidate branch got new
     # commits) is split per source sha, so one ratio never mixes code versions.
@@ -54,6 +77,10 @@ def load(out: Path) -> list[dict]:
         if r["config"] != "plain" and len(shas[r["config"]]) > 1 and r.get("source_sha"):
             r["config"] = f"{r['config']}@{r['source_sha'][:8]}"
     return rows
+
+
+def _tier(task):
+    return "heavy" if task.startswith("heavy_") or task == "long_nightly" else "light"
 
 
 def _valid(r):
@@ -140,8 +167,8 @@ def compute(rows: list[dict]) -> dict:
             for key, field in METRICS.items():
                 rs = []
                 for t in tasks:
-                    a = _med([r[field] for r in by.get((cfg, t), []) if _valid(r)])
-                    b = _med([r[field] for r in by.get(("plain", t), []) if _valid(r)])
+                    a = _med([r.get(field) for r in by.get((cfg, t), []) if _valid(r)])
+                    b = _med([r.get(field) for r in by.get(("plain", t), []) if _valid(r)])
                     if a is not None and b:
                         rs.append(a / b)
                         per_task.setdefault(t, {})[key] = round(a / b, 3)
@@ -153,8 +180,10 @@ def compute(rows: list[dict]) -> dict:
                      if (rd, t, "plain") in pair and (rd, t, cfg) in pair
                      and _valid(pair[(rd, t, "plain")]) and _valid(pair[(rd, t, cfg)])]
             for key, field in METRICS.items():
-                sp = sum(p[field] for p, _ in pairs)
-                sc = sum(c[field] for _, c in pairs)
+                pf = [(p.get(field), c.get(field)) for p, c in pairs]
+                pf = [(a, b) for a, b in pf if a is not None and b is not None]
+                sp = sum(a for a, _ in pf)
+                sc = sum(b for _, b in pf)
                 pooled[key] = round(sc / sp, 3) if sp else None
             entry["pooled_ratio_vs_plain"] = pooled
             entry["pairs"] = len(pairs)
@@ -197,19 +226,84 @@ def compute(rows: list[dict]) -> dict:
             "runs": len(rows), "board": board, "targets": TARGETS}
 
 
+def compute_all(rows: list[dict]) -> dict:
+    batches = {}
+    for b in sorted({r["batch"] for r in rows}):
+        br = [r for r in rows if r["batch"] == b]
+        tiers = {"all": compute(br)}
+        for tier in ("heavy", "light"):
+            tr = [r for r in br if r["tier"] == tier]
+            if tr:
+                tiers[tier] = compute(tr)
+        headline = {}
+        for cfg in tiers["all"]["configs"]:
+            if cfg == "plain":
+                continue
+            h = {}
+            for key in ("cost", "full_model_calls", "wall", "exec"):
+                parts = {t: tiers[t]["board"].get(cfg, {}).get("ratio_vs_plain", {}).get(key)
+                         for t in ("heavy", "light") if t in tiers}
+                parts = {t: v for t, v in parts.items() if v is not None}
+                if parts:
+                    w = sum(HEADLINE_WEIGHTS[t] for t in parts)
+                    h[key] = round(sum(HEADLINE_WEIGHTS[t] * v for t, v in parts.items()) / w, 3)
+                h[key + "_tiers"] = sorted(parts)
+            q = tiers["all"]["board"][cfg].get("quality", {})
+            h["meets_goal"] = {
+                "cost<=0.50x": h.get("cost") is not None and h["cost"] <= TARGETS["cost"],
+                "full_calls<=0.60x": h.get("full_model_calls") is not None
+                and h["full_model_calls"] <= TARGETS["full_model_calls"],
+                "wall<=0.70x": h.get("wall") is not None and h["wall"] <= TARGETS["wall"],
+                "quality_non_inferior": bool(q.get("non_inferior")),
+            }
+            headline[cfg] = h
+        batches[b] = {"note": BATCH_NOTES.get(b, ""), "tiers": tiers, "headline": headline,
+                      "rounds": tiers["all"]["rounds"],
+                      "window": [min(r["started_at"] for r in br), max(r.get("ended_at") or "" for r in br)],
+                      "spend_usd": round(sum(r.get("cost_usd") or 0 for r in br), 3)}
+    return {"generated": datetime.now(timezone.utc).isoformat(), "batches": batches,
+            "total_cost_usd": round(sum(r.get("cost_usd") or 0 for r in rows), 3), "runs": len(rows),
+            "targets": TARGETS, "headline_weights": HEADLINE_WEIGHTS}
+
+
 def _f(x, suffix=""):
     return "-" if x is None else f"{x}{suffix}"
 
 
-def render(sb: dict) -> str:
-    L = [f"# Continuous eval scoreboard", "",
-         f"Generated {sb['generated'][:19]}Z. Rounds: {sb['rounds']}. Runs: {sb['runs']}. "
-         f"Spend so far: ${sb['total_cost_usd']} (provider-reported estimate). Default model claude-opus-5-5; "
-         "all runs AFAST_TRAFFIC=test, events in ~/.amplifier/fast-decisions/events-eval.", "",
+def render_all(sb: dict, extra_spend: float = 0.0) -> str:
+    L = ["# Continuous eval scoreboard", "",
+         f"Generated {sb['generated'][:19]}Z. Runs scored: {sb['runs']}. Spend on scored runs: "
+         f"${sb['total_cost_usd']} (provider-reported estimate)"
+         + (f"; plus ${extra_spend:.2f} on discarded/killed runs and smoke tests" if extra_spend else "")
+         + ". Default model claude-opus-5-5; all runs AFAST_TRAFFIC=test, events in "
+         "~/.amplifier/fast-decisions/events-eval (watch: http://127.0.0.1:8790/, efficiency view "
+         "/api/efficiency?include_test=1).", "",
          "Targets vs plain on the same default model: cost <= 0.50x, full-model calls <= 0.60x, "
          "wall <= 0.70x, quality non-inferior (successes >= plain - 1 and no critical failure, STUDY-DESIGN 8).",
          "", "Ratios are geometric means over tasks of per-task median(config)/median(plain). "
-         "This is a screen (few rounds, shared machine), not a confirmation.", "",
+         f"Headline = tier ratios weighted by real-workload cost share {sb['headline_weights']}. "
+         "Batches are never pooled. This is a screen (few rounds, shared machine), not a confirmation.", ""]
+    for b, bd in sorted(sb["batches"].items(), reverse=True):
+        L += [f"# Batch {b} -- rounds {bd['rounds']}, {bd['window'][0][:16]}Z to {bd['window'][1][:16]}Z, "
+              f"spend ${bd['spend_usd']}", "", bd["note"], ""]
+        if bd["headline"]:
+            L += ["## Headline (cost-weighted over tiers)", "",
+                  "| config | cost x | full-model calls x | wall x | exec x | tiers | goal met |",
+                  "|---|---|---|---|---|---|---|"]
+            for cfg, h in bd["headline"].items():
+                met = [k for k, v in h["meets_goal"].items() if v]
+                L.append(f"| {cfg} | {_f(h.get('cost'))} | {_f(h.get('full_model_calls'))} | {_f(h.get('wall'))} | "
+                         f"{_f(h.get('exec'))} | {'+'.join(h.get('cost_tiers', []))} | "
+                         f"{'ALL' if len(met) == 4 else (', '.join(met) or 'none')} |")
+            L.append("")
+        for tier in ("heavy", "light", "all"):
+            if tier in bd["tiers"] and not (tier == "all" and len(bd["tiers"]) == 2):
+                L += render(bd["tiers"][tier], f"Batch {b} / {tier} tier" if tier != "all" else f"Batch {b} / all tasks")
+    return "\n".join(L) + "\n"
+
+
+def render(sb: dict, title: str) -> list[str]:
+    L = [f"## {title} (rounds {sb['rounds']}, {sb['runs']} runs, ${sb['total_cost_usd']})", "",
          "| config | pass | cost x | full-model calls x | wall x | exec x | pooled cost x | mean $ | mean full calls "
          "| mean wall s | goal met |", "|---|---|---|---|---|---|---|---|---|---|---|"]
     for cfg in sb["configs"]:
@@ -224,7 +318,7 @@ def render(sb: dict) -> str:
                  f"{_f(r['wall'])} | {_f(r['exec'])} | {_f(p['cost'])} | {_f(e['mean_cost_usd'])} | "
                  f"{_f(e['mean_full_model_calls'])} | {_f(e['mean_wall_s'])} | "
                  f"{'ALL' if len(met) == 4 else (', '.join(met) or 'none')} |")
-    L += ["", "## Quality", "", "| config | paired runs | plain successes | config successes | critical failures "
+    L += ["", "### Quality", "", "| config | paired runs | plain successes | config successes | critical failures "
           "| non-inferior |", "|---|---|---|---|---|---|"]
     for cfg in sb["configs"]:
         if cfg == "plain":
@@ -232,7 +326,7 @@ def render(sb: dict) -> str:
         q = sb["board"][cfg]["quality"]
         L.append(f"| {cfg} | {q['paired_runs']} | {q['plain_successes']} | {q['config_successes']} | "
                  f"{', '.join(q['critical_failures']) or 'none'} | {q['non_inferior']} |")
-    L += ["", "## Efficiency receipts by lever (sums over the config's runs)", "",
+    L += ["", "### Efficiency receipts by lever (sums over the config's runs)", "",
           "| config | lever | receipts | calls saved | $ saved | s saved |", "|---|---|---|---|---|---|"]
     for cfg in sb["configs"]:
         e = sb["board"][cfg]
@@ -241,7 +335,7 @@ def render(sb: dict) -> str:
             L.append(f"| {cfg} | (none) | 0 | 0 | 0 | 0 |")
         for lv, b in rows:
             L.append(f"| {cfg} | {lv} | {b['n']} | {b['calls_saved']} | {b['usd_saved']} | {b['seconds_saved']} |")
-    L += ["", "## Do receipts reconcile with measured differences? (per paired run, plain minus config)", "",
+    L += ["", "### Do receipts reconcile with measured differences? (per paired run, plain minus config)", "",
           "| config | quantity | measured mean saving (+/-2 SE) | receipts mean claim | verdict |",
           "|---|---|---|---|---|"]
     for cfg in sb["configs"]:
@@ -251,25 +345,46 @@ def render(sb: dict) -> str:
             band = v.get("band")
             L.append(f"| {cfg} | {q} | {_f(v.get('measured_mean'))}"
                      f"{f' [{band[0]}, {band[1]}]' if band else ''} | {v.get('receipts_mean')} | {v['verdict']} |")
-    L += ["", "## Per-task ratios (cost / full calls / wall)", ""]
+    L += ["", "### Per-task ratios (cost / full calls / wall / startup)", ""]
     for cfg in sb["configs"]:
         if cfg == "plain":
             continue
         pt = sb["board"][cfg]["per_task_ratio"]
         L.append(f"- **{cfg}**: " + "; ".join(
-            f"{t} {_f(v.get('cost'))}/{_f(v.get('full_model_calls'))}/{_f(v.get('wall'))}" for t, v in sorted(pt.items())))
-    L += ["", "## Served models (all calls, incl. helper agents)", ""]
+            f"{t} {_f(v.get('cost'))}/{_f(v.get('full_model_calls'))}/{_f(v.get('wall'))}/{_f(v.get('startup'))}"
+            for t, v in sorted(pt.items())))
+    L += ["", "### Served models (all calls, incl. helper agents)", ""]
     for cfg in sb["configs"]:
         e = sb["board"][cfg]
         L.append(f"- **{cfg}** (sources {', '.join(s[:8] for s in e['source_shas'])}): "
                  + ", ".join(f"{m} {n}" for m, n in sorted(e["served_models"].items(), key=lambda x: -x[1])))
-    return "\n".join(L) + "\n"
+    return L + [""]
+
+
+def total_spend(out: Path) -> float:
+    """Every session this eval ever ran (scored, discarded, killed, smoke): provider-reported cost from
+    the native session files of Amplifier projects under the eval root."""
+    key = str(out).replace("/", "-").strip("-")
+    total = 0.0
+    for proj in (Path.home() / ".amplifier/projects").iterdir():
+        if key not in proj.name:
+            continue
+        for ev in proj.glob("sessions*/*/events.jsonl"):
+            for line in ev.read_text(errors="replace").splitlines():
+                if '"llm:response"' in line:
+                    try:
+                        total += float(((json.loads(line).get("data") or {}).get("usage") or {}).get("cost_usd") or 0)
+                    except (ValueError, TypeError):
+                        pass
+    return total
 
 
 def write(out: Path) -> dict:
-    sb = compute(load(out))
+    sb = compute_all(load(out))
+    sb["total_spend_all_sessions_usd"] = round(total_spend(out), 3)
+    sb["extra_spend_usd"] = round(max(0.0, sb["total_spend_all_sessions_usd"] - sb["total_cost_usd"]), 3)
     (out / "scoreboard.json").write_text(json.dumps(sb, indent=2))
-    (out / "scoreboard.md").write_text(render(sb))
+    (out / "scoreboard.md").write_text(render_all(sb, sb["extra_spend_usd"]))
     return sb
 
 

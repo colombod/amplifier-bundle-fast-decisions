@@ -16,6 +16,7 @@ checkout.
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -135,6 +136,108 @@ def _setup_nightly(ws: Path) -> None:
     _mark_base(ws)
 
 
+# --- heavy-tier setups --------------------------------------------------------
+
+def _setup_multi_bug(ws: Path) -> None:
+    # Three regressions spread across three files and five commits.
+    with open(ws / "docs" / "ARCHITECTURE.md", "a") as f:
+        f.write("\n<!-- reviewed -->\n")
+    _commit(ws, "docs: note architecture review")
+    _replace(ws, "src/amplifier_fast_decisions/contracts.py",
+             '.get("escalate_min_probability", 0.7)', '.get("escalate_min_probability", 0.07)')
+    _commit(ws, "tune escalation gate")
+    _replace(ws, "src/amplifier_fast_decisions/orchestrator.py",
+             "if d not in _SCOPE_SKIP_DIRS]", "if d in _SCOPE_SKIP_DIRS]")
+    _commit(ws, "simplify workspace walk")
+    with open(ws / "README.md", "a") as f:
+        f.write("\n<!-- badge refresh -->\n")
+    _commit(ws, "readme: refresh badges")
+    _replace(ws, "src/amplifier_fast_decisions/savings.py",
+             "sorted(rates, key=len, reverse=True)", "sorted(rates, key=len)")
+    _commit(ws, "savings: tidy rate lookup")
+    _mark_base(ws)
+
+
+NIGHTLY_RED = """#!/bin/sh
+# Nightly consistency check. The full run walks every stage (slow on purpose);
+# --quick runs only the checks.
+set -e
+cd "$(dirname "$0")/.."
+mkdir -p logs
+if [ "$1" != "--quick" ]; then
+  i=1
+  while [ $i -le 11 ]; do
+    echo "nightly: stage $i/11 running ..."
+    sleep 30
+    i=$((i + 1))
+  done
+fi
+pricing=$(PYTHONPATH=src python3 -c "from amplifier_fast_decisions.savings import _rates_for, DEFAULT_RATES as R
+print('ok' if _rates_for('claude-fable-5-1-20260301', R) == R['claude-fable-5-1'] else 'bad')")
+n=$(git ls-files | wc -l | tr -d ' ')
+build=$(printf 'nightly-%s-%s' "$n" "${1:-full}" | cksum | cut -d' ' -f1)
+if [ "$pricing" = ok ]; then
+  echo "pricing check: ok" > logs/nightly.log
+  echo "NIGHTLY RESULT: status=green build=$build"
+else
+  echo "pricing check: claude-fable-5-1-20260301 was priced with the claude-fable-5 rate row (expected claude-fable-5-1)" > logs/nightly.log
+  echo "NIGHTLY RESULT: status=red build=$build failing=pricing (details in logs/nightly.log)"
+fi
+"""
+
+RELEASE_PREP = """#!/bin/sh
+# Starts the background indexer; it writes build/index.done when finished.
+cd "$(dirname "$0")/.."
+mkdir -p build
+rm -f build/index.done
+( sleep 150; echo "indexed" > build/index.done ) >/dev/null 2>&1 &
+echo "release prep: indexer started in the background (about 2.5 minutes)"
+"""
+
+PUBLISH_CHECK = """#!/bin/sh
+# Publishes the release manifest. Needs the finished index and the publish lock.
+cd "$(dirname "$0")/.."
+if [ ! -f build/index.done ]; then
+  echo "error: index not ready (build/index.done missing)" >&2
+  exit 2
+fi
+c=$(cat .git/publish-attempts 2>/dev/null || echo 0)
+c=$((c + 1))
+echo $c > .git/publish-attempts
+if [ $c -lt 3 ]; then
+  echo "error: publish lock is held by another process (pid 4242); it is usually released within a minute, retry shortly" >&2
+  exit 1
+fi
+id=$(printf 'publish-%s' "$(cat build/index.done)" | cksum | cut -d' ' -f1)
+echo "PUBLISH OK: manifest $id"
+"""
+
+
+def _setup_nightly_red(ws: Path) -> None:
+    _replace(ws, "src/amplifier_fast_decisions/savings.py",
+             "sorted(rates, key=len, reverse=True)", "sorted(rates, key=len)")
+    _commit(ws, "savings: tidy rate lookup")
+    path = ws / "scripts" / "nightly_check.sh"
+    path.write_text(NIGHTLY_RED)
+    path.chmod(0o755)
+    with open(ws / ".gitignore", "a") as f:
+        f.write("\nlogs/\n")
+    _commit(ws, "scripts: nightly consistency check", "scripts/nightly_check.sh", ".gitignore")
+    _mark_base(ws)
+
+
+def _setup_release(ws: Path) -> None:
+    for name, body in (("release_prep.sh", RELEASE_PREP), ("publish_check.sh", PUBLISH_CHECK)):
+        p = ws / "scripts" / name
+        p.write_text(body)
+        p.chmod(0o755)
+    with open(ws / ".gitignore", "a") as f:
+        f.write("\nbuild/\n")
+    _commit(ws, "scripts: release prep and publish check", "scripts/release_prep.sh", "scripts/publish_check.sh",
+            ".gitignore")
+    _mark_base(ws)
+
+
 # --- checks -----------------------------------------------------------------
 
 def _check_orient(ws, finals):
@@ -204,6 +307,80 @@ def _check_nightly(ws, finals):
     miss = _has(text, rf"\b{re.escape(tok)}\b", r"\b36\b")
     changed = _since(ws, _base(ws))
     return not miss and not changed, f"token={tok}; missing={miss}; changed={sorted(changed)}"
+
+
+def _gate_ok(ws):
+    r = _py(ws, "from amplifier_fast_decisions.contracts import Policy, effective_gate; "
+                "print(effective_gate(Policy(), 'escalation'))")
+    return r.stdout.strip() == "0.7", r.stdout.strip() or r.stderr[-160:]
+
+
+def _rates_ok(ws):
+    r = _py(ws, "from amplifier_fast_decisions.savings import _rates_for, DEFAULT_RATES as R; "
+                "print(_rates_for('claude-fable-5-1-20260301', R) == R['claude-fable-5-1'] and "
+                "_rates_for('claude-fable-5-20260101', R) == R['claude-fable-5'])")
+    return r.stdout.strip() == "True", r.stdout.strip() or r.stderr[-160:]
+
+
+def _check_multi_bug(ws, finals):
+    gate, gd = _gate_ok(ws)
+    rates, rd = _rates_ok(ws)
+    orch_ok, orch = _unittest(ws, "test_orchestrator_primary.py")
+    sav_ok, sav = _unittest(ws, "test_savings.py")
+    changed = _since(ws, _base(ws))
+    # Added tests are fine; the existing orchestrator tests must not be edited.
+    tests_ok = "tests/test_orchestrator_primary.py" not in changed
+    text = "\n".join(f or "" for f in finals)
+    miss = _has(text, r"simplify workspace walk", r"tune escalation gate", r"tidy rate lookup")
+    ok = gate and rates and orch_ok and sav_ok and tests_ok and not miss
+    return ok, (f"gate={gd}; rates={rd}; {orch}; {sav}; orch_tests_untouched={tests_ok}; missing={miss}; "
+                f"changed={sorted(changed)}")
+
+
+def _event_names(ws):
+    r = _py(ws, "import json; from amplifier_fast_decisions.contracts import EVENT_NAMES as E; "
+                "print(json.dumps(sorted(E)))")
+    return json.loads(r.stdout) if r.returncode == 0 else []
+
+
+def _check_event_map(ws, finals):
+    path = ws / "docs" / "EVENT-MAP.md"
+    if not path.exists():
+        return False, "docs/EVENT-MAP.md missing"
+    text = path.read_text()
+    names = _event_names(ws)
+    present = [n for n in names if n in text or n.split(":", 1)[-1] in text]
+    changed = _since(ws, _base(ws)) | {l[3:] for l in _git(ws, "status", "--porcelain").splitlines()}
+    only_doc = all(c.startswith("docs/EVENT-MAP.md") for c in changed if c)
+    ok = len(names) > 0 and len(present) >= len(names) - 2 and "orchestrator.py" in text and only_doc
+    return ok, f"names_covered={len(present)}/{len(names)}; orchestrator_named={'orchestrator.py' in text}; " \
+               f"changed={sorted(changed)}"
+
+
+def _check_nightly_red(ws, finals):
+    rates, rd = _rates_ok(ws)
+    n = len(_git(ws, "ls-files").splitlines())
+    build = subprocess.run(["sh", "-c", f"printf 'nightly-%s-%s' {n} full | cksum | cut -d' ' -f1"], capture_output=True,
+                           text=True).stdout.strip()
+    text = "\n".join(f or "" for f in finals)
+    miss = _has(text, rf"\b{re.escape(build)}\b", r"status=green")
+    # The full-run build id differs from --quick's, so reporting it means the full run happened;
+    # the script itself must be untouched (no shortening the wait).
+    changed = _since(ws, _base(ws))
+    scripts_ok = not any(c.startswith("scripts/") for c in changed)
+    return rates and not miss and scripts_ok, f"rates={rd}; build={build}; missing={miss}; changed={sorted(changed)}"
+
+
+def _check_publish(ws, finals):
+    done = ws / "build" / "index.done"
+    exp = subprocess.run(["sh", "-c", "printf 'publish-%s' indexed | cksum | cut -d' ' -f1"], capture_output=True,
+                         text=True).stdout.strip()
+    text = "\n".join(f or "" for f in finals)
+    miss = _has(text, rf"PUBLISH OK", rf"\b{exp}\b")
+    changed = _since(ws, _base(ws))
+    scripts_ok = not any(c.startswith("scripts/") for c in changed)
+    return done.exists() and not miss and scripts_ok, (f"index_done={done.exists()}; missing={miss}; "
+                                                        f"changed={sorted(changed)}")
 
 
 TASKS: dict[str, dict] = {
@@ -278,7 +455,65 @@ TASKS: dict[str, dict] = {
         ],
         "check": _check_nightly,
     },
+    # ---------------- heavy tier: shaped like the owner's long requests ----------------
+    # Many steps: reproduce, investigate three regressions across files and history, fix, re-run.
+    "heavy_multi_bug": {
+        "kind": "heavy_bugfix",
+        "setup": _setup_multi_bug,
+        "turns": [
+            "Three things regressed in the last few commits and I need all of them fixed today:\n"
+            "1. ScopeGateTests in tests/test_orchestrator_primary.py fail.\n"
+            "2. Dated model ids like claude-fable-5-1-20260301 are priced with the claude-fable-5 rates.\n"
+            "3. Escalation fires far too eagerly -- effective_gate's docstring says the escalation gate defaults "
+            "to 0.7, but that is not what it returns.\n"
+            "Investigate each one, find the commit that introduced it, fix the source (don't edit existing "
+            "tests; adding regression tests is fine), and run the affected test modules plus the full suite "
+            "(PYTHONPATH=src python3 -m unittest discover -s tests; about two minutes) until everything is "
+            "green. Finish with a short list: root cause, file, and the subject of the commit that caused it."
+        ],
+        "check": _check_multi_bug,
+    },
+    # A big-context helper agent: explorer maps the code, the main agent writes and verifies a doc.
+    "heavy_event_map": {
+        "kind": "heavy_delegate",
+        "turns": [
+            "Delegate to the foundation:explorer agent: for every event name in EVENT_NAMES in "
+            "src/amplifier_fast_decisions/contracts.py, find which source module(s) under "
+            "src/amplifier_fast_decisions/ emit it. Using its report, write docs/EVENT-MAP.md with a markdown "
+            "table: one row per event name, with the emitting file(s). Spot-check the rows with grep before you "
+            "finish, and don't change any other file."
+        ],
+        "check": _check_event_map,
+    },
+    # A >5-minute command mid-turn, then follow-up work that depends on its output.
+    "heavy_nightly_fix": {
+        "kind": "heavy_long_command",
+        "setup": _setup_nightly_red,
+        "turns": [
+            "Run scripts/nightly_check.sh -- the full run takes about five and a half minutes, let it finish. "
+            "If it reports red, read its log, fix the root cause in the source, and confirm with "
+            "scripts/nightly_check.sh --quick. Tell me the build id from the full run and the quick run's "
+            "NIGHTLY RESULT line."
+        ],
+        "check": _check_nightly_red,
+    },
+    # Polling and a transient failure: loop-prone by construction.
+    "heavy_publish_poll": {
+        "kind": "heavy_poll",
+        "setup": _setup_release,
+        "turns": [
+            "Run scripts/release_prep.sh. It starts a background indexer that writes build/index.done when it "
+            "finishes (about two and a half minutes). Wait for the indexer, then run scripts/publish_check.sh "
+            "until it succeeds -- its lock is transient; don't edit the scripts or kill processes -- and give me "
+            "its final output line."
+        ],
+        "check": _check_publish,
+    },
 }
+# Tier: "heavy" = shaped like the owner's costly requests (many steps, big-context helpers, >2.5-minute
+# waits, polling); "light" = short everyday requests. Reported separately; the headline is cost-weighted.
+for _name, _t in TASKS.items():
+    _t["tier"] = "heavy" if _name.startswith("heavy_") or _name == "long_nightly" else "light"
 
 
 def selftest(pinned: Path) -> dict:

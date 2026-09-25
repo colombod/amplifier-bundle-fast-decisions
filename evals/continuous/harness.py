@@ -117,18 +117,20 @@ def discover(out: Path) -> dict[str, dict]:
     return configs
 
 
-def schedule(rnd: int, task_names: list[str], configs: list[str], seed: int) -> list[dict]:
-    rng = random.Random(seed * 1000 + rnd)
+def schedule(rnd: int, task_names: list[str], configs: list[str], seed: int, batch: str = "A",
+             heavy_exclude: set[str] = frozenset()) -> list[dict]:
+    rng = random.Random(f"{seed}-{batch}-{rnd}")
     order_tasks = list(task_names)
     rng.shuffle(order_tasks)
     orders = {}
     for t in order_tasks:
-        cs = list(configs)
+        cs = [c for c in configs if not (T.TASKS[t]["tier"] == "heavy" and c in heavy_exclude)]
         rng.shuffle(cs)
         orders[t] = cs
     # Interleave so runs in flight together are different tasks (no shared
     # /tmp paths or same-command contention between configs of one task).
-    return [{"round": rnd, "task": t, "config": orders[t][j]} for j in range(len(configs)) for t in order_tasks]
+    return [{"batch": batch, "round": rnd, "task": t, "config": orders[t][j]}
+            for j in range(len(configs)) for t in order_tasks if j < len(orders[t])]
 
 
 def forge_call(tool: str, args: dict):
@@ -138,7 +140,7 @@ def forge_call(tool: str, args: dict):
 
 
 def run_item(out: Path, item: dict, cfg: dict, args) -> dict | None:
-    run_dir = out / "runs" / f"r{item['round']}" / item["task"] / item["config"]
+    run_dir = out / "runs" / f"{item['batch']}-r{item['round']}" / item["task"] / item["config"]
     if (run_dir / "result.json").exists():
         try:
             r = json.loads((run_dir / "result.json").read_text())
@@ -162,25 +164,37 @@ def run_item(out: Path, item: dict, cfg: dict, args) -> dict | None:
            + f"; tail -F {rd}/worker.log {rd}/turn1-stderr.txt & TP=$!; "
            + f"while [ ! -f {rd}/result.json ]; do sleep 5; done; kill $TP")
     term = None
-    for attempt in range(4):
+    for attempt in range(2):
         try:
             with LAUNCH_LOCK:
                 term = forge_call("create_terminal", {
-                    "name": f"ceval r{item['round']} {item['task']} {item['config']}", "cwd": str(run_dir),
-                    "command": "/bin/zsh", "args": ["-lc", cmd], "tags": ["afast-ceval", f"ceval-r{item['round']}"],
-                    "cols": 160, "rows": 40})
+                    "name": f"ceval {item['batch']}-r{item['round']} {item['task']} {item['config']}",
+                    # A tiny cwd: the shared Forge daemon crash-looped with EMFILE (fs watch) at 17:5x.
+                    "cwd": str(out / "forge-cwd"),
+                    "command": "/bin/zsh", "args": ["-lc", cmd],
+                    "tags": ["afast-ceval", f"ceval-{item['batch']}-r{item['round']}"], "cols": 160, "rows": 40})
                 time.sleep(2)
             break
         except SystemExit as exc:
-            log(out, f"forge launch failed ({exc}); doctor + retry {attempt + 1}")
-            subprocess.run([sys.executable, str(FORGE_PY), "doctor"], capture_output=True, timeout=120)
-            time.sleep(5 * (attempt + 1))
-    if term is None:
-        log(out, f"GIVING UP launch r{item['round']} {item['task']} {item['config']}")
-        return None
+            log(out, f"forge launch failed ({str(exc)[:120]}); doctor + retry {attempt + 1}")
+            try:
+                subprocess.run([sys.executable, str(FORGE_PY), "doctor"], capture_output=True, timeout=60)
+            except subprocess.TimeoutExpired:
+                pass
+            time.sleep(3)
     tid = term.get("id") if isinstance(term, dict) else None
-    (run_dir / "forge.json").write_text(json.dumps({"terminal": tid, "launched_at": time.time()}))
-    log(out, f"launched r{item['round']} {item['task']:20s} {item['config']:18s} forge={tid}")
+    if tid is None:
+        # Forge is down: launch the same detached worker directly so the loop keeps going;
+        # the run records launcher=direct.
+        spec["launcher"] = "direct"
+        (run_dir / "spec.json").write_text(json.dumps(spec, indent=2))
+        subprocess.run(["/bin/zsh", "-lc", "set -a; . ~/.amplifier/keys.env 2>/dev/null; set +a; "
+                        + shlex.join(["python3", str(HERE / "worker.py"), "--detach", str(run_dir)])],
+                       capture_output=True, timeout=60)
+    (run_dir / "forge.json").write_text(json.dumps({"terminal": tid, "launched_at": time.time(),
+                                                    "launcher": spec.get("launcher", "forge")}))
+    log(out, f"launched {item['batch']}-r{item['round']} {item['task']:20s} {item['config']:18s} "
+             f"{'forge=' + tid if tid else 'DIRECT (forge down)'}")
     launched = time.time()
     deadline = launched + turns * (args.deadline + 60) + 600
     result, dead_since = None, None
@@ -230,9 +244,14 @@ def run_item_retry(out: Path, item: dict, cfg: dict, args) -> dict | None:
 
 
 def spent(out: Path) -> float:
+    """Exact total so far: every eval session's provider-reported cost (scored, discarded, killed, smoke)."""
+    return scoreboard.total_spend(out)
+
+
+def spent_scored(out: Path) -> float:
     total = 0.0
     # Discarded runs (archived under <out>/discarded/) still cost money.
-    for p in [*out.glob("runs/r*/*/*/result.json"), *out.glob("discarded/**/result.json")]:
+    for p in [*out.glob("runs/*/*/*/result.json"), *out.glob("discarded/**/result.json")]:
         try:
             total += json.loads(p.read_text()).get("cost_usd") or 0
         except ValueError:
@@ -257,21 +276,38 @@ def main():
     ap.add_argument("--max-iterations", type=int, default=40)
     ap.add_argument("--seed", type=int, default=20260925)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--batch", default="B", help="batch label; rounds of different batches are never pooled")
+    ap.add_argument("--heavy-exclude", default="current",
+                    help="configs not run on heavy-tier tasks (comma list; current == plain in >300-file repos)")
     args = ap.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     Path(args.events_dir).mkdir(parents=True, exist_ok=True)
+    (out / "forge-cwd").mkdir(exist_ok=True)
+    heavy_exclude = {c.strip() for c in args.heavy_exclude.split(",") if c.strip()}
     task_names = list(T.TASKS) if args.tasks == "all" else [t.strip() for t in args.tasks.split(",")]
     rnd = args.first_round
     while rnd < args.first_round + args.max_rounds:
         if (out / "STOP").exists():
             log(out, "STOP file present; ending")
             break
-        prior = out / "runs" / f"r{rnd}" / "schedule.json"
+        prior = out / "runs" / f"{args.batch}-r{rnd}" / "schedule.json"
+        earlier = sorted(out.glob(f"runs/{args.batch}-r*/schedule.json"))
         if prior.exists():
             # A round's configs (source shas, overrides) are fixed when it is first
             # scheduled; resuming a round reruns only its missing runs with them.
             configs = json.loads(prior.read_text())["configs"]
+        elif earlier:
+            # Candidate shas are pinned for the whole batch (a moving target would split every
+            # ratio per sha); newer tips are logged and picked up by the next batch.
+            configs = json.loads(earlier[0].read_text())["configs"]
+            fresh = discover(out)
+            for name, c in fresh.items():
+                if name in configs and c["sha"] != configs[name]["sha"]:
+                    log(out, f"note: {name} has a newer tip {c['sha'][:8]} (batch {args.batch} stays on "
+                             f"{configs[name]['sha'][:8]})")
+                elif name not in configs:
+                    log(out, f"note: new candidate {name}@{c['sha'][:8]} appeared; it joins the next batch")
         else:
             configs = discover(out)
         if args.configs:
@@ -279,18 +315,26 @@ def main():
             configs = {k: v for k, v in configs.items() if k in keep}
         used = spent(out)
         done_rounds = rnd - args.first_round
-        per_run = used / max(1, sum(1 for _ in out.glob("runs/r*/*/*/result.json"))) if used else 1.0
-        projected = per_run * len(configs) * len(task_names)
+        items = schedule(rnd, task_names, list(configs), args.seed, args.batch, heavy_exclude)
+        # Projection from this batch's own runs (per task), else a flat $2/run.
+        per_task = {}
+        for rp in out.glob(f"runs/{args.batch}-r*/*/*/result.json"):
+            try:
+                rr = json.loads(rp.read_text())
+                per_task.setdefault(rr["task"], []).append(rr.get("cost_usd") or 0)
+            except (ValueError, KeyError):
+                pass
+        projected = sum((sum(per_task[i["task"]]) / len(per_task[i["task"]])) if per_task.get(i["task"]) else 2.0
+                        for i in items)
         if done_rounds >= args.min_rounds and used + projected > args.budget:
             log(out, f"budget stop: spent ${used:.2f}, next round projected ${projected:.2f} > ${args.budget}")
             break
-        items = schedule(rnd, task_names, list(configs), args.seed)
-        rdir = out / "runs" / f"r{rnd}"
+        rdir = out / "runs" / f"{args.batch}-r{rnd}"
         rdir.mkdir(parents=True, exist_ok=True)
-        (rdir / "schedule.json").write_text(json.dumps({"round": rnd, "configs": configs, "items": items,
+        (rdir / "schedule.json").write_text(json.dumps({"batch": args.batch, "round": rnd, "configs": configs, "items": items,
                                                         "model": args.model, "created": datetime.now(
                                                             timezone.utc).isoformat()}, indent=2))
-        log(out, f"=== round {rnd}: configs {', '.join(f'{k}@{v['sha'][:8]}' for k, v in configs.items())}; "
+        log(out, f"=== batch {args.batch} round {rnd}: configs {', '.join(f'{k}@{v['sha'][:8]}' for k, v in configs.items())}; "
                  f"{len(items)} runs; spent so far ${used:.2f}; projected ${projected:.2f}")
         if args.dry_run:
             for i in items:
@@ -304,11 +348,12 @@ def main():
                 except Exception as exc:  # noqa: BLE001
                     log(out, f"run crashed: {type(exc).__name__}: {exc}")
         sb = scoreboard.write(out)
-        log(out, f"=== round {rnd} complete; spend ${sb['total_cost_usd']}; scoreboard at {out / 'scoreboard.md'}")
-        for cfg, e in sb["board"].items():
-            if cfg != "plain":
-                log(out, f"    {cfg}: pass {e['passed']}/{e['runs']} ratios {e['ratio_vs_plain']} "
-                         f"receipts {e['receipts_total']}")
+        log(out, f"=== batch {args.batch} round {rnd} complete; spend ${sb['total_cost_usd']}; scoreboard at {out / 'scoreboard.md'}")
+        for tier, board in (sb["batches"].get(args.batch) or {}).get("tiers", {}).items():
+            for cfg, e in board["board"].items():
+                if cfg != "plain":
+                    log(out, f"    [{tier}] {cfg}: pass {e['passed']}/{e['runs']} ratios {e.get('ratio_vs_plain')} "
+                             f"receipts {e['receipts_total']}")
         rnd += 1
     subprocess.run(["amplifier", "bundle", "remove", "afast-continuous-eval"], capture_output=True, text=True)
 

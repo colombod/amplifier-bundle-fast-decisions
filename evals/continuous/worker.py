@@ -105,6 +105,8 @@ def session_metrics(session_dir: Path, host_model: str) -> dict:
         ts = parse_ts(e.get("ts") or e.get("timestamp"))
         if name == "llm:request":
             first = first or ts
+            if ts and "first_request" not in out:
+                out["first_request"] = ts
         elif name == "llm:response":
             last = ts or last
             usage = d.get("usage") or {}
@@ -169,6 +171,32 @@ def fd_receipts(events_dir: Path, session_ids: set[str], since: float) -> dict:
             "traffic": sorted({r.get("traffic") for r in eff if r.get("traffic")})}
 
 
+def collect(spec: dict, sessions: Path, sid: str | None, started_at: str, t_start: float) -> dict:
+    """Native metrics for one run: every session (main + helpers) under the run's project slug
+    whose first model call is at or after ``started_at`` (older ones are stale attempts)."""
+    t0 = parse_ts(started_at)
+    all_sessions = [p for p in (sessions.iterdir() if sessions.exists() else []) if (p / "events.jsonl").exists()]
+    per_session, stale = [], []
+    for p in sorted(all_sessions):
+        s = session_metrics(p, spec["model"])
+        first = parse_ts(s["calls"][0]["ts"]) if s["calls"] else None
+        if first is not None and t0 is not None and first < t0:
+            stale.append(p.name)
+            continue
+        per_session.append(s)
+    parent = next((s for s in per_session if s["session"] == sid), None)
+    calls = [c for s in per_session for c in s["calls"]]
+    served = Counter(c["model"] for c in calls)
+    full_calls = sum(n for m, n in served.items() if m and m.startswith(spec["model"]))
+    first_main = parent.get("first_request") if parent else None
+    receipts = fd_receipts(Path(spec["events_dir"]).expanduser(), {s["session"] for s in per_session}, t_start)
+    return {"per_session": per_session, "calls": calls, "served": served, "full_calls": full_calls,
+            "stale": stale, "receipts": receipts,
+            "exec_time_s": round(sum(parent["exec_windows"]) if parent else 0.0, 3),
+            # Worker start -> the main session's first llm:request (CLI start, bundle load, mount).
+            "startup_s": round((first_main - t0).total_seconds(), 3) if first_main and t0 else None}
+
+
 def parse_stdout(path: Path):
     try:
         text = path.read_text()
@@ -207,6 +235,10 @@ def main(run_dir: Path) -> int:
     env = dict(os.environ, AFAST_TRAFFIC="test", AFAST_OBSERVATORY="off", AMPLIFIER_NO_BROWSER="1",
                AMPLIFIER_MEMORY_CAPTURE="off", PYTHONPATH=str(Path(spec["source_root"]) / "src"))
     env.pop("VIRTUAL_ENV", None)
+    if sessions.exists():
+        # Sessions from an earlier (killed) attempt at this same run dir share the project slug.
+        # Kept (renamed) so total_spend.py still counts what the killed attempt cost.
+        sessions.rename(sessions.parent / f"sessions-stale-{int(time.time())}")
     started_at, t_start = now(), time.time()
     (run_dir / "running.json").write_text(json.dumps({"pid": os.getpid(), "started_at": started_at}))
     sid, turns, failed = None, [], False
@@ -247,14 +279,9 @@ def main(run_dir: Path) -> int:
         if code != 0 or timed_out or sid is None:
             failed = True
     wall_total = sum(t.get("wall_s") or 0 for t in turns)
-    all_sessions = [p for p in (sessions.iterdir() if sessions.exists() else []) if (p / "events.jsonl").exists()]
-    per_session = [session_metrics(p, spec["model"]) for p in sorted(all_sessions)]
-    parent = next((s for s in per_session if s["session"] == sid), None)
-    calls = [c for s in per_session for c in s["calls"]]
-    served = Counter(c["model"] for c in calls)
-    host = spec["model"]
-    full_calls = sum(n for m, n in served.items() if m and m.startswith(host))
-    receipts = fd_receipts(Path(spec["events_dir"]).expanduser(), {s["session"] for s in per_session}, t_start)
+    m = collect(spec, sessions, sid, started_at, t_start)
+    calls, served, full_calls = m["calls"], m["served"], m["full_calls"]
+    per_session, receipts = m["per_session"], m["receipts"]
     finals = [t.get("final") for t in turns]
     try:
         passed, detail = task["check"](ws, finals)
@@ -263,10 +290,11 @@ def main(run_dir: Path) -> int:
     run_ok = all(t.get("exit_code") == 0 and not t.get("timed_out") for t in turns if not t.get("skipped"))
     infra = sid is None or not calls
     result = {
-        **{k: spec[k] for k in ("round", "task", "config", "source_sha", "model", "mode")},
+        **{k: spec.get(k) for k in ("batch", "round", "task", "config", "source_sha", "model", "mode")},
         "kind": task["kind"], "started_at": started_at, "ended_at": now(),
         "wall_time_s": round(wall_total, 3),
-        "exec_time_s": round(sum(parent["exec_windows"]) if parent else 0.0, 3),
+        "exec_time_s": m["exec_time_s"], "startup_s": m["startup_s"], "tier": task.get("tier"),
+        "launcher": spec.get("launcher", "forge"), "stale_sessions_ignored": m["stale"],
         "cost_usd": round(sum(s["cost_usd"] for s in per_session), 6),
         "cost_known": all(s["cost_known"] for s in per_session),
         "model_calls": len(calls), "full_model_calls": full_calls, "served_models": dict(served),
