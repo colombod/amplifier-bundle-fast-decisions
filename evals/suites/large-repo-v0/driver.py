@@ -29,6 +29,7 @@ import argparse
 import concurrent.futures as cf
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -265,6 +266,10 @@ def main():
     for c in configs:
         if c not in OVERRIDES:
             raise SystemExit(f"unknown config {c}")
+        if not re.fullmatch(r"[A-Za-z0-9._-]+", c):
+            # The run dir becomes a file:// bundle URI; '+' etc. get
+            # percent-encoded and Amplifier then cannot find profile.md.
+            raise SystemExit(f"config name {c!r} is not URI-safe")
     task_names = list(T.TASKS) if args.tasks == "all" else [t.strip() for t in args.tasks.split(",")]
     items = [i for i in schedule(task_names, configs, args.first_rep + args.reps - 1) if i["rep"] >= args.first_rep]
     source = Path(args.source) if args.source else out / "candidate-src"
@@ -274,7 +279,7 @@ def main():
         subprocess.run(["tar", "-x", "-C", str(source)], input=archive, check=True)
         sha = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True, text=True).stdout.strip()
         (source / "SOURCE_SHA").write_text(sha + "\n")
-    (out / "schedule.json").write_text(json.dumps({"configs": configs, "tasks": task_names, "items": items,
+    (out / f"schedule-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}.json").write_text(json.dumps({"configs": configs, "tasks": task_names, "items": items,
                                                     "model": args.model, "source": str(source),
                                                     "pinned": args.pinned, "created": _now()}, indent=2))
     if args.dry_run:

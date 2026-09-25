@@ -35,7 +35,7 @@ OVERRIDES: dict[str, dict | None] = {
     # L1+L2 via the one user-facing knob: tiers (Haiku for very easy) + L2-either.
     "frugal": {"profile": "frugal"},
     # L3 on top of L2-both: medium-confidence complex turns keep the host at medium effort.
-    "L2-both+L3": {"model_routing": {"large_repo": {"max_p_complex": 0.3, "non_editing_max_p_edit": 0.5,
+    "L2-both-L3": {"model_routing": {"large_repo": {"max_p_complex": 0.3, "non_editing_max_p_edit": 0.5,
                                                     "require": "both"},
                                      "strong_effort": {"max_p_complex": 0.8, "effort": "medium"}}},
 }
