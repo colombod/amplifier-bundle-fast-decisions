@@ -52,7 +52,7 @@ _TIER_KEYS = frozenset({"max_p_complex", "model", "effort", "label"})
 _LARGE_REPO_KEYS = frozenset({"max_p_complex", "non_editing_max_p_edit", "require"})
 _STRONG_EFFORT_KEYS = frozenset({"max_p_complex", "effort"})
 
-# The cheap/fast/right trade each profile makes (see PROFILES.md in
+# The cheap/fast/right trade each profile makes (see README.md in
 # evals/suites/large-repo-v0 for the screen behind these numbers).
 #   careful:  right > cheap. Only confidently easy turns (p(complex) < 0.3)
 #             leave the host model; large repos always stay on it.
