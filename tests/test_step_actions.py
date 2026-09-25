@@ -148,6 +148,13 @@ class WorkspaceAdditionsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.ws._read({"operation": "read", "path": "src/mod.py", "line": 0})
 
+    def test_published_schema_is_unchanged(self):
+        # Part of every request's cached prompt prefix: must stay byte-identical.
+        self.assertEqual(self.ws.input_schema["properties"]["operation"]["enum"], ["read", "list"])
+        self.assertEqual(set(self.ws.input_schema["properties"]), {"operation", "path"})
+        self.assertEqual(self.ws.description, "Read or list non-hidden text files within the configured "
+                                              "workspace. No writes, shell, or network.")
+
     def test_git_summary(self):
         run = lambda *a: subprocess.run(["git", *a], cwd=self.root, check=True, capture_output=True)
         self.assertIsNone(self.ws.git_candidate())
@@ -211,6 +218,42 @@ class CandidateTests(unittest.TestCase):
         self.assertFalse(sa.repeats_prepared(args, [("grep", {"pattern": "x"})], self.ws))
         self.assertTrue(sa.repeats_prepared({"operation": "git", "path": "."},
                                             [("bash", {"command": "git status"})], self.ws))
+
+
+class PollRepeatTests(unittest.TestCase):
+    POLL = ("bash", {"command": "sleep 30 && gh run view 1 --json status"})
+    CHECK = ("bash", {"command": "sleep 20; curl -s localhost/health"})
+
+    def view(self, *pairs):
+        msgs = [user("wait for the deploy")]
+        for call, result in pairs:
+            msgs += [assistant(call), tool(result, "bash")]
+        return sa.analyze({"messages": msgs})
+
+    def test_pending_output_is_repeated(self):
+        poll = ("bash", {"command": "sleep 30 && tail -1 build.log"})
+        self.assertEqual(sa.poll_repeat(self.view((poll, "status: running")), {"repeat_polls": True}), poll)
+
+    def test_unchanged_output_is_repeated_changed_or_done_is_not(self):
+        poll = ("bash", {"command": "sleep 30 && tail -1 build.log"})
+        on = {"repeat_polls": True}
+        self.assertEqual(sa.poll_repeat(self.view((poll, "step 3/9"), (poll, "step 3/9")), on), poll)
+        self.assertIsNone(sa.poll_repeat(self.view((poll, "step 3/9")), on))              # first sight, no signal
+        self.assertIsNone(sa.poll_repeat(self.view((poll, "step 3/9"), (poll, "step 4/9")), on))
+        self.assertIsNone(sa.poll_repeat(self.view((poll, "running"), (poll, "build finished")), on))
+        self.assertIsNone(sa.poll_repeat(self.view((poll, "status: running")), {}))        # off by default
+
+    def test_only_read_only_sleeping_single_calls(self):
+        on = {"repeat_polls": True}
+        self.assertIsNone(sa.poll_repeat(self.view((("bash", {"command": "tail -1 build.log"}), "running")), on))
+        self.assertIsNone(sa.poll_repeat(self.view((("bash", {"command": "sleep 5; ./deploy.sh"}), "running")), on))
+        self.assertIsNone(sa.poll_repeat(self.view((("bash", {"command": "sleep 5; rm x"}), "running")), on))
+
+    def test_repeat_cap(self):
+        poll = ("bash", {"command": "sleep 30 && tail -1 build.log"})
+        pairs = [(poll, "running")] * 4
+        self.assertIsNone(sa.poll_repeat(self.view(*pairs), {"repeat_polls": True, "poll_max_repeats": 3}))
+        self.assertEqual(sa.poll_repeat(self.view(*pairs), {"repeat_polls": True, "poll_max_repeats": 4}), poll)
 
 
 class PriceMathTests(unittest.TestCase):
@@ -420,6 +463,23 @@ class LoopTests(unittest.IsolatedAsyncioTestCase):
                                    "tool_choice": "auto"})
         self.assertEqual(judge.asked, [])
         self.assertEqual(provider.calls, [None])
+
+    async def test_sleep_poll_is_repeated_without_a_model_call(self):
+        poll = ("bash", {"command": "sleep 30 && tail -1 build.log"})
+        service, facade, provider, events = self.setup(PickJudge(), {"repeat_polls": True}, [reply()])
+        facade._tools["bash"] = object()
+        req = {"messages": [user("wait for the build"), assistant(poll), tool("status: running", "bash")],
+               "tools": [{"name": "bash"}], "tool_choice": "auto"}
+        response = await facade.complete(req)
+        self.assertEqual(provider.calls, [])
+        self.assertEqual((response.tool_calls[0].name, response.tool_calls[0].arguments), poll)
+        step = self.steps(events)[0]
+        self.assertEqual((step["step_action"], step["mechanism"]), ("prepared", "rule:poll_repeat"))
+        req["messages"] += [assistant(poll), tool("status: done", "bash")]
+        await facade.complete(req)                                  # changed output: the model runs
+        self.assertEqual(provider.calls, [None])
+        receipt = next(r for r in self.receipts(events) if r["lever"] == "prepared_action")
+        self.assertEqual((receipt["mechanism"], receipt["calls_saved"]), ("rule:poll_repeat", 1))
 
     def _routine_request(self):
         return {"messages": [user("find x"), assistant(("grep", {"pattern": "x"})), tool('{"results": []}')],

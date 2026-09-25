@@ -75,9 +75,11 @@ DEFAULTS: dict[str, Any] = {
     "host_call_seconds_prior": 3.0,
     "skipped_output_tokens": 150,
     "cache_ttl_s": 300,
+    "repeat_polls": False,
+    "poll_max_repeats": 6,
 }
-_BOOL_KEYS = ("prepared", "cheaper_model", "cheap_may_answer", "judge_ambiguous")
-_INT_KEYS = {"amortize_steps": (1, 50), "routine_max_calls": (1, 16), "routine_max_result_chars": (100, 1_000_000),
+_BOOL_KEYS = ("prepared", "cheaper_model", "cheap_may_answer", "judge_ambiguous", "repeat_polls")
+_INT_KEYS = {"poll_max_repeats": (1, 100), "amortize_steps": (1, 50), "routine_max_calls": (1, 16), "routine_max_result_chars": (100, 1_000_000),
              "skipped_output_tokens": (1, 20_000), "cache_ttl_s": (1, 3600)}
 _FLOAT_KEYS = {"min_judge_saving_usd": (0.0, 10.0), "prior_accept": (0.0, 1.0), "judge_seconds_prior": (0.0, 60.0),
                "host_call_seconds_prior": (0.0, 600.0)}
@@ -348,6 +350,10 @@ class StepView:
     result_chars: int = 0
     error: bool = False
     repeat: bool = False
+    # Results of the most recent EARLIER identical call this turn (None when
+    # the last call is not a repeat) -- the sleep-polling rule compares them.
+    prev_same_results: list[str] | None = None
+    same_call_streak: int = 0
 
 
 _ERROR_RE = re.compile(r'"success":\s*false|"error":\s*\{|Traceback \(most recent call last\)|'
@@ -380,11 +386,58 @@ def analyze(request: Any) -> StepView:
             results.append(_text_of(field_value(message, "content", "")))
     signature = lambda c: (c[0], _dump(c[1]))
     earlier = {signature(c) for i in assistant_indices[:-1] for c in calls_of(messages[i])}
+    prev_same, streak = None, 0
+    if calls:
+        mine = [signature(c) for c in calls]
+        for position in range(len(assistant_indices) - 2, -1, -1):
+            index = assistant_indices[position]
+            if [signature(c) for c in calls_of(messages[index])] != mine:
+                break
+            streak += 1
+            if prev_same is None:
+                prev_same = [_text_of(field_value(m, "content", "")) for m in messages[index + 1:assistant_indices[position + 1]]
+                             if field_value(m, "role", None) == "tool"
+                             or (field_value(m, "role", None) == "user" and _has_tool_result_block(m))]
     return StepView(
         turn_start=False, step_index=len(assistant_indices), prompt=prompt, calls=calls, results=results,
         result_chars=sum(len(r) for r in results), error=any(_result_error(r) for r in results),
         repeat=bool(calls) and any(signature(c) in earlier for c in calls),
+        prev_same_results=prev_same, same_call_streak=streak,
     )
+
+
+# --- deterministic waits for sleep-polling ------------------------------------
+_SLEEP = re.compile(r"(?:^|[;&|(]\s*|\s)sleep\s+\d")
+_PENDING = re.compile(r"\b(running|pending|in[ _-]progress|queued|waiting|not (?:yet )?(?:ready|done|finished|complete)|"
+                      r"still|started|starting|building|deploying)\b", re.I)
+_DONE = re.compile(r"\b(done|finished|completed?|succeeded|success|failed|failure|error|ready|exited|passed)\b", re.I)
+
+
+def poll_repeat(view: StepView, config: dict[str, Any] | None = None) -> tuple[str, dict] | None:
+    """The call to repeat without asking the model, or None.
+
+    A sleep-polling step -- one read-only shell call that sleeps and then
+    checks something -- is repeated verbatim when its result says the thing
+    is still pending, or when it returned exactly what the same call returned
+    before (nothing changed), and neither result signals completion or an
+    error. The model is asked again as soon as the output changes, after
+    ``poll_max_repeats`` identical polls in a row, or on any doubt."""
+    cfg = settings(config)
+    if not cfg["repeat_polls"] or view.turn_start or len(view.calls) != 1 or view.error:
+        return None
+    name, args = view.calls[0]
+    command = args.get("command") if name in SHELL_TOOLS else None
+    if not isinstance(command, str) or not _SLEEP.search(command) or bash_readonly(command) is not True:
+        return None
+    if view.same_call_streak >= cfg["poll_max_repeats"]:
+        return None
+    text = "\n".join(view.results)[-4000:]
+    if _DONE.search(text) and not _PENDING.search(text):
+        return None
+    unchanged = view.prev_same_results is not None and "\n".join(view.prev_same_results)[-4000:] == text
+    if unchanged or (_PENDING.search(text) and not _DONE.search(text)):
+        return name, dict(args)
+    return None
 
 
 def classify(view: StepView, config: dict[str, Any] | None = None) -> tuple[str, str]:

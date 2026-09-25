@@ -42,14 +42,18 @@ def _positive_int(value: Any) -> bool:
 
 class WorkspaceTool:
     name = "fast_workspace"
-    description = ("Read or list non-hidden text files within the configured workspace (read with a line "
-                   "returns a numbered window around it), or summarize git status (operation git, path '.'). "
-                   "No writes, shell, or network.")
+    # The published description and schema stay byte-identical to the
+    # read/list-only tool: they are part of every request's cached prompt
+    # prefix, so changing them makes every session miss the prompt cache
+    # warmed by other sessions (measured: ~+$0.15 on a fresh session's first
+    # call). The ``line`` and ``git`` shapes are only ever issued by prepared
+    # actions (the synthetic tool call is not checked against this schema);
+    # _read and validate_candidate accept them.
+    description = "Read or list non-hidden text files within the configured workspace. No writes, shell, or network."
     input_schema = {
         "type": "object", "additionalProperties": False,
-        "properties": {"operation": {"type": "string", "enum": ["read", "list", "git"]},
-                       "path": {"type": "string", "maxLength": 512},
-                       "line": {"type": "integer", "minimum": 1}},
+        "properties": {"operation": {"type": "string", "enum": ["read", "list"]},
+                       "path": {"type": "string", "maxLength": 512}},
         "required": ["operation", "path"],
     }
 

@@ -31,6 +31,7 @@ from . import routing_levers
 from . import step_actions
 from .savings import DEFAULT_RATES
 from .backends import ask_many as backend_ask_many
+from .state import automatic_tools, tool_names
 from .runtime import Runtime, get_runtime
 from . import provenance
 
@@ -801,6 +802,10 @@ docs/UPSTREAM_CONTRACT.md.
         # step from deterministic features of the request; at a predictable
         # read/status step, offer the judge prepared read-only candidates.
         step = self._step_classify(service, request) if service.policy.step_actions else None
+        if step is not None and step.get("poll") is not None:
+            response = await self._submit_poll_repeat(service, step, step_started)
+            if response is not None:
+                return response
         if step is not None and step["offer"]:
             candidate = await service.choose(request, self._tools, extra_candidates=step["candidates"],
                                              force=True, workspace_paths=False,
@@ -1402,7 +1407,12 @@ docs/UPSTREAM_CONTRACT.md.
             view = step_actions.analyze(request)
             kind, reason = step_actions.classify(view, cfg)
             step = {"cfg": cfg, "view": view, "kind": kind, "reason": reason, "candidates": [],
-                    "offer": False, "expected_s": None, "judge_asked": False}
+                    "offer": False, "expected_s": None, "judge_asked": False, "poll": None}
+            poll = step_actions.poll_repeat(view, cfg)
+            if poll is not None and service.policy.mode == "active" and poll[0] in self._tools \
+                    and poll[0] in tool_names(request) and automatic_tools(request):
+                step["poll"] = poll
+                return step
             if (cfg["prepared"] and service.policy.mode == "active"
                     and kind in (step_actions.TURN_START, step_actions.ROUTINE)):
                 candidates = step_actions.candidates_for(view, kind, self._tools.get("fast_workspace"))
@@ -1416,6 +1426,39 @@ docs/UPSTREAM_CONTRACT.md.
             return step
         except Exception:  # noqa: BLE001 -- the step layer is optional
             return None
+
+    async def _submit_poll_repeat(self, service: Any, step: dict, step_started: float) -> Any:
+        """Deterministic wait: re-issue the sleep-polling call without a model
+        call (rule, no judge). It still goes through the loop's normal tool
+        execution, so approvals and hooks apply. None when the fast-path
+        budget is spent or the envelope cannot be built."""
+        turn = service.turn
+        if turn is None or turn.fast_streak >= service.policy.max_fast_streak \
+                or turn.fast_total >= service.policy.max_fast_per_turn:
+            return None
+        name, args = step["poll"]
+        tool_call_id = "fd_" + uuid4().hex[:24]
+        try:
+            candidate = Candidate("poll_repeat", "Repeat the polling command", name, args,
+                                  rationale="Nothing changed since the last identical poll", origin="step_poll_repeat")
+            response = self._response_factory(candidate, tool_call_id)
+        except Exception:  # noqa: BLE001 -- the model runs the step
+            return None
+        turn.fast_streak += 1
+        turn.fast_total += 1
+        await service.emit("routed", {"mode": service.policy.mode, "backend": service.backend.name,
+            "policy_version": service.policy.version, "route": "fast", "destination": name,
+            "tool_call_id": tool_call_id, "selected_candidate": candidate.id,
+            "reason_code": "poll_repeat_rule", "status": "submitted_to_upstream",
+            "transport_measured": "provider-complete"})
+        turn.tool_decisions[tool_call_id] = {"decision_id": service.last_decision_id, "tool": name,
+                                             "arguments_hash": digest(args), "claimed": False}
+        self._synthetic_responses[id(response)] = response
+        self._pending_prepared.append({"tool": name, "arguments": dict(args), "tool_call_id": tool_call_id,
+                                       "mechanism": "rule:poll_repeat",
+                                       "decision_s": time.perf_counter() - step_started})
+        await self._emit_step(service, step, "prepared", "rule:poll_repeat", {"candidate_origin": candidate.origin})
+        return response
 
     async def _step_after_choose(self, service: Any, step: dict, candidate: Any) -> None:
         """Judge statistics for the expected-saving gate, and a receipt for a
