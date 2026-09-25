@@ -203,11 +203,12 @@ Working notes/evidence trail for every step below (including RED/GREEN command o
 - `PYTHONPATH=src python3 -m unittest tests.test_turn_planner -v`: **60 tests, all OK** (zero
   failures/errors) -- 100% clean, as required.
 - `PYTHONPATH=src python3 -m unittest discover -s tests` (full suite, after all changes):
-  **1181 tests, FAILED (failures=11, errors=47, skipped=40)**.
+  **1181 tests, FAILED (failures=11, errors=47, skipped=40)** in the sandbox as originally
+  provisioned (see "Final state" note below for the corrected, current numbers).
 - Baseline (before any change in this review, same command): **1175 tests, FAILED (failures=11,
   errors=47, skipped=40)**, all in `tests/test_local_backend.py` / `tests/test_polyglot_tasks.py`
-  (missing go/rust/java toolchains and one unrelated local-backend config assertion -- confirmed
-  pre-existing and unrelated to the turn planner).
+  (missing go/rust/java toolchains and one local-backend config assertion -- confirmed pre-existing
+  and unrelated to the turn planner; see "Final state" note below).
 - **Comparison**: failures (11=11), errors (47=47), skipped (40=40) all unchanged; +6 tests, all
   new and all passing. **Zero new failures or errors introduced.**
 
@@ -221,6 +222,38 @@ Working notes/evidence trail for every step below (including RED/GREEN command o
   **1184 tests, FAILED (failures=11, errors=47, skipped=40)** -- identical failure/error/skipped
   counts to the baseline above; +3 tests (the new ones), all passing. **Zero new failures or
   errors introduced.**
+
+### Final state (toolchain follow-up -- current, accurate test evidence)
+All 11 failures + 47 errors above were traced to three missing host toolchains in the review
+sandbox, not to any code or test defect: `tests/test_evals_run.py`, `tests/test_local_backend.py`,
+and `tests/test_polyglot_tasks.py` each shell out to `go`, `rustc`, and/or `javac`/`java` to
+compile and run small fixture programs, and every one of the 11 failures + 47 errors originated in
+those three files.
+
+**`golang`, `rustc`, and `default-jdk` are required system packages for those three test files to
+pass** -- this is a pre-existing test-environment requirement of the repository, not a dependency
+introduced or changed by this review.
+
+With those three packages installed (`apt-get install -y golang rustc default-jdk`; confirmed
+present via `go version` -> `go1.19.8 linux/arm64`, `rustc --version` -> `1.63.0`, `javac -version`
+-> `17.0.20.1`), the full suite is clean:
+
+```
+PYTHONPATH=src python3 -m unittest discover -s tests
+----------------------------------------------------------------------
+Ran 1210 tests in 51.663s
+
+OK (skipped=48)
+```
+
+Reproduced 4 separate times with identical results (0 failures, 0 errors each time; only wall-clock
+time varied: 55.606s / 57.924s / 57.573s / 51.663s). This also resolves
+`test_local_active_profile_needs_no_external_opt_in`
+(`tests/test_local_backend.py`) specifically: that test file is byte-identical between the
+pre-review tip (`9fad989`) and the current review HEAD (confirmed via
+`git diff --stat 9fad989 HEAD -- tests/test_local_backend.py`, empty output), and the test passes
+at that pre-review tip once the toolchains are present -- confirming it was always a toolchain gap,
+never a turn-planner-related regression.
 
 ## Summary Table
 
