@@ -75,6 +75,11 @@ SAFE_FIELDS = {
     "seconds_saved",
     "project",
     "traffic",
+    # Routing levers: where served_model came from ("response" | "requested"),
+    # the chosen tier label and the user-facing profile name.
+    "served_model_source",
+    "tier",
+    "profile",
     "tool",
     "tool_call_id",
     "status",
