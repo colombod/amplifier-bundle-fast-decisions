@@ -52,6 +52,7 @@ CANDIDATES = ["feat/jev-step-actions", "feat/keepalive-loopstop"]
 OVERRIDES: dict[str, dict] = {}
 LOG_LOCK = threading.Lock()
 LAUNCH_LOCK = threading.Lock()
+FORGE_DOWN_UNTIL = [0.0]
 
 
 def log(out: Path, msg: str) -> None:
@@ -164,7 +165,8 @@ def run_item(out: Path, item: dict, cfg: dict, args) -> dict | None:
            + f"; tail -F {rd}/worker.log {rd}/turn1-stderr.txt & TP=$!; "
            + f"while [ ! -f {rd}/result.json ]; do sleep 5; done; kill $TP")
     term = None
-    for attempt in range(2):
+    # Circuit breaker: after a Forge failure, go direct for 5 minutes before trying Forge again.
+    for attempt in range(0 if time.time() < FORGE_DOWN_UNTIL[0] else 2):
         try:
             with LAUNCH_LOCK:
                 term = forge_call("create_terminal", {
@@ -184,6 +186,8 @@ def run_item(out: Path, item: dict, cfg: dict, args) -> dict | None:
             time.sleep(3)
     tid = term.get("id") if isinstance(term, dict) else None
     if tid is None:
+        if time.time() >= FORGE_DOWN_UNTIL[0]:
+            FORGE_DOWN_UNTIL[0] = time.time() + 300
         # Forge is down: launch the same detached worker directly so the loop keeps going;
         # the run records launcher=direct.
         spec["launcher"] = "direct"
