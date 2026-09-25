@@ -29,6 +29,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures as cf
 import json
+import os
 import random
 import shlex
 import subprocess
@@ -120,12 +121,14 @@ def schedule(rnd: int, task_names: list[str], configs: list[str], seed: int) -> 
     rng = random.Random(seed * 1000 + rnd)
     order_tasks = list(task_names)
     rng.shuffle(order_tasks)
-    items = []
+    orders = {}
     for t in order_tasks:
         cs = list(configs)
         rng.shuffle(cs)
-        items.extend({"round": rnd, "task": t, "config": c} for c in cs)
-    return items
+        orders[t] = cs
+    # Interleave so runs in flight together are different tasks (no shared
+    # /tmp paths or same-command contention between configs of one task).
+    return [{"round": rnd, "task": t, "config": orders[t][j]} for j in range(len(configs)) for t in order_tasks]
 
 
 def forge_call(tool: str, args: dict):
@@ -150,9 +153,14 @@ def run_item(out: Path, item: dict, cfg: dict, args) -> dict | None:
             "pinned": args.pinned, "deadline": args.deadline, "max_iterations": args.max_iterations}
     (run_dir / "spec.json").write_text(json.dumps(spec, indent=2))
     (run_dir / "result.json").unlink(missing_ok=True)
+    (run_dir / "worker.pid").unlink(missing_ok=True)
+    # The worker detaches into its own session (survives Forge daemon restarts);
+    # the Forge terminal shows its log live and exits when the result lands.
+    rd = shlex.quote(str(run_dir))
     cmd = ("set -a; . ~/.amplifier/keys.env 2>/dev/null; set +a; "
-           + shlex.join(["python3", str(HERE / "worker.py"), str(run_dir)])
-           + f" 2>&1 | tee {shlex.quote(str(run_dir / 'worker.log'))}")
+           + shlex.join(["python3", str(HERE / "worker.py"), "--detach", str(run_dir)])
+           + f"; tail -F {rd}/worker.log {rd}/turn1-stderr.txt & TP=$!; "
+           + f"while [ ! -f {rd}/result.json ]; do sleep 5; done; kill $TP")
     term = None
     for attempt in range(4):
         try:
@@ -173,8 +181,9 @@ def run_item(out: Path, item: dict, cfg: dict, args) -> dict | None:
     tid = term.get("id") if isinstance(term, dict) else None
     (run_dir / "forge.json").write_text(json.dumps({"terminal": tid, "launched_at": time.time()}))
     log(out, f"launched r{item['round']} {item['task']:20s} {item['config']:18s} forge={tid}")
-    deadline = time.time() + turns * (args.deadline + 60) + 600
-    result = None
+    launched = time.time()
+    deadline = launched + turns * (args.deadline + 60) + 600
+    result, dead_since = None, None
     while time.time() < deadline:
         if (run_dir / "result.json").exists():
             try:
@@ -182,6 +191,19 @@ def run_item(out: Path, item: dict, cfg: dict, args) -> dict | None:
                 break
             except ValueError:
                 pass
+        alive = None
+        try:
+            pid = int((run_dir / "worker.pid").read_text())
+            os.kill(pid, 0)
+            alive = True
+        except (OSError, ValueError):
+            alive = False if (run_dir / "worker.pid").exists() or time.time() - launched > 120 else None
+        if alive is False:
+            dead_since = dead_since or time.time()
+            if time.time() - dead_since > 20 and not (run_dir / "result.json").exists():
+                break
+        else:
+            dead_since = None
         time.sleep(5)
     if tid:
         try:
@@ -196,6 +218,15 @@ def run_item(out: Path, item: dict, cfg: dict, args) -> dict | None:
              f"{result.get('model_calls')} served={result.get('served_models')} "
              f"receipts={(result.get('receipts') or {}).get('by_lever')}")
     return result
+
+
+def run_item_retry(out: Path, item: dict, cfg: dict, args) -> dict | None:
+    for attempt in (1, 2):
+        r = run_item(out, item, cfg, args)
+        if r is not None and not r.get("error"):
+            return r
+        log(out, f"retrying r{item['round']} {item['task']} {item['config']} (attempt {attempt} gave no valid result)")
+    return r
 
 
 def spent(out: Path) -> float:
@@ -259,7 +290,7 @@ def main():
                 print(i)
             return
         with cf.ThreadPoolExecutor(max_workers=args.concurrency) as pool:
-            futs = [pool.submit(run_item, out, i, configs[i["config"]], args) for i in items]
+            futs = [pool.submit(run_item_retry, out, i, configs[i["config"]], args) for i in items]
             for f in cf.as_completed(futs):
                 try:
                     f.result()

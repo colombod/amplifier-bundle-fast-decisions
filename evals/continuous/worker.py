@@ -295,7 +295,21 @@ def main(run_dir: Path) -> int:
     return 0
 
 
+def detach(rd: Path) -> None:
+    """Re-exec this worker in its own session (no controlling terminal), so a
+    Forge daemon restart -- which kills every PTY child -- does not kill the
+    run. The Forge terminal then only tails the worker's log."""
+    log = open(rd / "worker.log", "a")
+    proc = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), str(rd)], stdin=subprocess.DEVNULL,
+                            stdout=log, stderr=subprocess.STDOUT, start_new_session=True, cwd=str(rd))
+    (rd / "worker.pid").write_text(str(proc.pid))
+    print(f"CEVAL detached worker pid {proc.pid}", flush=True)
+
+
 if __name__ == "__main__":
+    if sys.argv[1] == "--detach":
+        detach(Path(sys.argv[2]))
+        sys.exit(0)
     rd = Path(sys.argv[1])
     try:
         sys.exit(main(rd))
