@@ -26,6 +26,7 @@ from .contracts import (
     candidate_read_identity,
 )
 from . import effort
+from . import routing_levers
 from .backends import ask_many as backend_ask_many
 from .runtime import Runtime, get_runtime
 from . import provenance
@@ -257,36 +258,94 @@ async def decide_start_tier(service: Any, request: Any, model_routing: dict[str,
     if policy == "cheap":
         return "cheap"
     task = _turn_user_text(request)
+    turn = getattr(service, "turn", None)
     scope_limit = model_routing.get("cheap_max_workspace_files")
+    scope_files = None
     if scope_limit is not None:
         files = await asyncio.to_thread(workspace_file_count, session_working_dir(service), scope_limit)
         if files > scope_limit:
-            await service.emit("difficulty_judged", {
-                "backend": service.backend.name, "choice": "strong", "probabilities": None,
-                "duration_ms": 0.0, "reason_code": "scope_strong", "state_chars": len(task),
-                "candidate_count": files, "mode": service.policy.mode,
-            }, decision_id)
-            return "strong"
+            if not (model_routing.get("large_repo") and policy == "judge" and task):
+                await service.emit("difficulty_judged", {
+                    "backend": service.backend.name, "choice": "strong", "probabilities": None,
+                    "duration_ms": 0.0, "reason_code": "scope_strong", "state_chars": len(task),
+                    "candidate_count": files, "mode": service.policy.mode,
+                    **_profile_field(service),
+                }, decision_id)
+                return "strong"
+            scope_files = files  # large_repo lever: ask the judge anyway
     min_chars = model_routing.get("complex_min_prompt_chars", 2000)
     tier = "strong" if len(task) >= min_chars else "cheap"
-    decided_by, p_complex, duration_ms = "rules", None, 0.0
+    decided_by, p_complex, p_edit, duration_ms = "rules", None, None, 0.0
     if policy == "judge" and task:
-        choice, probability, duration_ms = await _ask_judge_choice(
-            service, question_name="task_difficulty", instructions=DIFFICULTY_INSTRUCTIONS,
-            criteria=DIFFICULTY_CRITERIA, state={"task": task[:_DIFFICULTY_STATE_CHARS]},
-        )
+        state = {"task": task[:_DIFFICULTY_STATE_CHARS]}
+        if scope_files is not None and routing_levers.large_repo_wants_edit_question(model_routing):
+            # One batched call: difficulty + "does this change code?"
+            questions = [Question(name="task_difficulty", type="choice", instructions=DIFFICULTY_INSTRUCTIONS,
+                                  criteria=DIFFICULTY_CRITERIA), routing_levers.edit_question()]
+            batch_start = time.perf_counter()
+            answers = await _ask_judges_many(service, questions=questions, state=state) or {}
+            duration_ms = (time.perf_counter() - batch_start) * 1000
+            choice, probability = answers.get("task_difficulty", (None, None))
+            edit_choice, edit_probability = answers.get(routing_levers.EDIT_QUESTION_NAME, (None, None))
+            if edit_choice is not None and edit_probability is not None:
+                p_edit = edit_probability if edit_choice == "edits" else 1.0 - edit_probability
+        else:
+            choice, probability, duration_ms = await _ask_judge_choice(
+                service, question_name="task_difficulty", instructions=DIFFICULTY_INSTRUCTIONS,
+                criteria=DIFFICULTY_CRITERIA, state=state,
+            )
         if choice is not None and probability is not None:
             p_complex = probability if choice == "complex" else 1.0 - probability
-            gate = model_routing.get("complex_min_probability", 0.5)
-            tier = "strong" if p_complex >= gate else "cheap"
             decided_by = "judge"
-    await service.emit("difficulty_judged", {
-        "backend": service.backend.name, "choice": tier,
-        "probabilities": {"complex": p_complex} if p_complex is not None else None,
-        "duration_ms": duration_ms, "reason_code": f"{decided_by}_{tier}",
-        "state_chars": len(task), "mode": service.policy.mode,
-    }, decision_id)
+    label, tier_model, tier_effort = None, None, None
+    if scope_files is not None:
+        # Scope-gated turn: the host model unless the large_repo lever allows
+        # a cheap tier; any judge failure keeps the host model.
+        allowed = p_complex is not None and routing_levers.large_repo_allows_cheap(
+            model_routing, p_complex, p_edit)
+        picked = None
+        if allowed:
+            # The tier its difficulty earns; a read-only turn the tiers call
+            # complex (allowed via require: either) gets start_model.
+            picked = routing_levers.choose_tier(model_routing, p_complex) or ("cheap", None, None)
+        tier = "cheap" if picked else "strong"
+        if picked and picked[1]:  # a configured tier (not the shipped start_model)
+            label, tier_model, tier_effort = picked
+        reason = f"scope_judge_{tier}" if p_complex is not None else "scope_fallback_strong"
+    elif decided_by == "judge":
+        picked = routing_levers.choose_tier(model_routing, p_complex)
+        tier = "cheap" if picked else "strong"
+        if picked and picked[1]:  # a configured tier (not the shipped start_model)
+            label, tier_model, tier_effort = picked
+        reason = f"judge_{tier}"
+    else:
+        reason = f"rules_{tier}"
+    if tier == "strong":
+        tier_effort = routing_levers.strong_effort(model_routing, p_complex)
+        label = "strong_effort" if tier_effort else None
+    if turn is not None and hasattr(turn, "tier_label"):
+        turn.tier_label, turn.tier_model, turn.tier_effort = label, tier_model, tier_effort
+    probabilities = None
+    if p_complex is not None or p_edit is not None:
+        probabilities = {k: v for k, v in (("complex", p_complex), ("edits_code", p_edit)) if v is not None}
+    data = {
+        "backend": service.backend.name, "choice": tier, "probabilities": probabilities,
+        "duration_ms": duration_ms, "reason_code": reason,
+        "state_chars": len(task), "mode": service.policy.mode, **_profile_field(service),
+    }
+    if scope_files is not None:
+        data["candidate_count"] = scope_files
+    if label is not None:
+        data["tier"] = label
+        data["requested_model"] = tier_model
+        data["requested_effort"] = tier_effort
+    await service.emit("difficulty_judged", data, decision_id)
     return tier
+
+
+def _profile_field(service: Any) -> dict:
+    profile = getattr(service.policy, "profile", None)
+    return {"profile": profile} if profile else {}
 
 
 def _judge_state(
@@ -806,7 +865,11 @@ docs/UPSTREAM_CONTRACT.md.
             if phase == effort.PHASE_EXPLORE:
                 turn.explore_requests = explore_requests
             by_tier = effort_routing.get("by_tier")
-            if (by_tier is not None and turn.start_tier in by_tier and by_tier[turn.start_tier] != "phase"
+            if turn.tier_effort is not None and not host_pinned and not turn.escalated:
+                # Routing levers: the chosen tier's own effort, for the whole turn.
+                applied_effort = turn.tier_effort
+                reason_code = f"tier_{turn.tier_label}"
+            elif (by_tier is not None and turn.start_tier in by_tier and by_tier[turn.start_tier] != "phase"
                     and not host_pinned):
                 applied_effort = by_tier[turn.start_tier]
                 reason_code = f"tier_{turn.start_tier}"
@@ -954,6 +1017,14 @@ docs/UPSTREAM_CONTRACT.md.
                 reason_code = f"escalated_{turn.escalation_reason}"
             elif strong_turn:
                 reason_code = "start_strong"
+                if (turn.tier_effort is not None and not effort_applied_this_request
+                        and field_value(request, "reasoning_effort", None) is None):
+                    # strong_effort lever with no effort_routing configured.
+                    requested_effort = turn.tier_effort
+                    if isinstance(request, dict):
+                        request["reasoning_effort"] = requested_effort
+                    else:
+                        setattr(request, "reasoning_effort", requested_effort)
             elif provider_match and not self._provider_matches(provider_match):
                 reason_code = "provider_not_matched"
             else:
@@ -961,6 +1032,9 @@ docs/UPSTREAM_CONTRACT.md.
                 if explicit_model and not override_explicit:
                     reason_code = "host_pinned"
                 else:
+                    start_model = turn.tier_model or start_model
+                    if turn.tier_effort is not None:
+                        start_effort = turn.tier_effort
                     requested_model = start_model
                     if isinstance(request, dict):
                         request["model"] = start_model
@@ -1022,9 +1096,25 @@ docs/UPSTREAM_CONTRACT.md.
         await service.emit("slow_end", {"provider": self._provider_key, "model": model, **self._host_model_field(),
             "provider_call_id": provider_call_id,
             "status": "ok", "duration_ms": (time.perf_counter() - start) * 1000,
-            **usage_fields(response), "latency_kind": "provider_complete_wall_time",
+            **self._served_fields(response, request, kwargs), "latency_kind": "provider_complete_wall_time",
             "transport_measured": "provider-complete"}, decision_id)
         return response
+
+    def _served_fields(self, response: Any, request: Any, kwargs: dict) -> dict:
+        """usage_fields plus a served_model on EVERY ok receipt: the model the
+        response names (served_model_source "response"), else the model this
+        call was actually sent with -- the kwargs/request override or the
+        provider's default (source "requested"), so benchmarks can store the
+        serving model per request even when a provider omits it."""
+        fields = usage_fields(response)
+        if "served_model" in fields:
+            fields["served_model_source"] = "response"
+            return fields
+        sent = kwargs.get("model") or field_value(request, "model") or getattr(self._provider, "default_model", None)
+        if isinstance(sent, str) and sent:
+            fields["served_model"] = sent[:80]
+            fields["served_model_source"] = "requested"
+        return fields
 
     def _host_model_field(self) -> dict:
         """The wrapped provider's configured default model -- the model a

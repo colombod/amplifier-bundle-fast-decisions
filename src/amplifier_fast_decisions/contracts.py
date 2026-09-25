@@ -180,6 +180,20 @@ MODEL_ROUTING_KEYS = frozenset(
         # (escalation did not recover a misdirected start); such turns start
         # strong whatever the judge says. None = no gate.
         "cheap_max_workspace_files",
+        # Routing levers (research/routing-levers, all opt-in; absent = the
+        # shipped two-tier behavior byte-for-byte). See routing_levers.py.
+        # tiers: [{max_p_complex, model, effort?, label?}] ascending -- a
+        # judged turn takes the first tier whose threshold its p(complex) is
+        # below, else the host model. Replaces complex_min_probability.
+        "tiers",
+        # large_repo: when the scope gate fires, still allow a cheap tier if
+        # the judge is confident ({max_p_complex}) and/or the turn does not
+        # change code ({non_editing_max_p_edit}); require: both | either.
+        "large_repo",
+        # strong_effort: {max_p_complex, effort} -- a turn judged complex
+        # with p(complex) below max_p_complex stays on the host model at this
+        # effort (medium-confidence complex turns).
+        "strong_effort",
     }
 )
 
@@ -275,6 +289,8 @@ def validate_model_routing(model_routing: Any) -> None:
         raise ValueError(
             "model_routing.escalate_min_probability must be a number between 0 and 1"
         )
+    from .routing_levers import validate_levers
+    validate_levers(model_routing)
     escalation_weights = model_routing.get("escalation_weights")
     if escalation_weights is not None:
         if not isinstance(escalation_weights, dict):
@@ -619,6 +635,10 @@ class Policy:
     # backend available to the routers (e.g. start_policy: judge) without
     # putting a candidate-scoring call in front of slow requests.
     read_shortcut: bool = True
+    # fast_decisions.profile (frugal | balanced | careful): the one user-facing
+    # routing knob, expanded into model_routing/effort_routing by
+    # routing_levers.apply_profile() in from_config. Recorded for receipts.
+    profile: str | None = None
     version: str = "policy-v1"
 
     def __post_init__(self) -> None:
@@ -649,9 +669,15 @@ class Policy:
             raise ValueError("tool_risk_shadow must be a bool")
         if not isinstance(self.read_shortcut, bool):
             raise ValueError("read_shortcut must be a bool")
+        if self.profile is not None:
+            from .routing_levers import PROFILES
+            if self.profile not in PROFILES:
+                raise ValueError(f"profile must be one of {sorted(PROFILES)}")
 
     @classmethod
     def from_config(cls, config: dict[str, Any]) -> Policy:
+        from .routing_levers import apply_profile
+        config = apply_profile(config)
         names = cls.__dataclass_fields__
         values = {k: v for k, v in config.items() if k in names}
         if "allowed_tools" in values:
@@ -764,6 +790,11 @@ class TurnState:
     # Turn-start difficulty router: "cheap" | "strong", decided once at the
     # turn's first slow request (None until then / when routing is off).
     start_tier: str | None = None
+    # Routing levers: the chosen tier's label, model and effort for this turn
+    # (None = the shipped start_model/start_effort/by_tier behavior).
+    tier_label: str | None = None
+    tier_model: str | None = None
+    tier_effort: str | None = None
 
 
 def candidate_read_identity(

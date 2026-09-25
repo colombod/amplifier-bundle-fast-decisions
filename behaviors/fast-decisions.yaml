@@ -60,6 +60,10 @@ session:
           strong: null
         max_explore_requests: 6
         escalate_after_provider_errors: 1
+      # Research levers (default off; see src/amplifier_fast_decisions/routing_levers.py):
+      # one knob, profile: frugal | balanced | careful (balanced = this file),
+      # or the individual model_routing keys tiers / large_repo / strong_effort.
+      # profile: balanced
       model_routing:
         start_model: claude-sonnet-5
         # Only ever send the Anthropic start model to Anthropic providers.
