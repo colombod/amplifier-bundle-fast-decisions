@@ -136,6 +136,34 @@ class PlanTurnTests(unittest.TestCase):
         )
         self.assertEqual(plan["choice"], OPUS)
 
+    def test_candidate_vs_candidate_tie_goes_to_first_listed_candidate(self):
+        """TURN-PLANNER.md ## Behaviour only specifies "ties go to the host" --
+        it is silent on a tie between two non-host candidates. The
+        implementation resolves `winners[0]` by the ORDER of the `candidates`
+        sequence the caller passed in (not by dict/hash ordering). This test
+        locks in that deterministic, caller-order-dependent behaviour and
+        proves it by reversing the candidate order and observing the choice
+        flip -- so any future change to a hash- or dict-ordering-based
+        tie-break (which would NOT be reliably order-preserving) fails loudly."""
+        rates = {**DEFAULT_RATES, "twin-a": DEFAULT_RATES[SONNET], "twin-b": DEFAULT_RATES[SONNET]}
+        priors = {
+            **DEFAULT_PLANNER_PRIORS,
+            "twin-a": DEFAULT_PLANNER_PRIORS[SONNET],
+            "twin-b": DEFAULT_PLANNER_PRIORS[SONNET],
+        }
+        cfg = config(objective="cost", priors=priors)
+
+        forward = planner.plan_turn(OPUS, ["twin-a", "twin-b"], {}, 60000, 0.0, cfg, rates)
+        reversed_ = planner.plan_turn(OPUS, ["twin-b", "twin-a"], {}, 60000, 0.0, cfg, rates)
+
+        self.assertFalse(forward["abstained"])
+        by_model = {o["model"]: o for o in forward["options"]}
+        self.assertEqual(by_model["twin-a"]["cost"], by_model["twin-b"]["cost"])
+        self.assertLess(by_model["twin-a"]["cost"], by_model[OPUS]["cost"])  # host not a winner
+
+        self.assertEqual(forward["choice"], "twin-a")
+        self.assertEqual(reversed_["choice"], "twin-b")
+
 
 # ---------------------------------------------------------------------------
 # Config validation (contracts.py)
@@ -384,6 +412,96 @@ class PlannerDisabledByteIdenticalTests(unittest.IsolatedAsyncioTestCase):
         routed = [e for e in events if e["event"].endswith("model_routed")]
         self.assertEqual(routed[0]["data"]["reason_code"], "start_model")
         self.assertFalse(any(e["event"].endswith("turn_planned") for e in events))
+
+
+def _strip_nondeterministic_event_fields(events):
+    """Drop fields that are inherently variable per-run (random ids, wall-clock
+    timestamps, monotonic clock, the randomized DemoCoordinator session_id, and
+    the randomized per-decision correlation id -- DecisionService.last_decision_id
+    is `uuid4().hex` generated fresh per decision in service.py, and shows up both
+    as a top-level event field and, for some events, inside `data` too) so that
+    two independent runs can be compared for true payload equality without false
+    negatives from these expected, behavior-irrelevant sources of variance."""
+    variable_keys = {
+        "event_id",
+        "timestamp",
+        "monotonic_ns",
+        "session_id",
+        "parent_session_id",
+        "decision_id",
+        "provider_call_id",
+        "duration_ms",
+    }
+
+    def strip(obj):
+        if isinstance(obj, dict):
+            return {k: strip(v) for k, v in obj.items() if k not in variable_keys}
+        if isinstance(obj, list):
+            return [strip(v) for v in obj]
+        return obj
+
+    return [strip(e) for e in events]
+
+
+class PlannerDisabledFullByteIdenticalTests(unittest.IsolatedAsyncioTestCase):
+    """Strengthens PlannerDisabledByteIdenticalTests: the existing tests above
+    only assert req.model equality plus two event fields (reason_code and
+    turn_planned-absence). That is NOT the "byte-identical requests and
+    receipts" comparison the spec's disabled-planner requirement calls for --
+    a planner-disabled run could still diverge in some other request field or
+    some other emitted event field/value and those tests would not catch it.
+
+    These tests instead perform a genuine full-payload comparison: the ENTIRE
+    constructed request object (every field) and the ENTIRE emitted event
+    stream (every event, every field, in order) between a planner-ABSENT
+    baseline run and a planner-enabled-but-DISABLED run, via
+    json.dumps(sort_keys=True) string equality. Only fields that are
+    inherently non-deterministic per run (random ids, timestamps) are
+    stripped first -- everything else must match exactly.
+    """
+
+    async def _run(self, policy):
+        _service, runtime, events = setup_service(policy=policy)
+        provider = DemoProvider(delay_ms=0)
+        facade = RoutedProvider(provider, runtime, {}, demo_response)
+        req = request([user()])
+        await facade.complete(req)
+        return vars(req), _strip_nondeterministic_event_fields(events)
+
+    async def test_no_planner_key_vs_planner_disabled_full_request_payload_byte_identical(self):
+        baseline_req, _baseline_events = await self._run(
+            Policy(mode="off", model_routing={"start_model": SONNET})
+        )
+        disabled_req, _disabled_events = await self._run(
+            Policy(
+                mode="off",
+                model_routing={"start_model": SONNET, "planner": {"enabled": False}},
+            )
+        )
+
+        self.assertEqual(
+            json.dumps(baseline_req, sort_keys=True, default=str),
+            json.dumps(disabled_req, sort_keys=True, default=str),
+            "planner-absent and planner-disabled runs must produce a byte-identical request",
+        )
+
+    async def test_no_planner_key_vs_planner_disabled_full_event_stream_byte_identical(self):
+        _baseline_req, baseline_events = await self._run(
+            Policy(mode="off", model_routing={"start_model": SONNET})
+        )
+        _disabled_req, disabled_events = await self._run(
+            Policy(
+                mode="off",
+                model_routing={"start_model": SONNET, "planner": {"enabled": False}},
+            )
+        )
+
+        self.assertEqual(
+            json.dumps(baseline_events, sort_keys=True, default=str),
+            json.dumps(disabled_events, sort_keys=True, default=str),
+            "planner-absent and planner-disabled runs must emit a byte-identical event stream "
+            "(modulo inherently non-deterministic ids/timestamps)",
+        )
 
 
 class PlannerOrchestratorTests(unittest.IsolatedAsyncioTestCase):
@@ -736,6 +854,56 @@ class EstimateCtxTests(unittest.TestCase):
 
         req = request([{"role": "user", "content": Unserializable()}])
         self.assertIsInstance(_request_chars(req), int)
+
+
+class ContextCompactionResetTests(unittest.TestCase):
+    """A real "context:compaction" native event means the conversation just
+    shrank. If Runtime.planner_last_ctx (the persisted pre-compaction total
+    prompt size) is left untouched, every subsequent _estimate_ctx() call
+    keeps adding new message sizes on top of the stale, too-large baseline --
+    silently and permanently overestimating cost/cache-warmth for the rest of
+    the session. observer.reset_planner_ctx_on_compaction is the hook that
+    must invalidate that baseline."""
+
+    def _runtime(self):
+        return Runtime(DecisionService(Policy(mode="off"), ScriptedBackend(delay_ms=0),
+                                        Emitter("s"), DemoCoordinator(), []))
+
+    def test_compaction_event_resets_stale_planner_last_ctx(self):
+        from amplifier_fast_decisions import observer
+
+        runtime = self._runtime()
+        runtime.planner_last_ctx = 150000  # stale pre-compaction baseline
+
+        observer.reset_planner_ctx_on_compaction(runtime, "context:compaction")
+
+        self.assertIsNone(runtime.planner_last_ctx)
+
+    def test_compaction_reset_makes_next_estimate_fall_back_to_cold_start(self):
+        from amplifier_fast_decisions import observer
+
+        runtime = self._runtime()
+        runtime.planner_last_ctx = 150000
+        req = request([user("x" * 4000)])
+
+        observer.reset_planner_ctx_on_compaction(runtime, "context:compaction")
+
+        # Post-compaction: must NOT be 150000 + new_message_chars//4 (stale
+        # baseline compounding); must fall back to the fresh cold-start
+        # estimate, exactly like a brand new session.
+        self.assertEqual(_estimate_ctx(req, runtime), _request_chars(req) // 4)
+
+    def test_unrelated_events_do_not_reset_planner_last_ctx(self):
+        from amplifier_fast_decisions import observer
+
+        runtime = self._runtime()
+        runtime.planner_last_ctx = 150000
+
+        for event in ("provider:request", "tool:pre", "tool:post",
+                      "execution:start", "execution:end", "session:end"):
+            observer.reset_planner_ctx_on_compaction(runtime, event)
+
+        self.assertEqual(runtime.planner_last_ctx, 150000)
 
 
 # ---------------------------------------------------------------------------

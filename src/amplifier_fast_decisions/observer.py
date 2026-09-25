@@ -142,6 +142,26 @@ def _continue_result() -> Any:
         return SimpleNamespace(action="continue")
 
 
+def reset_planner_ctx_on_compaction(runtime: Any, event: str) -> None:
+    """Invalidate the persisted ctx-estimate baseline on a real compaction.
+
+    ``Runtime.planner_last_ctx`` (see runtime.py / orchestrator._estimate_ctx)
+    is the last known total prompt size, persisted across turns so each new
+    turn only has to measure its OWN new message rather than re-measuring the
+    whole conversation. A "context:compaction" native event means the real
+    conversation just shrank -- if planner_last_ctx is left untouched, every
+    subsequent _estimate_ctx() call keeps adding new message sizes on top of
+    the stale PRE-compaction baseline, silently and permanently overestimating
+    context size (and therefore cost and cache-warmth) for the rest of the
+    session. Resetting it to None makes the next _estimate_ctx() call fall
+    back to its designed cold-start path (a fresh measurement of the current
+    request) instead of compounding stale state. See
+    docs/proposals/TURN-PLANNER.md.
+    """
+    if event == "context:compaction":
+        runtime.planner_last_ctx = None
+
+
 class ShadowScorer:
     """Off-critical-path 'what would we have chosen' measurement.
 
@@ -504,6 +524,7 @@ async def mount(coordinator, config: dict):
 
     async def observe(event: str, data: dict):
         # Allowlisted structural fields only. Never copy native event bodies.
+        reset_planner_ctx_on_compaction(runtime, event)
         tool = data.get("tool_name") or data.get("tool")
         if not isinstance(tool, str):
             tool = field_value(tool, "name", None)
