@@ -148,6 +148,26 @@ class WorkspaceTool:
                        f"text file {source}: {relative} (around line {line})"),
             origin=origin, revision=self._revision(path))
 
+    def estimate_chars(self, arguments: dict[str, Any]) -> int | None:
+        """Approximate size of a read's result (what it adds to every later
+        prompt), without reading more than the file's metadata for a whole
+        read. None when unknown."""
+        try:
+            if arguments.get("operation") == "git":
+                return 2_000
+            path = self._path(arguments["path"], file=arguments.get("operation") == "read")
+            if arguments.get("operation") != "read":
+                return 2_000
+            size = path.stat().st_size
+            line = arguments.get("line")
+            if not _positive_int(line):
+                return min(size, self.max_bytes)
+            lines = path.read_bytes()[:4_000_000].splitlines()
+            start, end = max(1, line - WINDOW_BEFORE), min(len(lines), line + WINDOW_AFTER - 1)
+            return sum(len(x) + 8 for x in lines[start - 1:end])
+        except (OSError, ValueError, KeyError, TypeError):
+            return None
+
     def is_git_repo(self) -> bool:
         return (self.root / ".git").exists()
 

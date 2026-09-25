@@ -51,6 +51,16 @@ class BashClassificationTests(unittest.TestCase):
                     "mkdir out && ls"):
             self.assertIs(sa.bash_readonly(cmd), False, cmd)
 
+    def test_polling_loops_and_nested_scripts(self):
+        loop = ('for i in $(seq 1 20); do s=$(gh run view 12 --json status -q .status); echo "$s"; '
+                '[ "$s" = completed ] && break; sleep 45; done')
+        self.assertIs(sa.bash_readonly(loop), True)
+        self.assertIs(sa.bash_readonly('timeout 900 bash -c "for i in {1..30}; do gh pr checks 21 && break || sleep 30; done"'), True)
+        self.assertIs(sa.bash_readonly('bash -c "rm -rf build"'), False)
+        self.assertIs(sa.bash_readonly("gh pr merge 3 --squash"), False)
+        self.assertIs(sa.bash_readonly("gh api -X POST repos/o/r/issues"), False)
+        self.assertIs(sa.bash_readonly("x=$(rm -f a)"), False)
+
     def test_unknown_is_ambiguous(self):
         self.assertIsNone(sa.bash_readonly("python3 script.py"))
         self.assertIsNone(sa.bash_readonly("./run.sh"))
@@ -292,6 +302,21 @@ class PriceMathTests(unittest.TestCase):
                   windows={HAIKU: 200_000}, rates=DEFAULT_RATES)
         self.assertIsNone(sa.cheaper_step(**kw, amortize_steps=2)["model"])
         self.assertEqual(sa.cheaper_step(**kw, amortize_steps=30)["model"], HAIKU)
+
+    def test_prepared_results_must_pay_for_themselves(self):
+        small = sa.max_prepared_tokens(OPUS, prompt_tokens=70_000, output_tokens=150, rates=DEFAULT_RATES)
+        big = sa.max_prepared_tokens(OPUS, prompt_tokens=263_000, output_tokens=150, rates=DEFAULT_RATES)
+        self.assertAlmostEqual(small, (70_000 * 0.20 + 150 * (20 + 5)) / 5.0, delta=1)
+        self.assertGreater(big, small)
+        with tempfile.TemporaryDirectory() as tmp:
+            Path(tmp, "small.py").write_text("x = 1\n")
+            Path(tmp, "huge.py").write_text("y = 2\n" * 20_000)
+            ws = WorkspaceTool(tmp, max_bytes=262_144)
+            cands = [ws.candidate_for_path("small.py", 0), ws.candidate_for_path("huge.py", 1),
+                     ws.candidate_for_path("huge.py", 2, line=500)]
+            kept = sa.affordable(cands, ws, small)
+        self.assertEqual([c.arguments.get("path") for c in kept], ["small.py", "huge.py"])
+        self.assertEqual(kept[1].arguments.get("line"), 500)          # a window fits, the whole file does not
 
     def test_expected_saving_gate(self):
         self.assertGreater(sa.expected_prepared_saving_s(asked=0, accepted=0, prior_accept=0.5, host_call_s=3.0,

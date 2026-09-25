@@ -77,9 +77,12 @@ DEFAULTS: dict[str, Any] = {
     "cache_ttl_s": 300,
     "repeat_polls": False,
     "poll_max_repeats": 6,
+    # Prompt size assumed before the session's first model call (the price
+    # guard on prepared results needs one).
+    "prompt_tokens_prior": 70_000,
 }
 _BOOL_KEYS = ("prepared", "cheaper_model", "cheap_may_answer", "judge_ambiguous", "repeat_polls")
-_INT_KEYS = {"poll_max_repeats": (1, 100), "amortize_steps": (1, 50), "routine_max_calls": (1, 16), "routine_max_result_chars": (100, 1_000_000),
+_INT_KEYS = {"prompt_tokens_prior": (1_000, 2_000_000), "poll_max_repeats": (1, 100), "amortize_steps": (1, 50), "routine_max_calls": (1, 16), "routine_max_result_chars": (100, 1_000_000),
              "skipped_output_tokens": (1, 20_000), "cache_ttl_s": (1, 3600)}
 _FLOAT_KEYS = {"min_judge_saving_usd": (0.0, 10.0), "prior_accept": (0.0, 1.0), "judge_seconds_prior": (0.0, 60.0),
                "host_call_seconds_prior": (0.0, 600.0)}
@@ -175,42 +178,98 @@ def _git_readonly(words: list[str]) -> bool | None:
     return False
 
 
-def bash_readonly(command: Any) -> bool | None:
-    """True when every command in the pipeline is a known read-only command,
-    False when any writes (redirection, tee, ``sed -i``, mutating git, ``rm``,
-    ...), None when unknown (ambiguous: e.g. a script or interpreter)."""
-    if not isinstance(command, str) or not command.strip():
+_SHELL_C = re.compile(r"""\b(?:bash|sh|zsh)\s+-c\s+(['"])(.*?)\1""", re.S)
+_SUBST = re.compile(r"\$\(([^()]*(?:\([^()]*\)[^()]*)*)\)|`([^`]*)`")
+_SHELL_KEYWORDS = frozenset({"do", "done", "then", "else", "fi", "esac", "{", "}", "!", "in", "break", "continue",
+                             "exit", "return", "wait", "local", "declare", "readonly", "shift", "true", ":"})
+_COND_KEYWORDS = frozenset({"if", "elif", "while", "until"})
+_GH_READONLY = {"pr": {"checks", "view", "list", "diff", "status"}, "run": {"view", "list", "watch"},
+                "issue": {"view", "list", "status"}, "repo": {"view"}, "release": {"view", "list"},
+                "workflow": {"view", "list"}, "search": None, "status": None, "auth": {"status"}}
+
+
+def _gh_readonly(words: list[str]) -> bool | None:
+    if len(words) < 2:
         return None
-    stripped = _SAFE_REDIRECTS.sub(" ", command)
-    if ">" in stripped:
-        return False
+    group = words[1]
+    if group == "api":
+        rest = words[2:]
+        method = next((rest[i + 1].upper() for i, w in enumerate(rest[:-1]) if w in ("-X", "--method")), "GET")
+        if method != "GET" or any(w in ("-f", "-F", "--field", "--raw-field", "--input") for w in rest):
+            return False
+        return True
+    if group not in _GH_READONLY:
+        return None
+    subs = _GH_READONLY[group]
+    if subs is None:
+        return True
+    return True if len(words) > 2 and words[2] in subs else False
+
+
+def bash_readonly(command: Any, _depth: int = 0) -> bool | None:
+    """True when every command in the script is a known read-only command
+    (pipelines, ``&&``/``;`` chains, for/while polling loops, ``$(...)``
+    substitutions and ``bash -c`` scripts are looked into), False when any
+    writes (redirection to a file, tee, ``sed -i``, mutating git/gh, ``rm``,
+    ...), None when unknown (ambiguous: e.g. an interpreter or script)."""
+    if not isinstance(command, str) or not command.strip() or _depth > 3:
+        return None
     verdict: bool | None = True
+    for _quote, script in _SHELL_C.findall(command):
+        sub = bash_readonly(script, _depth + 1)
+        if sub is False:
+            return False
+        if sub is None:
+            verdict = None
+    command = _SHELL_C.sub("true", command)
+    for inner in _SUBST.findall(command):
+        sub = bash_readonly(inner[0] or inner[1], _depth + 1)
+        if sub is False:
+            return False
+        if sub is None:
+            verdict = None
+    command = _SUBST.sub("X", command)
+    stripped = _SAFE_REDIRECTS.sub(" ", command)
+    if re.search(r"(?<![<=!-])>", stripped):
+        return False
     for segment in _SEGMENTS.split(command):
         words = [w for w in _words(segment.strip())]
-        while words and _ASSIGNMENT.match(words[0]):
+        while words and (_ASSIGNMENT.match(words[0]) or words[0] in _SHELL_KEYWORDS):
             words = words[1:]
         if not words:
             continue
+        if words[0] in ("for", "case", "select", "function") or words[0].endswith("()"):
+            continue                                   # loop/case header: the body is its own segment
+        if words[0] in _COND_KEYWORDS:
+            words = words[1:]
+            if not words:
+                continue
         head = words[0].rsplit("/", 1)[-1]
-        if head in ("cd", "pushd", "popd", "set", "export", "time", "nice", "timeout", "command", "builtin"):
+        if head in ("cd", "pushd", "popd", "set", "export", "time", "nice", "timeout", "command", "builtin", "[[", "(("):
             if head in ("time", "nice", "command", "builtin") and len(words) > 1:
                 words, head = words[1:], words[1].rsplit("/", 1)[-1]
             elif head == "timeout" and len(words) > 2:
                 words, head = words[2:], words[2].rsplit("/", 1)[-1]
             else:
                 continue
-        if head in ("tee", "rm", "rmdir", "mv", "cp", "mkdir", "touch", "chmod", "chown", "ln", "dd", "truncate",
-                    "patch", "install", "unlink", "shred"):
+        if head in ("bash", "sh", "zsh") and "-c" in words[1:-1]:
+            result = bash_readonly(words[words.index("-c") + 1], _depth + 1)
+        elif head in ("tee", "rm", "rmdir", "mv", "cp", "mkdir", "touch", "chmod", "chown", "ln", "dd", "truncate",
+                      "patch", "install", "unlink", "shred"):
             return False
-        if head == "git":
+        elif head == "git":
             result = _git_readonly(words)
+        elif head == "gh":
+            result = _gh_readonly(words)
         elif head == "sed":
             result = False if any(w == "-i" or w.startswith("-i") or w == "--in-place" for w in words[1:]) else True
         elif head == "find":
             result = False if any(w in ("-delete", "-exec", "-execdir", "-ok", "-okdir", "-fprint") for w in words) \
                 else True
-        elif head in _READONLY_COMMANDS:
+        elif head in _READONLY_COMMANDS or head in ("pgrep", "lsof"):
             result = True
+        elif head == "curl":
+            result = not any(w in ("-X", "-d", "--data", "-F", "-T", "-o", "-O", "--output") for w in words)
         else:
             result = None
         if result is False:
@@ -562,6 +621,33 @@ def candidates_for(view: StepView, kind: str, workspace: Any, max_candidates: in
     except Exception:  # noqa: BLE001 -- candidates are optional
         return out[:max_candidates]
     return out[:max_candidates]
+
+
+CHARS_PER_TOKEN = 3.5
+
+
+def max_prepared_tokens(host: str | None, *, prompt_tokens: int, output_tokens: int, rates: dict) -> int | None:
+    """Largest prepared result that can still pay for itself: a prepared
+    action saves one host call (one cached read of the prompt plus its
+    output) but its result is cache-written into every later prompt, so a
+    result bigger than saving / write-rate costs more than the call it
+    removes. None when the host is unpriced."""
+    r = _rates(host, rates)
+    saving = host_step_saving(host, prompt_tokens=prompt_tokens, output_tokens=output_tokens,
+                              cheap_output_tokens=0, rates=rates) if r else None
+    return None if saving is None else int(saving / (r[3] / 1_000_000))
+
+
+def affordable(candidates: list[Any], workspace: Any, max_tokens: int | None) -> list[Any]:
+    """Drop candidates whose result would cost more than the call they save."""
+    if max_tokens is None or workspace is None or not hasattr(workspace, "estimate_chars"):
+        return candidates
+    out = []
+    for c in candidates:
+        chars = workspace.estimate_chars(c.arguments)
+        if chars is not None and chars / CHARS_PER_TOKEN <= max_tokens:
+            out.append(c)
+    return out
 
 
 def repeats_prepared(arguments: dict, response_calls: list[tuple[str, dict]], workspace: Any) -> bool:

@@ -1415,9 +1415,19 @@ docs/UPSTREAM_CONTRACT.md.
                 return step
             if (cfg["prepared"] and service.policy.mode == "active"
                     and kind in (step_actions.TURN_START, step_actions.ROUTINE)):
-                candidates = step_actions.candidates_for(view, kind, self._tools.get("fast_workspace"))
+                workspace = self._tools.get("fast_workspace")
+                candidates = step_actions.candidates_for(view, kind, workspace)
+                sst = self._step_state(service)
                 if candidates:
-                    sst = self._step_state(service)
+                    host = getattr(self._provider, "default_model", None)
+                    outs = sorted(sst["tool_step_out"])
+                    limit = step_actions.max_prepared_tokens(
+                        host if isinstance(host, str) else None,
+                        prompt_tokens=int((sst["last_prompt"] or cfg["prompt_tokens_prior"]) + view.result_chars / 3.5),
+                        output_tokens=outs[len(outs) // 2] if len(outs) >= 3 else cfg["skipped_output_tokens"],
+                        rates=DEFAULT_RATES)
+                    candidates = step_actions.affordable(candidates, workspace, limit)
+                if candidates:
                     expected = step_actions.expected_prepared_saving_s(
                         asked=sst["asked"], accepted=sst["accepted"], prior_accept=cfg["prior_accept"],
                         host_call_s=_mean(sst["host_s"], cfg["host_call_seconds_prior"]),
