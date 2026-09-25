@@ -55,6 +55,10 @@ def build_workspace(run_dir: Path, pinned: Path, task: dict) -> Path:
     ws = run_dir / "workspace"
     subprocess.run(["git", "clone", "-q", str(pinned), str(ws)], check=True)
     subprocess.run(["git", "remote", "remove", "origin"], cwd=ws, check=True)
+    # This host's global core.fsmonitor daemon intermittently fails ("could not read IPC response"),
+    # which made tests/test_campaign.py flaky in B-r1 (an agent chased it to the deadline). Off locally.
+    subprocess.run(["git", "config", "core.fsmonitor", "false"], cwd=ws, check=True)
+    subprocess.run(["git", "config", "core.untrackedCache", "false"], cwd=ws, check=True)
     (ws / ".amplifier").mkdir(exist_ok=True)
     (ws / ".amplifier/settings.local.yaml").write_text("bundle:\n  app: []\n")
     with open(ws / ".git/info/exclude", "a") as f:
