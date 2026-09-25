@@ -8,6 +8,8 @@ Infrastructure failures are excluded from ratios and counted separately.
 from __future__ import annotations
 
 import argparse
+import ast
+import re
 import json
 import math
 import statistics
@@ -15,10 +17,36 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 
+def _rescore_escalation_gate(r):
+    """Same rule as the revised tasks._check_gate_fix, applied to the recorded
+    check detail of runs scored with the original (stricter) check."""
+    m = re.search(r"value=(\S+); changed=(\[.*\])", r.get("check_detail", ""))
+    if not m:
+        return r["passed"]
+    changed = ast.literal_eval(m.group(2))
+    ok = m.group(1) == "0.7" and all(
+        c == "src/amplifier_fast_decisions/contracts.py" or c.startswith("tests/") for c in changed)
+    return ok and r["exit_code"] == 0 and not r["timed_out"]
+
+
+def _rescore_rates_prefix(r):
+    """Revised tasks._check_rates_fix: regression tests allowed."""
+    d = r.get("check_detail", "")
+    ok = "lookup=True" in d and "test_savings.py: OK" in d
+    return ok and r["exit_code"] == 0 and not r["timed_out"]
+
+
+RESCORE = {"b_escalation_gate": _rescore_escalation_gate, "b_rates_prefix": _rescore_rates_prefix}
+
+
 def load(root: Path):
     rows = []
     for path in sorted(root.glob("r*/*/*/result.json")):
-        rows.append(json.loads(path.read_text()))
+        r = json.loads(path.read_text())
+        if r["task"] in RESCORE:
+            r["passed_original"] = r["passed"]
+            r["passed"] = RESCORE[r["task"]](r)
+        rows.append(r)
     return rows
 
 

@@ -233,6 +233,10 @@ def run_one(item, args, source: Path, pinned: Path):
     with LOCK:
         with open(Path(args.out) / "results.jsonl", "a") as f:
             f.write(json.dumps(result) + "\n")
+    # Evidence for rescoring: the agent's changes relative to the task start.
+    for fname, gitargs in (("diff.patch", ["diff", "HEAD"]), ("status.txt", ["status", "--porcelain"])):
+        proc = subprocess.run(["git", *gitargs], cwd=ws, capture_output=True, text=True)
+        (run_dir / fname).write_text(proc.stdout[-200000:])
     # Keep the run small on disk: the workspace is reproducible from pinned + setup.
     if not args.keep_workspaces:
         shutil.rmtree(ws, ignore_errors=True)

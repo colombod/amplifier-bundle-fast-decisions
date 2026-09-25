@@ -144,7 +144,10 @@ def _check_gate_fix(ws, final):
     r = _py(ws, "from amplifier_fast_decisions.contracts import Policy, effective_gate; "
                 "print(effective_gate(Policy(), 'escalation'))")
     changed = _since_setup(ws)
-    ok = r.stdout.strip() == "0.7" and changed <= {"src/amplifier_fast_decisions/contracts.py"}
+    # Revised after rep 1: adding a regression test under tests/ is allowed
+    # (the prompt does not forbid it; Opus did so in 3/3 runs).
+    ok = r.stdout.strip() == "0.7" and all(
+        c == "src/amplifier_fast_decisions/contracts.py" or c.startswith("tests/") for c in changed)
     return ok, f"value={r.stdout.strip() or r.stderr[-200:]}; changed={sorted(changed)}"
 
 
@@ -161,8 +164,9 @@ def _check_rates_fix(ws, final):
                 "_rates_for('claude-fable-5-20260101', R) == R['claude-fable-5'])")
     tests_ok, tests = _unittest(ws, "test_savings.py")
     changed = _since_setup(ws)
-    untouched_tests = not any(c.startswith("tests/") for c in changed)
-    return (r.stdout.strip() == "True" and tests_ok and untouched_tests,
+    # Revised after rep 1: the prompt does not forbid adding a regression
+    # test, and every agent did; only the lookup and the suite are checked.
+    return (r.stdout.strip() == "True" and tests_ok,
             f"lookup={r.stdout.strip() or r.stderr[-200:]}; {tests}; changed={sorted(changed)}")
 
 
