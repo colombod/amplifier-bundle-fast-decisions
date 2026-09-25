@@ -64,11 +64,12 @@ async def judge_rows(judge: str, rows: list[dict]) -> list[dict]:
         backend = JevBackend(model='jev-1.13.0', timeout_ms=10000)
     elif judge.startswith('hosted:'):
         # OpenAI-compatible host (e.g. vLLM behind LiteLLM on RunPod): URL from
-        # FAST_DECISIONS_HOSTED_URL, bearer token from FAST_DECISIONS_HOSTED_TOKEN.
+        # FAST_DECISIONS_HOSTED_URL, bearer token from FAST_DECISIONS_HOSTED_TOKEN (or the env var named by
+        # FAST_DECISIONS_HOSTED_TOKEN_ENV), e.g. to point the probe straight at a vLLM/RunPod origin.
         import os
         from amplifier_fast_decisions.local_backend import HostedBackend
         backend = HostedBackend(model=judge.split(':', 1)[1], url=os.environ.get('FAST_DECISIONS_HOSTED_URL'),
-                                timeout_ms=20000)
+                                timeout_ms=20000, token_env=os.environ.get('FAST_DECISIONS_HOSTED_TOKEN_ENV'))
     elif judge.startswith('ollama:'):
         from amplifier_fast_decisions.local_backend import OllamaBackend
         backend = OllamaBackend(model=judge.split(':', 1)[1], timeout_ms=20000)
@@ -105,6 +106,9 @@ def summarize(judge, scored):
     summary['s1_mean_p_complex'] = round(statistics.mean(s1), 3) if s1 else None
     ms = sorted(r['ms'] for r in ok)
     summary['latency_ms_p50'] = round(ms[len(ms) // 2], 1) if ms else None
+    summary['latency_ms_p90'] = round(ms[min(len(ms) - 1, int(len(ms) * 0.9))], 1) if ms else None
+    summary['latency_ms_max'] = round(ms[-1], 1) if ms else None
+    summary['decisions_over_5s'] = sum(m > 5000 for m in ms)
     return summary
 
 
