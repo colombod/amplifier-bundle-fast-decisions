@@ -803,7 +803,8 @@ docs/UPSTREAM_CONTRACT.md.
         step = self._step_classify(service, request) if service.policy.step_actions else None
         if step is not None and step["offer"]:
             candidate = await service.choose(request, self._tools, extra_candidates=step["candidates"],
-                                             force=True, workspace_paths=False)
+                                             force=True, workspace_paths=False,
+                                             state_instruction=step_actions.STEP_INSTRUCTION)
             await self._step_after_choose(service, step, candidate)
         else:
             candidate = await service.choose(request, self._tools)

@@ -74,7 +74,8 @@ class DecisionService:
         return bool(validator and await maybe_await(validator(candidate)))
 
     async def choose(self, request: Any, tools: dict[str, Any], *, extra_candidates: list[Any] | None = None,
-                     force: bool = False, workspace_paths: bool = True) -> Candidate | None:
+                     force: bool = False, workspace_paths: bool = True,
+                     state_instruction: str | None = None) -> Candidate | None:
         """The judged prepared-action decision. ``force`` (the orchestrator's
         per-step decision point, step_actions.py) asks even when the always-on
         ``read_shortcut`` is disabled, with ``extra_candidates`` built for this
@@ -214,7 +215,7 @@ class DecisionService:
         domain = classify_domain(candidates)
         common["domain"] = domain
         state_stats: dict[str, Any] = {}
-        state = build_state(request, self.policy.max_state_chars, state_stats)
+        state = build_state(request, self.policy.max_state_chars, state_stats, state_instruction)
         state_chars = len(canonical(state))
         await self.emit(
             "requested",

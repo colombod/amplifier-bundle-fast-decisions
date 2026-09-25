@@ -87,6 +87,17 @@ class StepClassificationTests(unittest.TestCase):
         self.assertEqual(view.prompt, "Which function picks the tier?")
         self.assertEqual(sa.classify(view)[0], sa.ROUTINE)
 
+    def test_judge_state_task_skips_injected_envelopes(self):
+        from amplifier_fast_decisions.state import build_state
+        envelope = "<system-reminders>\nInjected.\n<system-reminder>todo</system-reminder>\n</system-reminders>"
+        msgs = [user("Which function picks the tier?"), assistant(("grep", {"pattern": "x"})),
+                tool('{"results": []}'), user(envelope)]
+        state = build_state({"messages": msgs}, 4000, None, sa.STEP_INSTRUCTION)
+        texts = [o["text"] for o in state["observations"]]
+        self.assertIn("Which function picks the tier?", texts)
+        self.assertFalse(any("Injected" in t for t in texts))
+        self.assertEqual(state["instruction"], sa.STEP_INSTRUCTION)
+
     def test_kinds(self):
         base = [user("q")]
         self.assertEqual(self.kind(base + [assistant(("grep", {"pattern": "x"})), tool('{"results": []}')]), sa.ROUTINE)
