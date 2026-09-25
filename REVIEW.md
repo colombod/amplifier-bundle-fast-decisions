@@ -29,8 +29,23 @@ Working notes/evidence trail for every step below (including RED/GREEN command o
   per turn"; corroborated by mutant `b5` in `mutation-table.md`, already caught by an existing
   test, confirming once-per-turn is enforced elsewhere in the router).
 - **Fix applied**: none needed -- correct by construction.
+- **Closing test evidence (added in a follow-up pass)**: the analysis above was code-reading
+  only when first written. It is now backed by an actual regression test rather than resting
+  on inspection alone:
+  `tests/test_turn_planner.py::CacheKeyRealModelIdRegressionTests::test_ui_model_override_bypasses_planner_with_planner_enabled`
+  drives a `ui.model_override` session-state marker (the `--model`/in-session-pick
+  representation) through `RoutedProvider.complete()` with the turn planner **enabled**, and
+  asserts `start_tier == "strong"`, `turn.planner_decided` stays `False`, no `turn_planned`
+  event is emitted, and the routed `reason_code` is `start_strong` -- proving the planner
+  branch is truly bypassed, not just "should be" by reading the code. A companion test,
+  `test_mid_session_default_model_change_keys_cache_by_new_model_not_stale_one`, drives two
+  turns of the same session where `provider.default_model` changes between them with no
+  explicit per-request override, and asserts turn 2 is also forced strong
+  (`reason_code: "user_model_strong"`) and its cache entry is keyed by the *new* model, with
+  turn 1's own cache entry left untouched. Both passed immediately on first run -- no bug
+  found, Area 1's "correct by construction" conclusion stands, now proven rather than asserted.
 
-### 2. Per-model cache state keying / placeholder fallback (Area 2) -- reviewed, no defect found; coverage gap identified but left open
+### 2. Per-model cache state keying / placeholder fallback (Area 2) -- reviewed, no defect found; coverage gap identified and now closed
 - **Location**: `src/amplifier_fast_decisions/orchestrator.py`, post-response cache-update block
   (~lines 1314-1331):
   ```python
@@ -47,16 +62,27 @@ Working notes/evidence trail for every step below (including RED/GREEN command o
   intentional/harmless: the fallback only triggers when the response reports no `served_model`
   *and* no explicit `request.model` was set, in which case `provider.default_model` at that
   instant is, by definition, the model that served the request (not cached/stale).
-- **Coverage gap**: all existing test doubles (`PricedProvider`, `DemoProvider`) always set
-  `response.model` to the served model, so the `served in (None, "", "provider-default")` fallback
-  branch is never exercised by any existing test.
-- **Left unfixed**: no regression test added for this fallback branch. This is a genuine gap I
-  identified but did not close in this pass -- it is not a confirmed bug (the code path is correct
-  by construction), so it fell outside this review's required TDD workflow (which applies to
-  *confirmed* bugs), and time/turn budget was prioritized toward the confirmed bug in Area 3 and
-  the explicitly-requested coverage gap in Area 5. Recommend a follow-up test constructing a
-  provider response with no `model`/`metadata.model` field and asserting `planner_state` gets
-  keyed by `provider.default_model`.
+- **Coverage gap (as originally identified)**: all existing test doubles (`PricedProvider`,
+  `DemoProvider`) always set `response.model` to the served model, so the
+  `served in (None, "", "provider-default")` fallback branch was never exercised by any existing
+  test. This was flagged but explicitly left open in the original pass (time/turn budget was
+  prioritized toward the confirmed bug in Area 3 and the explicitly-requested coverage gap in
+  Area 5).
+- **Coverage gap: now closed (follow-up pass)**: added `NoServedModelPricedProvider` (a
+  `PricedProvider` subclass whose response always reports a blank `model` and carries no
+  `metadata`) plus
+  `tests/test_turn_planner.py::CacheKeyRealModelIdRegressionTests::test_no_served_model_in_response_falls_back_to_real_provider_default`.
+  The test drives a turn where the planner chooses the **host** (so `request.model` is never
+  reassigned away from the `"provider-default"` placeholder set at request-construction time),
+  with a response that reports no served model at all -- forcing `usage_fields()` to omit
+  `served_model` entirely, so `served` resolves to the literal `"provider-default"` string,
+  which must then hit the `getattr(self._provider, "default_model", None)` fallback. The test
+  asserts `planner_state` is keyed by the real model id (`OPUS`, matching
+  `provider.default_model` at call time) with correct `cached_tokens`/`last_used_at`, and that
+  `planner_state` contains neither the literal `"provider-default"` string nor `None`/`""` as a
+  key. **Result: passed immediately on first run** -- confirms the fallback branch is correct by
+  construction, now proven by test execution rather than code-reading alone. No bug found; no
+  source change was needed.
 
 ### 3. Context-length estimation & compaction (Area 3) -- CONFIRMED REAL BUG, FIXED
 - **Location**: `src/amplifier_fast_decisions/observer.py` (bug was in the `observe()` closure,
@@ -185,12 +211,23 @@ Working notes/evidence trail for every step below (including RED/GREEN command o
 - **Comparison**: failures (11=11), errors (47=47), skipped (40=40) all unchanged; +6 tests, all
   new and all passing. **Zero new failures or errors introduced.**
 
+### Follow-up pass (Area 1/2 coverage-gap closure)
+- Added `CacheKeyRealModelIdRegressionTests` (3 new tests) to `tests/test_turn_planner.py`,
+  closing the Area 2 coverage gap and turning Area 1's "correct by construction" conclusion into
+  an executed regression test.
+- `PYTHONPATH=src python3 -m unittest tests.test_turn_planner -v`: **63 tests, all OK** (zero
+  failures/errors) -- 100% clean.
+- `PYTHONPATH=src python3 -m unittest discover -s tests` (full suite, after this follow-up):
+  **1184 tests, FAILED (failures=11, errors=47, skipped=40)** -- identical failure/error/skipped
+  counts to the baseline above; +3 tests (the new ones), all passing. **Zero new failures or
+  errors introduced.**
+
 ## Summary Table
 
 | # | Area | Verdict | Severity | Disposition |
 |---|------|---------|----------|-------------|
 | 1 | Host model id resolution | No defect | n/a | Reviewed, no fix needed |
-| 2 | Cache keying placeholder fallback | No defect | low | Coverage gap left unfixed (see above) |
+| 2 | Cache keying placeholder fallback | No defect | low | Coverage gap closed (follow-up): `CacheKeyRealModelIdRegressionTests` |
 | 3 | Ctx estimation / compaction reset | **Confirmed bug** | **high** | Fixed: `observer.py:145,527` + `ContextCompactionResetTests` |
 | 4 | Candidate-vs-candidate tie-break | No defect | n/a (doc gap) | Coverage gap closed; TURN-PLANNER.md `## Behaviour` needs a sentence |
 | 5 | Planner-disabled byte-identical | No defect | n/a | Coverage gap closed: `PlannerDisabledFullByteIdenticalTests` |

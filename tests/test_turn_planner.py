@@ -691,6 +691,136 @@ class PlannerOrchestratorTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(provider.requests[0].messages[0]["content"], "sys")
 
 
+class NoServedModelPricedProvider(PricedProvider):
+    """PricedProvider variant whose response NEVER reports a served model
+    (blank `model`, no `metadata` attribute at all) -- exercises the
+    `served in (None, "", "provider-default")` fallback branch in the
+    post-response cache-update block (orchestrator.py, ~lines 1314-1322).
+    No existing test double behaved this way: PricedProvider/DemoProvider
+    always set response.model to the model that actually served the
+    request, so that fallback branch was previously untested. See
+    REVIEW.md Area 2 ("coverage gap identified but left open")."""
+
+    async def complete(self, request, **kwargs):
+        response = await super().complete(request, **kwargs)
+        response.model = ""
+        return response
+
+
+class CacheKeyRealModelIdRegressionTests(unittest.IsolatedAsyncioTestCase):
+    """Closes the coverage gap REVIEW.md Area 2 explicitly left open, and
+    turns Area 1's "correct by construction" claim into an actual
+    regression test rather than a code-reading conclusion. Together these
+    three tests prove: (1) the untested "provider-default" placeholder
+    fallback branch keys the cache by a REAL model id, never the literal
+    placeholder; (2) a `ui.model_override` ("--model" style) pick, with the
+    planner ENABLED, still bypasses the planner branch entirely; and (3) a
+    mid-session `provider.default_model` change is never served from a
+    stale cache key on the very next turn."""
+
+    async def test_no_served_model_in_response_falls_back_to_real_provider_default(self):
+        """Planner enabled, planner chooses the HOST (not a candidate) --
+        same setup as test_planner_chooses_host_applies_no_model_override --
+        so `model` is never reassigned away from the "provider-default"
+        placeholder set at request-construction time. The response reports
+        NO served model at all (empty `model`, no `metadata`). The
+        cache-update block must key planner_state by the actual
+        provider.default_model at call time, never by "provider-default"
+        (or None/empty)."""
+        policy = planner_policy()
+        _service, runtime, events = setup_service(policy=policy)
+        runtime.planner_state[OPUS] = {"last_used_at": time.time(), "cached_tokens": 80000}
+        runtime.planner_last_ctx = 90000
+        provider = NoServedModelPricedProvider(default_model=OPUS, usage_by_call=[{"input_tokens": 90000}])
+        facade = RoutedProvider(provider, runtime, {}, demo_response)
+        req = request([user()])
+
+        await facade.complete(req)
+
+        routed = [e["data"] for e in events if e["event"].endswith("model_routed")]
+        self.assertEqual(routed[0]["reason_code"], "planner_host")  # confirms the host path fired
+        self.assertNotIn("provider-default", runtime.planner_state)
+        self.assertNotIn(None, runtime.planner_state)
+        self.assertNotIn("", runtime.planner_state)
+        entry = runtime.planner_state[OPUS]
+        self.assertEqual(entry["cached_tokens"], 90000)
+        self.assertIsInstance(entry["last_used_at"], float)
+
+    async def test_ui_model_override_bypasses_planner_with_planner_enabled(self):
+        """A `ui.model_override` session-state marker (how amplifier-runtime
+        represents an in-session model pick / a `--model`-style CLI
+        override) must force strong_turn=True and bypass the planner
+        branch entirely, even with the turn planner ENABLED. The existing
+        test_ui_model_pick_is_respected (test_orchestrator_primary.py)
+        proves this for the difficulty router alone but never turns the
+        planner on, so it does not prove the planner is actually
+        bypassed -- this test does."""
+        policy = planner_policy()
+        service, runtime, events = setup_service(policy=policy)
+        service.coordinator.session_state = {
+            "ui.model_override": {"provider": "anthropic", "model": OPUS}
+        }
+        provider = PricedProvider(default_model=SONNET, usage_by_call=[{"input_tokens": 60000}])
+        facade = RoutedProvider(provider, runtime, {}, demo_response)
+        req = request([user()])
+
+        await facade.complete(req)
+
+        self.assertEqual(service.turn.start_tier, "strong")
+        self.assertFalse(service.turn.planner_decided)          # planner branch never ran
+        self.assertFalse(any(e["event"].endswith("turn_planned") for e in events))
+        judged = [e["data"] for e in events if e["event"].endswith("difficulty_judged")]
+        self.assertEqual(judged[0]["reason_code"], "user_model_strong")
+        self.assertEqual(judged[0]["model"], OPUS)
+        routed = [e["data"] for e in events if e["event"].endswith("model_routed")]
+        self.assertEqual(routed[0]["reason_code"], "start_strong")
+        self.assertIsNone(getattr(req, "model", None))          # untouched: the override IS the served model
+        # The cache-update block (planner enabled) still runs on every slow
+        # call regardless of routing branch -- keyed by the real served
+        # model (the provider's own default), never the placeholder.
+        self.assertIn(SONNET, runtime.planner_state)
+        self.assertNotIn("provider-default", runtime.planner_state)
+
+    async def test_mid_session_default_model_change_keys_cache_by_new_model_not_stale_one(self):
+        """Two turns of the SAME session, planner ENABLED throughout. Turn 1
+        runs the planner normally (fresh session, Opus host, balanced picks
+        Sonnet). Mid-session -- without any explicit per-request override --
+        `provider.default_model` changes to a brand-new model. Turn 2 must
+        (a) force strong_turn via user_model_strong (Area 1), bypassing the
+        planner branch, and (b) have its post-response cache-update entry
+        keyed by the NEW default_model, never by turn 1's host/choice --
+        proving planner cache state is never stale across a mid-session
+        model change."""
+        policy = planner_policy()
+        service, runtime, events = setup_service(policy=policy)
+        provider = PricedProvider(
+            default_model=OPUS,
+            usage_by_call=[{"input_tokens": 60000}, {"input_tokens": 40000}],
+        )
+        facade = RoutedProvider(provider, runtime, {}, demo_response)
+
+        first = request([user()])
+        await facade.complete(first)
+        self.assertEqual(first.model, SONNET)          # fresh/cold: balanced picks Sonnet over Opus
+        self.assertIn(SONNET, runtime.planner_state)
+
+        provider.default_model = FABLE                 # user switched models mid-session
+        service.turn = TurnState("t2")
+        second = request([user()])
+        await facade.complete(second)
+
+        self.assertIsNone(getattr(second, "model", None))   # host-pinned to the NEW model, untouched
+        judged = [e["data"] for e in events if e["event"].endswith("difficulty_judged")]
+        self.assertEqual([j["reason_code"] for j in judged], ["user_model_strong"])
+        self.assertFalse(service.turn.planner_decided)      # planner never ran for turn 2
+        routed = [e["data"] for e in events if e["event"].endswith("model_routed")]
+        self.assertEqual(routed[-1]["reason_code"], "start_strong")
+        self.assertIn(FABLE, runtime.planner_state)
+        self.assertEqual(runtime.planner_state[FABLE]["cached_tokens"], 40000)
+        # Turn 1's own cache entry (Sonnet) must be untouched by turn 2.
+        self.assertEqual(runtime.planner_state[SONNET]["cached_tokens"], 60000)
+
+
 class PlannerMultiTurnHandComputedTests(unittest.IsolatedAsyncioTestCase):
     async def test_opus_host_four_turn_sequence(self):
         """Hand-computed sequence on an Opus host, balanced objective,
