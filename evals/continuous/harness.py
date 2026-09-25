@@ -231,7 +231,8 @@ def run_item_retry(out: Path, item: dict, cfg: dict, args) -> dict | None:
 
 def spent(out: Path) -> float:
     total = 0.0
-    for p in out.glob("runs/r*/*/*/result.json"):
+    # Discarded runs (archived under <out>/discarded/) still cost money.
+    for p in [*out.glob("runs/r*/*/*/result.json"), *out.glob("discarded/**/result.json")]:
         try:
             total += json.loads(p.read_text()).get("cost_usd") or 0
         except ValueError:
@@ -266,7 +267,13 @@ def main():
         if (out / "STOP").exists():
             log(out, "STOP file present; ending")
             break
-        configs = discover(out)
+        prior = out / "runs" / f"r{rnd}" / "schedule.json"
+        if prior.exists():
+            # A round's configs (source shas, overrides) are fixed when it is first
+            # scheduled; resuming a round reruns only its missing runs with them.
+            configs = json.loads(prior.read_text())["configs"]
+        else:
+            configs = discover(out)
         if args.configs:
             keep = {c.strip() for c in args.configs.split(",")}
             configs = {k: v for k, v in configs.items() if k in keep}
