@@ -61,6 +61,7 @@ EVENT_NAMES = tuple(
         # Turn-start difficulty router (model_routing.start_policy): which
         # tier the turn starts on, who decided, with what probability.
         "difficulty_judged",
+        "judge_usage",
         # Efficiency receipts (docs/GOAL.md): one per optimization decision,
         # with the baseline and the savings fixed at decision time.
         "efficiency",

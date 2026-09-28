@@ -773,6 +773,21 @@ def _judge_state(
     return {**state, "task_prompt_head": ""}
 
 
+async def _judge_usage(service: Any, questions: tuple[Question, ...], start: float,
+                       result: Any = None, status: str = "ok") -> None:
+    """Record billed-work evidence without retaining the judged state."""
+    await service.emit("judge_usage", {
+        "backend": service.backend.name,
+        "model": getattr(result, "model", None),
+        "input_tokens": getattr(result, "input_tokens", None),
+        "output_tokens": getattr(result, "output_tokens", None),
+        "synthetic": getattr(result, "synthetic", False),
+        "duration_ms": (time.perf_counter() - start) * 1000,
+        "status": status,
+        "question_ids": [q.name for q in questions],
+    })
+
+
 async def _ask_judge_choice(
     service: Any,
     *,
@@ -801,10 +816,13 @@ async def _ask_judge_choice(
         async with asyncio.timeout_at(deadline):
             result = await service.backend.ask(decision_request)
     except asyncio.CancelledError:
+        await _judge_usage(service, (question,), start, status="cancelled")
         raise
     except Exception:
+        await _judge_usage(service, (question,), start, status="error")
         return None, None, (time.perf_counter() - start) * 1000
     duration_ms = (time.perf_counter() - start) * 1000
+    await _judge_usage(service, (question,), start, result)
     answer = result.answers.get(question_name)
     if answer is None or not answer.probabilities:
         return None, None, duration_ms
@@ -880,14 +898,18 @@ async def _ask_judges_many(
     if service.backend.external and not service.policy.allow_external_state:
         return {q.name: (None, None) for q in questions}
     decision_request = DecisionRequest(state=state, candidates=(), questions=tuple(questions))
+    start = time.perf_counter()
     deadline = asyncio.get_running_loop().time() + service.policy.timeout_ms / 1000
     try:
         async with asyncio.timeout_at(deadline):
             result = await backend_ask_many(service.backend, decision_request)
     except asyncio.CancelledError:
+        await _judge_usage(service, tuple(questions), start, status="cancelled")
         raise
     except Exception:
+        await _judge_usage(service, tuple(questions), start, status="error")
         return None
+    await _judge_usage(service, tuple(questions), start, result)
     answers: dict[str, tuple[str | None, float | None]] = {}
     for question in questions:
         answer = result.answers.get(question.name)

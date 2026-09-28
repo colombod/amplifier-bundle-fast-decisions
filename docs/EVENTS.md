@@ -265,3 +265,12 @@ An explicit host-set `request.model` is always respected
 is `true`. `model_routed` is the only new event surface; it never changes
 tool approvals, never touches `stream()`, and never overrides an
 already-applied HC03 `effort_routed` result on the same request.
+
+### Judge usage accounting
+
+`judge_usage` records each sequential Choice judge or batched phase/escalation
+backend attempt: question IDs, backend, returned model/token usage, duration,
+synthetic flag, and status. It contains no state or question text. Policy-blocked
+calls emit no usage event. Errors/cancellations retain unknown usage as null,
+not zero. These receipts supplement generative-provider and cache-refresh usage;
+they are cost evidence, not billed-dollar records.

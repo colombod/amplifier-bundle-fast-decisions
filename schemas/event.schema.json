@@ -58,7 +58,8 @@
         "fast_decisions:easy_turn_shaped",
         "fast_decisions:turn_planned",
         "fast_decisions:step_decided",
-        "fast_decisions:waste_guard"
+        "fast_decisions:waste_guard",
+        "fast_decisions:judge_usage"
       ]
     },
     "session_id": {
