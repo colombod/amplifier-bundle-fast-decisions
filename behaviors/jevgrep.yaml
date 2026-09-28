@@ -1,0 +1,21 @@
+bundle:
+  name: fast-decisions-jevgrep
+  version: 0.1.0
+  description: Optional natural-language code retrieval through the normal host tool path.
+
+tools:
+  - module: tool-jevgrep
+    source: git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=modules/tool-jevgrep
+    config:
+      root: .
+      executable: jg
+      # Separate opt-in: this sends source, not just a short task description.
+      allow_external_state: false
+      timeout_ms: 60000
+      max_source_bytes: 32768
+      max_output_bytes: 65536
+      concurrency: 4
+
+context:
+  include:
+    - fast-decisions:context/jevgrep.md

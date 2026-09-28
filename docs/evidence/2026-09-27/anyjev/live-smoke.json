@@ -1,0 +1,145 @@
+{
+  "kind": "live local classifier smoke; no completed agent tasks, calibration or quality claim",
+  "upstream_commit": "45add301a7aa60ed3420c83d15c061e84e5bce61",
+  "model_snapshot": "ea980cb0a6c2ae4b936e82123acc929f1cec04c1",
+  "model_config_hash": "4e13aeca0911e405bd3b83c780f4fe16d781e94c200f465a1757dd7520d576cb",
+  "device": "mps",
+  "dtype": "float32",
+  "level": "L0",
+  "prior": "none",
+  "python": "3.13.12",
+  "versions": {
+    "anyjev": "0.1.0",
+    "torch": "2.14.0",
+    "transformers": "5.17.0",
+    "numpy": "2.5.3"
+  },
+  "timing": "client wall time; model load excluded; first request includes cold inference",
+  "cases": {
+    "typo": "Fix the spelling of teh to the in README.md.",
+    "edge": "Fix clamp(value, low, high) so values below low return low; keep the existing API.",
+    "distributed": "Diagnose intermittent cross-region duplicate payments across the scheduler, queue, database, and payment service. Identify the race, preserve backwards compatibility, migrate existing records, and add integration tests."
+  },
+  "rows": [
+    {
+      "case": "typo",
+      "repeat": 1,
+      "reverse": false,
+      "probabilities": {
+        "simple": 0.6007345753505573,
+        "complex": 0.39926542464944276
+      },
+      "ms": 1090.22
+    },
+    {
+      "case": "typo",
+      "repeat": 1,
+      "reverse": true,
+      "probabilities": {
+        "complex": 0.39926542464944276,
+        "simple": 0.6007345753505573
+      },
+      "ms": 121.03
+    },
+    {
+      "case": "edge",
+      "repeat": 1,
+      "reverse": false,
+      "probabilities": {
+        "simple": 0.5759583926545987,
+        "complex": 0.4240416073454013
+      },
+      "ms": 195.6
+    },
+    {
+      "case": "edge",
+      "repeat": 1,
+      "reverse": true,
+      "probabilities": {
+        "complex": 0.4240416073454013,
+        "simple": 0.5759583926545987
+      },
+      "ms": 120.48
+    },
+    {
+      "case": "distributed",
+      "repeat": 1,
+      "reverse": false,
+      "probabilities": {
+        "simple": 0.4549479210152111,
+        "complex": 0.545052078984789
+      },
+      "ms": 179.38
+    },
+    {
+      "case": "distributed",
+      "repeat": 1,
+      "reverse": true,
+      "probabilities": {
+        "complex": 0.545052078984789,
+        "simple": 0.4549479210152111
+      },
+      "ms": 132.04
+    },
+    {
+      "case": "typo",
+      "repeat": 2,
+      "reverse": false,
+      "probabilities": {
+        "simple": 0.6007345753505573,
+        "complex": 0.39926542464944276
+      },
+      "ms": 122.49
+    },
+    {
+      "case": "typo",
+      "repeat": 2,
+      "reverse": true,
+      "probabilities": {
+        "complex": 0.39926542464944276,
+        "simple": 0.6007345753505573
+      },
+      "ms": 121.59
+    },
+    {
+      "case": "edge",
+      "repeat": 2,
+      "reverse": false,
+      "probabilities": {
+        "simple": 0.5759583926545987,
+        "complex": 0.4240416073454013
+      },
+      "ms": 118.48
+    },
+    {
+      "case": "edge",
+      "repeat": 2,
+      "reverse": true,
+      "probabilities": {
+        "complex": 0.4240416073454013,
+        "simple": 0.5759583926545987
+      },
+      "ms": 121.11
+    },
+    {
+      "case": "distributed",
+      "repeat": 2,
+      "reverse": false,
+      "probabilities": {
+        "simple": 0.4549479210152111,
+        "complex": 0.545052078984789
+      },
+      "ms": 133.89
+    },
+    {
+      "case": "distributed",
+      "repeat": 2,
+      "reverse": true,
+      "probabilities": {
+        "complex": 0.545052078984789,
+        "simple": 0.4549479210152111
+      },
+      "ms": 133.06
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "upstream_review_commit": "24adac80dd57b673eafd8e8c477e4800b39c6c01",
+  "npm_package": "@dzhng/jevgrep@0.4.0",
+  "npm_integrity": "sha512-i+veX7/V57RpmAmJeuji+zgagzBW0Py1usJGDmEuv/ruVMZbF9rzA/O7zvuyhyPQJoQwSF/Y6/ah1TtCgGirXg==",
+  "node": "22.22.0",
+  "host_python": "3.12.11",
+  "amplifier_core": "2.0.1",
+  "wrapper_tests": {
+    "run": 13,
+    "passed": 13,
+    "skipped": 0
+  },
+  "upstream_installed_fixture_tests": {
+    "run": 5,
+    "passed": 5,
+    "failed": 0,
+    "provider": "synthetic loopback"
+  },
+  "authenticated_live_retrieval": false,
+  "installed_app_changed": false,
+  "source_sharing_enabled": false,
+  "combined_regression": {
+    "run": 1175,
+    "skipped": 49,
+    "failures": 0,
+    "seconds": 96.394
+  }
+}

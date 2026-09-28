@@ -26,6 +26,7 @@ dependencies = []
 [project.optional-dependencies]
 jev = ["typesafe-sdk"]
 local = ["httpx>=0.27,<1"]
+anyjev = ["anyjev[hf] @ git+https://github.com/nokia-applied-research/AnyJev@45add301a7aa60ed3420c83d15c061e84e5bce61"]
 amplifier = [
   "amplifier-core @ git+https://github.com/microsoft/amplifier-core@6d4cd217f83bb29b671b5c9d854aaa08be14db1b",
   "amplifier-module-loop-streaming @ git+https://github.com/microsoft/amplifier-module-loop-streaming@4cc86dd4eae36b40af38b4e2e70b9045649d2903",

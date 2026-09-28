@@ -46,12 +46,12 @@ class BuildTests(unittest.TestCase):
         """Each module is a thin shim importing amplifier_fast_decisions; it must declare
         that package as a dependency, or a fresh install (e.g. after `amplifier update`
         rebuilds the tool environment) fails with 'No module named amplifier_fast_decisions'."""
-        for name in ('loop-fast-decisions', 'hooks-fast-decisions', 'tool-fast-workspace'):
+        for name in ('loop-fast-decisions', 'hooks-fast-decisions', 'tool-fast-workspace', 'tool-jevgrep'):
             deps = tomllib.loads((ROOT/f'modules/{name}/pyproject.toml').read_text())['project']['dependencies']
             self.assertTrue(any(d.startswith('amplifier-fast-decisions @ ') for d in deps), name)
 
     def test_module_entrypoints(self):
-        for name in ('loop-fast-decisions','hooks-fast-decisions','tool-fast-workspace'):
+        for name in ('loop-fast-decisions','hooks-fast-decisions','tool-fast-workspace','tool-jevgrep'):
             data=tomllib.loads((ROOT/'modules'/name/'pyproject.toml').read_text())
             self.assertIn(name,data['project']['entry-points']['amplifier.modules'])
     def test_root_package_assets(self):

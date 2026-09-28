@@ -22,6 +22,23 @@ Scrubbing masks common key, bearer, secret-assignment and private-key patterns. 
 
 ## Actions and authority
 
+**Optional Jevgrep retrieval:** `behaviors/jevgrep.yaml` is separately opt-in
+and starts with `tool-jevgrep.allow_external_state: false`. Enabling it permits
+eligible source under its configured root to go to the provider saved by
+`jg auth`. The router's external-state setting does not enable source retrieval.
+The wrapper disables retrieval caching, retains default source exclusions,
+bounds output and stops child processes on timeout/cancellation. Retrieved source
+is a normal host tool result and may appear in host transcripts. Returned-source
+limits do not cap upload bytes or provider charges. See [Jevgrep](JEVGREP.md).
+
+**Optional AnyJev judge:** `backend: anyjev` sends bounded, scrubbed state and
+typed questions only to its literal loopback server. That server loads an
+already-downloaded local model snapshot with remote code disabled. It logs no
+requests or inference exception text and exposes no fitting or file-writing
+HTTP endpoints. Its offline fitter exports model artifacts without raw states;
+protect the fitting input separately. There is no online observation collection
+or head adaptation. See [AnyJev setup](ANYJEV.md).
+
 The bundled workspace tool supports read/list only, resolves paths under an explicit root, rejects symlink components, traversal, absolute paths, hidden/sensitive filenames, binary data and unsupported file types, bounds output and rechecks revisions. It is a convenience guard, not an OS-level sandbox against an adversary racing filesystem changes. Use a disposable checkout or container with appropriate file permissions.
 
 Other tools require explicit allowlisting and a trusted validator. Those controls restrict routing eligibility, but native permission hooks are still required for actions that need them. Do not base mandatory authorization on an optional observer hook or a model confidence score. Do not treat the read-only default as authorization to enable writes globally.
