@@ -1,8 +1,10 @@
 """One decision service per session; no global provider mutations."""
 from __future__ import annotations
 import asyncio
+import json
 import logging
 import os
+import re
 import threading
 from pathlib import Path
 from typing import Any
@@ -15,6 +17,84 @@ from .shadow import ShadowJob, ShadowOutcome, ShadowWorker
 from .telemetry import Emitter, JsonlRecorder
 
 _logger = logging.getLogger(__name__)
+
+_PLANNER_STATE_ID_RE = re.compile(r"[^a-zA-Z0-9_-]")
+
+
+def _planner_state_path(events_dir: str, session_id: str) -> Path:
+    safe_id = _PLANNER_STATE_ID_RE.sub("_", session_id)[:200] or "unknown"
+    return Path(events_dir).expanduser() / "planner-state" / f"{safe_id}.json"
+
+
+def load_planner_state(
+    events_dir: str | None, session_id: str | None
+) -> tuple[dict[str, dict[str, Any]], int | None]:
+    """Best-effort load of the turn planner's persisted per-session cache
+    state (Runtime.planner_state / planner_last_ctx), written by
+    ``save_planner_state`` after every real provider response while the
+    planner is enabled. Each turn is a fresh process under
+    ``amplifier run --resume``/``amplifier continue``, so without this the
+    in-memory ``Runtime`` starts empty every turn and every model looks
+    cold forever -- see docs/proposals/TURN-PLANNER.md.
+
+    Never raises: a missing ``events_dir``/``session_id``, a missing file,
+    a corrupt/malformed file, or any I/O error all fall back to an empty
+    state (today's fresh-process behavior) -- a persistence failure must
+    never fail the turn that triggered it.
+    """
+    if not events_dir or not session_id:
+        return {}, None
+    try:
+        raw = _planner_state_path(events_dir, session_id).read_text(encoding="utf-8")
+        data = json.loads(raw)
+    except (OSError, ValueError):
+        return {}, None
+    models = data.get("models") if isinstance(data, dict) else None
+    state: dict[str, dict[str, Any]] = {}
+    if isinstance(models, dict):
+        for model, entry in models.items():
+            if not isinstance(model, str) or not isinstance(entry, dict):
+                continue
+            last_used_at = entry.get("last_used_at")
+            cached_tokens = entry.get("cached_tokens")
+            if (
+                isinstance(last_used_at, (int, float))
+                and not isinstance(last_used_at, bool)
+                and isinstance(cached_tokens, int)
+                and not isinstance(cached_tokens, bool)
+            ):
+                state[model] = {
+                    "last_used_at": float(last_used_at),
+                    "cached_tokens": cached_tokens,
+                }
+    last_ctx = data.get("last_ctx") if isinstance(data, dict) else None
+    if isinstance(last_ctx, bool) or not isinstance(last_ctx, int):
+        last_ctx = None
+    return state, last_ctx
+
+
+def save_planner_state(
+    events_dir: str | None,
+    session_id: str | None,
+    state: dict[str, dict[str, Any]],
+    last_ctx: int | None,
+) -> None:
+    """Best-effort ATOMIC write (tmp file + ``os.replace``) of the turn
+    planner's cache state. Never raises -- an I/O error here must never
+    fail the turn that triggered it; the next process simply falls back
+    to loading whatever was last written successfully (or nothing).
+    """
+    if not events_dir or not session_id:
+        return
+    try:
+        path = _planner_state_path(events_dir, session_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = json.dumps({"models": state, "last_ctx": last_ctx})
+        tmp = path.with_name(f"{path.name}.tmp-{os.getpid()}")
+        tmp.write_text(payload, encoding="utf-8")
+        os.replace(tmp, path)
+    except OSError:
+        pass
 
 
 def _schedule_backend_warmup(backend: Any) -> None:
@@ -77,7 +157,9 @@ def session_identity(coordinator: Any) -> tuple[str, str | None]:
 
 class Runtime:
     def __init__(self, service: DecisionService, recorder: JsonlRecorder | None = None, *,
-                 shadow_capacity: int = 64, shadow_drain_ms: int = 2000):
+                 shadow_capacity: int = 64, shadow_drain_ms: int = 2000,
+                 events_dir: str | None = None, session_id: str | None = None,
+                 parent_session_id: str | None = None):
         self.service = service
         self.recorder = recorder
         self.lock = asyncio.Lock()
@@ -93,6 +175,63 @@ class Runtime:
         # Set by the first module that installs the auto-observatory
         # session:start handler, so orchestrator + hook never both launch it.
         self.observatory_installed = False
+        # Turn planner (model_routing.planner, opt-in): per-session,
+        # per-model cache state -- {model: {"last_used_at": float,
+        # "cached_tokens": int}} -- fed from every real provider
+        # response's usage while the planner is configured (see
+        # orchestrator.RoutedProvider.complete); read (never written) by
+        # planner.plan_turn(). planner_last_ctx is the most recently
+        # reported total prompt size (any model), the turn planner's
+        # ctx estimate for the NEXT request when available. Both stay
+        # empty/None -- and unread -- unless model_routing.planner is
+        # enabled. See planner.py and docs/proposals/TURN-PLANNER.md.
+        self.planner_state: dict[str, dict[str, Any]] = {}
+        self.planner_last_ctx: int | None = None
+        # events_dir/session_id identify where/under what key persisted
+        # planner state lives on disk (<events_dir>/planner-state/<session_id>.json)
+        # -- None (the default, e.g. demo.py/tests) means persistence is
+        # inert: ensure_planner_state_loaded/persist_planner_state become
+        # no-ops and the planner behaves exactly as an in-memory-only
+        # session. _planner_state_loaded guards a single lazy load attempt
+        # per process, made only the first time the planner actually runs
+        # this turn (orchestrator.RoutedProvider.complete), not at mount.
+        # parent_session_id (None for a root session) is the same signal
+        # session_identity() reads -- exposed here for the lookahead's
+        # session-kind detection (orchestrator._session_kind).
+        self.events_dir = events_dir
+        self.session_id = session_id
+        self.parent_session_id = parent_session_id
+        self._planner_state_loaded = False
+
+    def ensure_planner_state_loaded(self) -> None:
+        """Lazily load persisted turn-planner cache state ONCE per process,
+        the first time the planner actually runs. Each turn is a fresh
+        process under ``amplifier run --resume``/``amplifier continue``;
+        without this, ``planner_state``/``planner_last_ctx`` would start
+        empty every turn and every model would look cold forever. A no-op
+        if events_dir/session_id are unset, if already attempted this
+        process, or if in-memory state is already populated (e.g. a caller
+        -- a test -- seeded it directly before the planner ran)."""
+        if self._planner_state_loaded:
+            return
+        self._planner_state_loaded = True
+        if self.planner_state or self.planner_last_ctx is not None:
+            return
+        state, last_ctx = load_planner_state(self.events_dir, self.session_id)
+        if state:
+            self.planner_state = state
+        if last_ctx is not None:
+            self.planner_last_ctx = last_ctx
+
+    def persist_planner_state(self) -> None:
+        """Best-effort save of the current in-memory turn-planner cache
+        state, called after every response that updated it. A no-op if
+        events_dir/session_id are unset (matching every other HC0x seam:
+        inert unless the planner is actually configured with session
+        context available)."""
+        save_planner_state(
+            self.events_dir, self.session_id, self.planner_state, self.planner_last_ctx
+        )
 
     def start_shadow_worker(self) -> None:
         """Idempotent. The runtime's creator owns this task (mirrors runtime
@@ -282,7 +421,9 @@ def get_runtime(coordinator: Any, config: dict[str, Any], *, owner: bool = False
     _schedule_backend_warmup(backend)
     service = DecisionService(policy, backend, emitter, coordinator, config.get("candidates"))
     runtime = Runtime(service, recorder, shadow_capacity=config.get("shadow_capacity", 64),
-                       shadow_drain_ms=config.get("shadow_drain_ms", 2000))
+                       shadow_drain_ms=config.get("shadow_drain_ms", 2000),
+                       events_dir=events_dir, session_id=session_id,
+                       parent_session_id=parent)
     # The runtime's creator (whichever module calls get_runtime first this
     # session) owns the shadow worker's lifecycle: it starts the task here
     # and drains/cancels it in Runtime.close, which the same module's

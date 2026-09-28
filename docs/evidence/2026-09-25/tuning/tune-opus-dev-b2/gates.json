@@ -1,0 +1,50 @@
+{
+  "plain-sonnet": {
+    "passed": true,
+    "flags": []
+  },
+  "plain-opus": {
+    "passed": true,
+    "flags": []
+  },
+  "orch-default-opus": {
+    "passed": true,
+    "flags": [],
+    "latency_within_budget_by_rep": [
+      true
+    ],
+    "latency_within_budget": true
+  },
+  "orch-haiku-opus": {
+    "passed": true,
+    "flags": [],
+    "latency_within_budget_by_rep": [
+      true
+    ],
+    "latency_within_budget": true
+  },
+  "orch-haiku-low-opus": {
+    "passed": true,
+    "flags": [],
+    "latency_within_budget_by_rep": [
+      true
+    ],
+    "latency_within_budget": true
+  },
+  "orch-opuslow-opus": {
+    "passed": true,
+    "flags": [],
+    "latency_within_budget_by_rep": [
+      true
+    ],
+    "latency_within_budget": true
+  },
+  "orch-sonnetlow-opus": {
+    "passed": true,
+    "flags": [],
+    "latency_within_budget_by_rep": [
+      true
+    ],
+    "latency_within_budget": true
+  }
+}

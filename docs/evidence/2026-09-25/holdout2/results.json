@@ -1,0 +1,171 @@
+{
+  "schema": "fast-decisions-evals/results/v1",
+  "suite": "s1",
+  "split": "holdout2",
+  "reps": 3,
+  "cells": [
+    {
+      "cell": "orch-default",
+      "anchor": "plain",
+      "reps": 3,
+      "split": "holdout2",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 0.5182480489917871,
+        "ci95_low": 0.4225076291337462,
+        "ci95_high": 0.6508431830351685,
+        "sign_test_p": 0.00634765625
+      },
+      "cost_ratio": 0.49076400957477434,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "confirmed",
+      "vs_plain": {
+        "anchor": "plain-sonnet",
+        "exec_time_ratio": {
+          "geomean": 1.0438421789599508,
+          "ci95_low": 0.8378565241979322,
+          "ci95_high": 1.3552042756848293,
+          "sign_test_p": 0.3876953125
+        },
+        "cost_ratio": 1.336285365556869,
+        "quality": {
+          "candidate_successes": 12,
+          "anchor_successes": 12,
+          "non_inferior": true
+        }
+      }
+    },
+    {
+      "cell": "orch-default-opus",
+      "anchor": "plain-opus",
+      "reps": 3,
+      "split": "holdout2",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 0.8005701190745528,
+        "ci95_low": 0.6737096704977935,
+        "ci95_high": 0.9221620549883559,
+        "sign_test_p": 0.03857421875
+      },
+      "cost_ratio": 0.9696952705109015,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "confirmed",
+      "vs_plain": {
+        "anchor": "plain-sonnet",
+        "exec_time_ratio": {
+          "geomean": 0.8685302946735708,
+          "ci95_low": 0.7376341579673665,
+          "ci95_high": 1.030825707487302,
+          "sign_test_p": 0.14599609375
+        },
+        "cost_ratio": 0.9906025177165269,
+        "quality": {
+          "candidate_successes": 12,
+          "anchor_successes": 12,
+          "non_inferior": true
+        }
+      }
+    },
+    {
+      "cell": "orch-haiku-shaped-opus",
+      "anchor": "plain-opus",
+      "reps": 3,
+      "split": "holdout2",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 1.1553392765854977,
+        "ci95_low": 0.9244464784667946,
+        "ci95_high": 1.5179019948350372,
+        "sign_test_p": 0.3876953125
+      },
+      "cost_ratio": 0.4522605639877184,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 11,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "critical_failures": [
+        {
+          "task": "repair_roman_to_int",
+          "rep": 1,
+          "labels": [
+            "candidate_failed_where_anchor_passed"
+          ]
+        },
+        {
+          "task": "repair_roman_to_int",
+          "rep": 2,
+          "labels": [
+            "candidate_failed_where_anchor_passed"
+          ]
+        }
+      ],
+      "verdict": "disqualified (critical failure)"
+    },
+    {
+      "cell": "orch-haiku-shaped-fable",
+      "anchor": "plain",
+      "reps": 3,
+      "split": "holdout2",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 0.6637231967075848,
+        "ci95_low": 0.5335545563774541,
+        "ci95_high": 0.8271645644987239,
+        "sign_test_p": 0.03857421875
+      },
+      "cost_ratio": 0.29568256014122796,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 11,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "critical_failures": [
+        {
+          "task": "repair_roman_to_int",
+          "rep": 1,
+          "labels": [
+            "candidate_failed_where_anchor_passed"
+          ]
+        },
+        {
+          "task": "repair_roman_to_int",
+          "rep": 3,
+          "labels": [
+            "candidate_failed_where_anchor_passed"
+          ]
+        }
+      ],
+      "verdict": "disqualified (critical failure)"
+    }
+  ],
+  "q3": null,
+  "evidence_limits": [
+    "bootstrap_ci: 2000 resamples, seed=20260919",
+    "confirmed requires >= 3 reps, >= 8 paired passing tasks, and split=holdout",
+    "external_harness_exec_time_may_still_include_its_own_startup",
+    "models_not_necessarily_matched_across_campaigns_or_harnesses",
+    "models_not_necessarily_matched_across_harnesses",
+    "n_tasks=12",
+    "non_contemporaneous_runs_across_campaigns",
+    "single_repetition_per_task_per_harness"
+  ]
+}

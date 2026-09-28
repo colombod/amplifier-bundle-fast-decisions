@@ -1,0 +1,76 @@
+{
+  "per_harness": {
+    "amplifier-plain": {
+      "n": 3,
+      "success_rate": 1.0,
+      "deadline_failures": 0,
+      "mean_penalized_ms": 52821.787000000004,
+      "median_penalized_ms": 52073.621,
+      "mean_exec_ms": 52821.787000000004,
+      "median_exec_ms": 52073.621,
+      "mean_wall_ms": 102751.38887531163,
+      "median_wall_ms": 103462.38166597323,
+      "mean_cost_known_usd": 0.6145011333333333,
+      "unknown_cost_count": 0,
+      "cost_per_success_usd": 0.6145011333333333,
+      "tokens": {
+        "input_tokens": 3731095.0,
+        "output_tokens": 10620.0,
+        "cost_usd": 1.8435034
+      }
+    }
+  },
+  "per_task": {
+    "scn_dev_1": {
+      "task": "scn_dev_1",
+      "amplifier-plain": {
+        "penalized_ms": 63642.04,
+        "outcome_passed": true,
+        "cost_usd": 0.6666742
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "scn_dev_2": {
+      "task": "scn_dev_2",
+      "amplifier-plain": {
+        "penalized_ms": 52073.621,
+        "outcome_passed": true,
+        "cost_usd": 0.61590715
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "scn_dev_3": {
+      "task": "scn_dev_3",
+      "amplifier-plain": {
+        "penalized_ms": 42749.7,
+        "outcome_passed": true,
+        "cost_usd": 0.56092205
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    }
+  },
+  "per_family": {
+    "scenario": {
+      "amplifier-plain": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          63642.04,
+          52073.621,
+          42749.7
+        ]
+      }
+    }
+  },
+  "amplifier_fd_vs_plain": null,
+  "cross": null,
+  "dev": {},
+  "holdout": {},
+  "mechanism": null,
+  "amplifier_fd_series_label": null,
+  "evidence_limits": [
+    "n_tasks=3",
+    "single_repetition_per_task_per_harness",
+    "models_not_necessarily_matched_across_harnesses"
+  ]
+}

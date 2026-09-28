@@ -640,5 +640,136 @@ class RoutingReceiptTests(_DifficultyHarness):
             Policy(model_routing={"start_model": "m", "cheap_max_workspace_files": 0})
 
 
+class _RequestCapturingProvider(DemoProvider):
+    """Records the exact request OBJECT each complete() call actually
+    received -- identity matters here (has it been copied/shaped or not),
+    not just the kwargs the installed Anthropic provider reads from."""
+
+    def __init__(self):
+        super().__init__(delay_ms=0)
+        self.requests_seen: list = []
+
+    async def complete(self, request, **kwargs):
+        self.requests_seen.append(request)
+        return await super().complete(request, **kwargs)
+
+
+class EasyTurnShapingTests(_DifficultyHarness):
+    def test_receipt_name_is_an_allowed_event(self):
+        # The emitter drops unknown event names; a mocked emit would not notice.
+        from amplifier_fast_decisions.contracts import EVENT_NAMES
+        self.assertIn("fast_decisions:easy_turn_shaped", EVENT_NAMES)
+
+    """HC12 ("easy-turn shaping", opt-in): model_routing.easy_turn_guidance /
+    easy_turn_hide_tools apply only while turn.start_tier == "cheap", via a
+    shaped COPY built per call -- the original request/messages/tools are
+    never mutated."""
+
+    SYSTEM = {"role": "system", "content": "Base system prompt."}
+
+    def _cheap_request(self, prompt="typo", tools=None):
+        return NS(messages=[self.SYSTEM, {"role": "user", "content": prompt}],
+                   tools=tools if tools is not None else [], tool_choice="auto")
+
+    async def _run_calls(self, routing, n=3, tools=None, judge=None):
+        service, runtime, events = self._setup(routing, judge)
+        provider = _RequestCapturingProvider()
+        facade = RoutedProvider(provider, runtime, {}, demo_response, "anthropic-primary")
+        reqs = []
+        for _ in range(n):
+            req = self._cheap_request(tools=tools)
+            await facade.complete(req)
+            reqs.append(req)
+        return provider, events, reqs, service.turn
+
+    async def test_default_config_is_no_change(self):
+        # No easy_turn_* keys at all: byte-identical to pre-HC12 behavior.
+        routing = dict(self.ROUTING, max_requests_before_escalation=6)
+        provider, events, reqs, turn = await self._run_calls(routing)
+        self.assertEqual(turn.start_tier, "cheap")
+        for seen, original in zip(provider.requests_seen, reqs):
+            self.assertIs(seen, original)  # no copy was made at all
+        self.assertEqual([e for e in events if e["event"].endswith("easy_turn_shaped")], [])
+
+    async def test_guidance_appended_once_and_identical_across_calls(self):
+        guidance = "Work directly: batch independent tool calls, verify once."
+        routing = dict(self.ROUTING, max_requests_before_escalation=6, easy_turn_guidance=guidance)
+        provider, events, reqs, turn = await self._run_calls(routing, n=3)
+        self.assertEqual(turn.start_tier, "cheap")
+        expected = self.SYSTEM["content"] + "\n\n" + guidance
+        system_contents = [seen.messages[0]["content"] for seen in provider.requests_seen]
+        self.assertEqual(system_contents, [expected, expected, expected])  # identical every call
+        for original in reqs:  # original objects passed in by the caller stay untouched
+            self.assertEqual(original.messages[0]["content"], self.SYSTEM["content"])
+        shaped = [e["data"] for e in events if e["event"].endswith("easy_turn_shaped")]
+        self.assertEqual(len(shaped), 1)  # once per turn, not once per call
+        self.assertEqual(shaped[0]["guidance_chars"], len(guidance))
+        self.assertEqual(shaped[0]["hidden_tools"], [])
+
+    async def test_strong_turn_untouched(self):
+        judge = self.FakeJudge(p_complex=0.9)
+        routing = dict(self.ROUTING, start_policy="judge",
+                       easy_turn_guidance="ignored on a strong turn",
+                       easy_turn_hide_tools=["todo"])
+        provider, events, reqs, turn = await self._run_calls(routing, n=2, judge=judge)
+        self.assertEqual(turn.start_tier, "strong")
+        for seen, original in zip(provider.requests_seen, reqs):
+            self.assertIs(seen, original)  # byte-for-byte: no shaping applied
+        self.assertEqual([e for e in events if e["event"].endswith("easy_turn_shaped")], [])
+
+    async def test_escalated_calls_are_not_shaped(self):
+        # After the turn escalates to the host, calls go out unshaped.
+        routing = dict(self.ROUTING, max_requests_before_escalation=1,
+                       easy_turn_guidance="g", easy_turn_hide_tools=["todo"])
+        tools = [{"name": "todo"}, {"name": "bash"}]
+        provider, _events, reqs, turn = await self._run_calls(routing, n=3, tools=tools)
+        self.assertTrue(turn.escalated)
+        self.assertEqual([t["name"] for t in provider.requests_seen[0].tools], ["bash"])
+        for seen, original in zip(provider.requests_seen[1:], reqs[1:]):
+            self.assertIs(seen, original)
+
+    async def test_hide_tools_filters_by_name(self):
+        routing = dict(self.ROUTING, max_requests_before_escalation=6,
+                       easy_turn_hide_tools=["todo"])
+        tools = [{"name": "todo"}, {"name": "bash"}]
+        provider, events, reqs, _turn = await self._run_calls(routing, n=1, tools=tools)
+        seen_names = [t["name"] for t in provider.requests_seen[0].tools]
+        self.assertEqual(seen_names, ["bash"])
+        self.assertEqual(reqs[0].tools, tools)  # original list of tools untouched
+        shaped = [e["data"] for e in events if e["event"].endswith("easy_turn_shaped")]
+        self.assertEqual(shaped[0]["hidden_tools"], ["todo"])
+        self.assertEqual(shaped[0]["guidance_chars"], 0)
+
+    async def test_receipt_emitted_once_per_turn(self):
+        routing = dict(self.ROUTING, max_requests_before_escalation=6,
+                       easy_turn_guidance="g", easy_turn_hide_tools=["todo"])
+        _provider, events, _reqs, turn = await self._run_calls(
+            routing, n=4, tools=[{"name": "todo"}, {"name": "bash"}])
+        shaped = [e for e in events if e["event"].endswith("easy_turn_shaped")]
+        self.assertEqual(len(shaped), 1)
+        self.assertTrue(turn.easy_turn_shaped)
+
+    async def test_no_system_message_is_a_no_op_for_guidance(self):
+        # Fail closed: never invent a system message just to attach guidance.
+        routing = dict(self.ROUTING, max_requests_before_escalation=6, easy_turn_guidance="g")
+        service, runtime, events = self._setup(routing)
+        provider = _RequestCapturingProvider()
+        facade = RoutedProvider(provider, runtime, {}, demo_response, "anthropic-primary")
+        req = NS(messages=[{"role": "user", "content": "typo"}], tools=[], tool_choice="auto")
+        await facade.complete(req)
+        self.assertIs(provider.requests_seen[0], req)
+        self.assertEqual([e for e in events if e["event"].endswith("easy_turn_shaped")], [])
+
+    def test_validation(self):
+        with self.assertRaises(ValueError):
+            Policy(model_routing={"start_model": "m", "easy_turn_guidance": 5})
+        with self.assertRaises(ValueError):
+            Policy(model_routing={"start_model": "m", "easy_turn_hide_tools": "todo"})
+        with self.assertRaises(ValueError):
+            Policy(model_routing={"start_model": "m", "easy_turn_hide_tools": [1, 2]})
+        Policy(model_routing={"start_model": "m", "easy_turn_guidance": "g",
+                              "easy_turn_hide_tools": ["todo"]})
+
+
 if __name__ == "__main__":
     unittest.main()

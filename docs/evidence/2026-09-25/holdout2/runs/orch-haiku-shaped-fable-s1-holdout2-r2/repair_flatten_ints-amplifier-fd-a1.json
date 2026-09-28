@@ -1,0 +1,134 @@
+{
+  "name": "orch-haiku-shaped-fable-s1-holdout2-r2-repair_flatten_ints-amplifier-fd-a1",
+  "task": "repair_flatten_ints",
+  "family": "repair",
+  "split": "holdout2",
+  "kind": "code",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-haiku-4-5-20251001",
+  "started_at": "2026-09-25T14:16:15.513859+00:00",
+  "ended_at": "2026-09-25T14:16:58.396461+00:00",
+  "wall_time_ms": 42881.62012500106,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.0707575,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 221490.0,
+    "output_tokens": 2497.0,
+    "cache_read_tokens": 221450.0,
+    "cache_write_tokens": 28870.0,
+    "cost_usd": 0.0707575
+  },
+  "num_turns": null,
+  "final_message": null,
+  "quality": {
+    "checks": 31,
+    "passed": 31,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true,
+    "test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 27018.145,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 5,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.040000000000000036,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_39d7d6dadc9f42fc9647c99ada6e3fb0",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 22515,
+        "output_tokens": 309,
+        "cache_read_tokens": 22505,
+        "cache_write_tokens": 25639
+      },
+      {
+        "provider_call_id": "provider_8c8fa5f2d0904fc6a8935cf05afb52fe",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 48154,
+        "output_tokens": 1337,
+        "cache_read_tokens": 48144,
+        "cache_write_tokens": 1422
+      },
+      {
+        "provider_call_id": "provider_e0c5e627284d47aaa6467134eb44634c",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 49576,
+        "output_tokens": 367,
+        "cache_read_tokens": 49566,
+        "cache_write_tokens": 823
+      },
+      {
+        "provider_call_id": "provider_1da92235498c4549b1aac3fb2d5fd852",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50394,
+        "output_tokens": 431,
+        "cache_read_tokens": 50389,
+        "cache_write_tokens": 457
+      },
+      {
+        "provider_call_id": "provider_29b048a409814da9adf7e16755eddb5e",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50851,
+        "output_tokens": 53,
+        "cache_read_tokens": 50846,
+        "cache_write_tokens": 529
+      }
+    ],
+    "served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_cost_usd_by_model": {
+      "claude-haiku-4-5-20251001": 0.070758
+    }
+  }
+}

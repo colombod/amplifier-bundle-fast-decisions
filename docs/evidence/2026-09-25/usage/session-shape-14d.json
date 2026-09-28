@@ -1,0 +1,14 @@
+{
+  "note": "Shape of this user's own local Amplifier sessions over the 14 days to 2026-09-25, counted from ~/.amplifier/projects/*/sessions/*/events.jsonl (prompt:submit = user turn, llm:response = provider call). Benchmark workspaces (afast-ev, */workspace) excluded. Sub-session = session id containing '_' (Amplifier's sub-agent naming).",
+  "sessions": {
+    "root": {"count": 107, "turns_histogram": {"0": 12, "1": 82, "2": 4, "4": 2, "6+": 7}, "share_multi_turn": 0.12},
+    "sub": {"count": 277, "turns_histogram": {"1": 260, "2": 12, "3": 2, "5": 1, "6+": 2}, "share_multi_turn": 0.06}
+  },
+  "provider_calls": {
+    "root_first_turn": {"count": 979, "share": 0.07},
+    "root_later_turns": {"count": 1663, "share": 0.12},
+    "sub_first_turn": {"count": 9925, "share": 0.74},
+    "sub_later_turns": {"count": 833, "share": 0.06}
+  },
+  "caveat": "One user, one machine, 14 days; sub-sessions on this machine often already run on Sonnet via the routing matrix, so the share of calls where a host-to-Sonnet route applies is lower than 74%."
+}

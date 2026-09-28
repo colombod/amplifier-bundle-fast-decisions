@@ -1,0 +1,57 @@
+{
+  "name": "plain-opus-s1-holdout2-r2-answer_retry_max_attempts-amplifier-plain-a1",
+  "task": "answer_retry_max_attempts",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T14:09:29.560809+00:00",
+  "ended_at": "2026-09-25T14:09:53.083288+00:00",
+  "wall_time_ms": 23521.453458000906,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.38527,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 138035.0,
+    "output_tokens": 442.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": 69757.0,
+    "cost_usd": 0.38527
+  },
+  "num_turns": null,
+  "final_message": "If you call `retry.call_with_retry()` without `max_attempts`, it tries up to 4 times, counting the first try, before giving up.\n\n- In `retry.py`, `attempts` becomes `DEFAULT_MAX_ATTEMPTS = 4` when `max_attempts` is `None`. The loop `for _ in range(attempts)` then calls `fn()` at most 4 times and re-raises the last exception.\n- `main7.py` calls it with no `max_attempts`, so it gets this default.\n- `RETRY_LIMIT = 5` in `decoy_backoff.py` and `MAX_RETRIES = 3` in `decoy_network.py` have no effect, because `retry.py` doesn't import either file.\n- `.amplifier/settings.local.yaml` only holds an empty bundle config (`app: []`) and has nothing to do with retries.\n\nANSWER: 4",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 10037.466,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 2,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.38527
+    }
+  }
+}

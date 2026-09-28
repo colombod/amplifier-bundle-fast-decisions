@@ -1,0 +1,57 @@
+{
+  "name": "plain-sonnet-s1-holdout2-r1-answer_shipping_zone_count-amplifier-plain-a1",
+  "task": "answer_shipping_zone_count",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T13:57:50.942407+00:00",
+  "ended_at": "2026-09-25T13:58:12.784619+00:00",
+  "wall_time_ms": 21841.105917003006,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2153907,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 171015.0,
+    "output_tokens": 580.0,
+    "cache_read_tokens": 171009.0,
+    "cache_write_tokens": 41432.0,
+    "cost_usd": 0.2153907
+  },
+  "num_turns": null,
+  "final_message": "`shipping.ZONES` has 5 keys: NA-EAST, NA-WEST, EU-CENTRAL, EU-NORTH, APAC-SE. All other files (notify.py, checkout.py, decoy_warehouse_map.py, decoy_partner_regions.py, decoy_legacy_zones.py) are confirmed unrelated/deprecated per their own docstrings and README's guidance.\n\nANSWER: 5",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 8156.515,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.215391
+    }
+  }
+}

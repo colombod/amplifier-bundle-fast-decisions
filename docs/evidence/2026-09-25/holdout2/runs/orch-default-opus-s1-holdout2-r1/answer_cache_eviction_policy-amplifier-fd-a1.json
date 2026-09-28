@@ -1,0 +1,93 @@
+{
+  "name": "orch-default-opus-s1-holdout2-r1-answer_cache_eviction_policy-amplifier-fd-a1",
+  "task": "answer_cache_eviction_policy",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T13:52:44.587847+00:00",
+  "ended_at": "2026-09-25T13:53:05.031904+00:00",
+  "wall_time_ms": 20443.219000007957,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.3692762,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 68404.0,
+    "output_tokens": 320.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": 69833.0,
+    "cost_usd": 0.3692762
+  },
+  "num_turns": null,
+  "final_message": "If you call `cache.make_cache()` without a `policy` argument, the policy is `None`, so it falls back to `DEFAULT_POLICY = \"lru\"` (in `cache.py`). `main6.py` calls `make_cache()` with no argument, so it gets that default.\n\nTwo other files mention policies, but `cache.py` doesn't import either of them, so they don't affect the answer:\n- `decoy_config.py` returns `\"random\"`.\n- `decoy_policies.py` sets `\"fifo\"`.\n\nANSWER: lru",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 7403.137,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 2,
+  "concurrency_at_launch": 2,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.53,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_a85d5699c6a247b19070e75b3fae49a5",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 4,
+        "output_tokens": 113,
+        "cache_write_tokens": 68396
+      },
+      {
+        "provider_call_id": "provider_7271404bc8ba43269f2636e42e0c66a5",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68400,
+        "output_tokens": 207,
+        "cache_read_tokens": 68396,
+        "cache_write_tokens": 1437
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 2
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.369276
+    }
+  }
+}

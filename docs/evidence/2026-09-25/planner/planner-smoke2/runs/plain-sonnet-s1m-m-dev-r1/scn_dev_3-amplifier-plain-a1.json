@@ -1,0 +1,177 @@
+{
+  "name": "plain-sonnet-s1m-m-dev-r1-scn_dev_3-amplifier-plain-a1",
+  "task": "scn_dev_3",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T16:43:34.373329+00:00",
+  "ended_at": "2026-09-25T16:45:21.376075+00:00",
+  "wall_time_ms": 106998.47729099565,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.6694231500000001,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1111919.0,
+    "output_tokens": 2544.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.6694231500000001
+  },
+  "num_turns": null,
+  "final_message": "DONE: Fixed the mutable-default-argument bug in `add_tag` by using `tags=None` and initializing a fresh list per call; `test_public.py` passes (1/1).",
+  "quality": {
+    "checks": 40,
+    "passed": 40,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_semver_compare/README.md": true,
+    "t1-repair_semver_compare/test_public.py": true,
+    "t2-answer_sqlite_import_module/README.md": true,
+    "t3-edit_record_to_json/README.md": true,
+    "t4-bugfix_add_tag_mutable_default/README.md": true,
+    "t4-bugfix_add_tag_mutable_default/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_semver_compare",
+      "started_at": "2026-09-25T16:43:34.373329+00:00",
+      "ended_at": "2026-09-25T16:44:27.377517+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 53002.43349999073,
+      "final_message": "Both tests pass.\n\nDONE: Repaired `semver_compare` to validate strict `MAJOR.MINOR.PATCH` format (no leading zeros), raise `TypeError`/`ValueError` per contract, and compare via tuple ordering; `test_public.py` passes (2/2).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 31,
+        "passed": 31,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 13474.655999999999,
+      "provider_requests": 5,
+      "cost_usd": 0.3609285,
+      "model_counts": {
+        "claude-sonnet-5": 5
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_sqlite_import_module",
+      "started_at": "2026-09-25T16:44:27.378213+00:00",
+      "ended_at": "2026-09-25T16:44:44.128100+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 16749.769166024635,
+      "final_message": "ANSWER: storage",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 6407.046,
+      "provider_requests": 3,
+      "cost_usd": 0.08781884999999999,
+      "model_counts": {
+        "claude-sonnet-5": 3
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T16:44:42.231593+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_record_to_json",
+      "started_at": "2026-09-25T16:44:44.128757+00:00",
+      "ended_at": "2026-09-25T16:45:02.143981+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 18015.090375003638,
+      "final_message": "DONE: Added `Record.to_json()` returning `json.dumps(self.to_dict(), sort_keys=True)`, leaving `__init__` and `to_dict()` unchanged; verified output manually.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 3,
+        "passed": 3,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 9963.515,
+      "provider_requests": 4,
+      "cost_usd": 0.11011515,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_add_tag_mutable_default",
+      "started_at": "2026-09-25T16:45:02.144747+00:00",
+      "ended_at": "2026-09-25T16:45:21.376075+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 19231.18424997665,
+      "final_message": "DONE: Fixed the mutable-default-argument bug in `add_tag` by using `tags=None` and initializing a fresh list per call; `test_public.py` passes (1/1).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 5,
+        "passed": 5,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 8780.815999999999,
+      "provider_requests": 4,
+      "cost_usd": 0.11056065,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    }
+  ],
+  "exec_time_ms": 38626.032999999996,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 16,
+  "concurrency_at_launch": 2,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 16,
+      "claude-haiku-4-5-20251001": 1
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.667149,
+      "claude-haiku-4-5-20251001": 0.002274
+    }
+  }
+}

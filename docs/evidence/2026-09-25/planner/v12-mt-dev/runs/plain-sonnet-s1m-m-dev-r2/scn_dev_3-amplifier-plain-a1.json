@@ -1,0 +1,177 @@
+{
+  "name": "plain-sonnet-s1m-m-dev-r2-scn_dev_3-amplifier-plain-a1",
+  "task": "scn_dev_3",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T20:49:33.364778+00:00",
+  "ended_at": "2026-09-25T20:50:49.660048+00:00",
+  "wall_time_ms": 76291.67300098925,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.651459,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1043432.0,
+    "output_tokens": 2670.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.651459
+  },
+  "num_turns": null,
+  "final_message": "DONE: Fixed the mutable-default-argument bug in `add_tag` (t4-bugfix_add_tag_mutable_default/tag_util.py) by switching `tags=[]` to `tags=None` with an in-body fresh-list fallback, leaving `remove_tag` untouched; verified with `python3 -m unittest -v test_public.py` (1 test, OK).",
+  "quality": {
+    "checks": 40,
+    "passed": 40,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_semver_compare/README.md": true,
+    "t1-repair_semver_compare/test_public.py": true,
+    "t2-answer_sqlite_import_module/README.md": true,
+    "t3-edit_record_to_json/README.md": true,
+    "t4-bugfix_add_tag_mutable_default/README.md": true,
+    "t4-bugfix_add_tag_mutable_default/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_semver_compare",
+      "started_at": "2026-09-25T20:49:33.364778+00:00",
+      "ended_at": "2026-09-25T20:50:01.716676+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 28350.952000007965,
+      "final_message": "Both tests pass.\n\nDONE: Repaired `semver_compare` in t1-repair_semver_compare/solution.py to validate strict `MAJOR.MINOR.PATCH` format (no leading zeros) via regex, raise TypeError for non-string args and ValueError for malformed versions, and return -1/0/1 via tuple comparison; verified with `python3 -m unittest -v test_public.py` (2 tests, OK).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 31,
+        "passed": 31,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 11507.072,
+      "provider_requests": 4,
+      "cost_usd": 0.34038045,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_sqlite_import_module",
+      "started_at": "2026-09-25T20:50:01.717531+00:00",
+      "ended_at": "2026-09-25T20:50:15.492042+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 13774.354083987419,
+      "final_message": "ANSWER: storage",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 6589.33,
+      "provider_requests": 3,
+      "cost_usd": 0.08819175000000001,
+      "model_counts": {
+        "claude-sonnet-5": 3
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T20:50:13.847271+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_record_to_json",
+      "started_at": "2026-09-25T20:50:15.492499+00:00",
+      "ended_at": "2026-09-25T20:50:32.198170+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 16705.482666991884,
+      "final_message": "DONE: Added `to_json()` method to `Record` in t3-edit_record_to_json/record.py returning `json.dumps(self.to_dict(), sort_keys=True)`, without altering `to_dict()` or `__init__`; verified with a manual run producing correctly sorted JSON output.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 3,
+        "passed": 3,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 10774.561,
+      "provider_requests": 4,
+      "cost_usd": 0.11106659999999999,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_add_tag_mutable_default",
+      "started_at": "2026-09-25T20:50:32.198969+00:00",
+      "ended_at": "2026-09-25T20:50:49.660048+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 17460.884250001982,
+      "final_message": "DONE: Fixed the mutable-default-argument bug in `add_tag` (t4-bugfix_add_tag_mutable_default/tag_util.py) by switching `tags=[]` to `tags=None` with an in-body fresh-list fallback, leaving `remove_tag` untouched; verified with `python3 -m unittest -v test_public.py` (1 test, OK).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 5,
+        "passed": 5,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 11740.812,
+      "provider_requests": 4,
+      "cost_usd": 0.1118202,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    }
+  ],
+  "exec_time_ms": 40611.775,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 15,
+  "concurrency_at_launch": 1,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 15,
+      "claude-haiku-4-5-20251001": 1
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.649122,
+      "claude-haiku-4-5-20251001": 0.002337
+    }
+  }
+}

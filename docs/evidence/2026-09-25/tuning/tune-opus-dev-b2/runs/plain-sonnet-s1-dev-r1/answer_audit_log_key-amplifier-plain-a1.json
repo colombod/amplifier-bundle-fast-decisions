@@ -1,0 +1,57 @@
+{
+  "name": "plain-sonnet-s1-dev-r1-answer_audit_log_key-amplifier-plain-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T12:29:40.040950+00:00",
+  "ended_at": "2026-09-25T12:30:36.934865+00:00",
+  "wall_time_ms": 56891.7127080058,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.34313534999999995,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 390214.0,
+    "output_tokens": 3906.0,
+    "cache_read_tokens": 390202.0,
+    "cache_write_tokens": 44653.0,
+    "cost_usd": 0.34313534999999995
+  },
+  "num_turns": null,
+  "final_message": "Reading the raw bytes with `od -c` confirms the actual (unredacted) line: `key = [REDACTED:SECRET]\n\n- `service.checkout(\"7781\")` \u2192 `write_audit(\"order\", \"7781\")`\n- `write_audit` computes `key = [REDACTED:SECRET]\"order\", \"7781\")`\n- `_format_key(kind, ident)` returns `f\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"`\n- `AUDIT_PREFIX = \"AUD\"` (from config.py)\n- Result: `\"AUD-ORDER-7781\"`\n\n(`decoy_cache.py` and `decoy_metrics.py` are red herrings \u2014 they never touch the audit log dict.)\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 43515.758,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 6,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 6
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.343135
+    }
+  }
+}

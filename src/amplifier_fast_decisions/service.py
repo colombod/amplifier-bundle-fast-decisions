@@ -44,6 +44,10 @@ class DecisionService:
         self.last_decision_id: str | None = None
         self.slow_total = 0
         self.unhealthy_until = 0.0
+        # Wall time of the backend call in the most recent choose() (None
+        # when that decision never reached the backend); read by the
+        # orchestrator's per-step receipts.
+        self.last_backend_ms: float | None = None
 
     async def emit(self, kind: str, data: dict, decision_id: str | None = None):
         return await self.emitter.emit(
@@ -69,7 +73,15 @@ class DecisionService:
         validator = capability(self.coordinator, VALIDATOR_CAPABILITY)
         return bool(validator and await maybe_await(validator(candidate)))
 
-    async def choose(self, request: Any, tools: dict[str, Any]) -> Candidate | None:
+    async def choose(self, request: Any, tools: dict[str, Any], *, extra_candidates: list[Any] | None = None,
+                     force: bool = False, workspace_paths: bool = True,
+                     state_instruction: str | None = None) -> Candidate | None:
+        """The judged prepared-action decision. ``force`` (the orchestrator's
+        per-step decision point, step_actions.py) asks even when the always-on
+        ``read_shortcut`` is disabled, with ``extra_candidates`` built for this
+        step; every other gate (mode, budgets, consent, eligibility,
+        staleness) is unchanged."""
+        self.last_backend_ms = None
         if self.turn is None:
             raise RuntimeError("No active turn")
         turn = self.turn
@@ -99,7 +111,7 @@ class DecisionService:
 
         if self.policy.mode == "off":
             return await slow("mode_off")
-        if not self.policy.read_shortcut:
+        if not self.policy.read_shortcut and not force:
             return await slow("read_shortcut_disabled")
         if self.backend.name == "unavailable":
             # Routing-only configuration (the orchestrator-primary default):
@@ -129,6 +141,8 @@ class DecisionService:
                     tools,
                     self.configured_candidates,
                     self.policy.max_candidates,
+                    extra=extra_candidates,
+                    workspace_paths=workspace_paths,
                 )
                 questions, question_reasons = await collect_questions(
                     self.coordinator, self.policy.max_questions
@@ -201,7 +215,7 @@ class DecisionService:
         domain = classify_domain(candidates)
         common["domain"] = domain
         state_stats: dict[str, Any] = {}
-        state = build_state(request, self.policy.max_state_chars, state_stats)
+        state = build_state(request, self.policy.max_state_chars, state_stats, state_instruction)
         state_chars = len(canonical(state))
         await self.emit(
             "requested",
@@ -249,6 +263,7 @@ class DecisionService:
             reason = (
                 "decision_timeout" if isinstance(exc, TimeoutError) else "backend_error"
             )
+            self.last_backend_ms = (time.perf_counter() - start) * 1000
             self.unhealthy_until = time.monotonic() + 5.0
             await self.emit(
                 "fallback",
@@ -263,6 +278,7 @@ class DecisionService:
             return await slow(reason)
         decision = result.action
         duration = (time.perf_counter() - start) * 1000
+        self.last_backend_ms = duration
         p = decision.probabilities[decision.choice]
         others = [v for k, v in decision.probabilities.items() if k != decision.choice]
         margin = p - max(others, default=0)

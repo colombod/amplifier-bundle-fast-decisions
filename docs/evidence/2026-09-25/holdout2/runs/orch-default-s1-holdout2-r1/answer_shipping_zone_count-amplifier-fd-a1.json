@@ -1,0 +1,94 @@
+{
+  "name": "orch-default-s1-holdout2-r1-answer_shipping_zone_count-amplifier-fd-a1",
+  "task": "answer_shipping_zone_count",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T13:43:46.551769+00:00",
+  "ended_at": "2026-09-25T13:44:12.827461+00:00",
+  "wall_time_ms": 26274.90012499038,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.566855,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 100308.0,
+    "output_tokens": 720.0,
+    "cache_read_tokens": 100300.0,
+    "cache_write_tokens": 40456.0,
+    "cost_usd": 0.566855
+  },
+  "num_turns": null,
+  "final_message": "I've read every file. `shipping.py` is the authoritative source; its `ZONES` dict (shipping.py:4-10) has exactly five keys:\n\n- `NA-EAST`\n- `NA-WEST`\n- `EU-CENTRAL`\n- `EU-NORTH`\n- `APAC-SE`\n\nThe other files are distractors: `decoy_legacy_zones.py` (4 deprecated `ZONE-*` codes), `decoy_partner_regions.py` (6 partner regions, not zones), `decoy_warehouse_map.py` (warehouse\u2192zone mapping with 3 values that overlap real codes), and `notify.py`/`checkout.py` (no zone definitions).\n\nANSWER: 5",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 13602.807,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 2,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.57,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_1290b036f1ff4809851429dda168d20a",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 479,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36586
+      },
+      {
+        "provider_call_id": "provider_35ac1e6b4c574cefaec4ae4b31af8aee",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68447,
+        "output_tokens": 241,
+        "cache_read_tokens": 68443,
+        "cache_write_tokens": 3870
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 2
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.566855
+    }
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "per_harness": {
+    "amplifier-plain": {
+      "n": 12,
+      "success_rate": 1.0,
+      "deadline_failures": 0,
+      "mean_penalized_ms": 21581.782166666668,
+      "median_penalized_ms": 21659.206000000002,
+      "mean_exec_ms": 21581.782166666668,
+      "median_exec_ms": 21659.206000000002,
+      "mean_wall_ms": 34436.587250003264,
+      "median_wall_ms": 34132.798625010764,
+      "mean_cost_known_usd": 0.6597370416666667,
+      "unknown_cost_count": 0,
+      "cost_per_success_usd": 0.6597370416666667,
+      "tokens": {
+        "input_tokens": 2473336.0,
+        "output_tokens": 12788.0,
+        "cache_write_tokens": 532629.0,
+        "cost_usd": 7.9168445,
+        "cache_read_tokens": 2195332.0
+      }
+    }
+  },
+  "per_task": {
+    "answer_cache_eviction_policy": {
+      "task": "answer_cache_eviction_policy",
+      "amplifier-plain": {
+        "penalized_ms": 17921.909,
+        "outcome_passed": true,
+        "cost_usd": 0.9210032499999999
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "answer_retry_max_attempts": {
+      "task": "answer_retry_max_attempts",
+      "amplifier-plain": {
+        "penalized_ms": 9431.652,
+        "outcome_passed": true,
+        "cost_usd": 0.53696675
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "answer_shipping_zone_count": {
+      "task": "answer_shipping_zone_count",
+      "amplifier-plain": {
+        "penalized_ms": 12034.579000000002,
+        "outcome_passed": true,
+        "cost_usd": 0.564219
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "bugfix_dedupe_keep_order": {
+      "task": "bugfix_dedupe_keep_order",
+      "amplifier-plain": {
+        "penalized_ms": 19358.069,
+        "outcome_passed": true,
+        "cost_usd": 0.5772212499999999
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "bugfix_invoice_tax_unit_mismatch": {
+      "task": "bugfix_invoice_tax_unit_mismatch",
+      "amplifier-plain": {
+        "penalized_ms": 21659.206000000002,
+        "outcome_passed": true,
+        "cost_usd": 0.5891512499999999
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "bugfix_rate_limiter_off_by_one": {
+      "task": "bugfix_rate_limiter_off_by_one",
+      "amplifier-plain": {
+        "penalized_ms": 20872.141,
+        "outcome_passed": true,
+        "cost_usd": 0.57788325
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "edit_cart_apply_coupon": {
+      "task": "edit_cart_apply_coupon",
+      "amplifier-plain": {
+        "penalized_ms": 26001.012,
+        "outcome_passed": true,
+        "cost_usd": 0.614351
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "edit_slugify_max_length": {
+      "task": "edit_slugify_max_length",
+      "amplifier-plain": {
+        "penalized_ms": 22267.302,
+        "outcome_passed": true,
+        "cost_usd": 0.59246475
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "edit_temp_round_fahrenheit": {
+      "task": "edit_temp_round_fahrenheit",
+      "amplifier-plain": {
+        "penalized_ms": 9930.675000000001,
+        "outcome_passed": true,
+        "cost_usd": 0.523714
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "repair_flatten_ints": {
+      "task": "repair_flatten_ints",
+      "amplifier-plain": {
+        "penalized_ms": 22636.936999999998,
+        "outcome_passed": true,
+        "cost_usd": 1.03008575
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "repair_reorder_point": {
+      "task": "repair_reorder_point",
+      "amplifier-plain": {
+        "penalized_ms": 45182.199,
+        "outcome_passed": true,
+        "cost_usd": 0.75674
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "repair_roman_to_int": {
+      "task": "repair_roman_to_int",
+      "amplifier-plain": {
+        "penalized_ms": 31685.704999999998,
+        "outcome_passed": true,
+        "cost_usd": 0.63304425
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    }
+  },
+  "per_family": {
+    "answer": {
+      "amplifier-plain": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          17921.909,
+          9431.652,
+          12034.579000000002
+        ]
+      }
+    },
+    "bugfix": {
+      "amplifier-plain": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          19358.069,
+          21659.206000000002,
+          20872.141
+        ]
+      }
+    },
+    "edit": {
+      "amplifier-plain": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          26001.012,
+          22267.302,
+          9930.675000000001
+        ]
+      }
+    },
+    "repair": {
+      "amplifier-plain": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          22636.936999999998,
+          45182.199,
+          31685.704999999998
+        ]
+      }
+    }
+  },
+  "amplifier_fd_vs_plain": null,
+  "cross": null,
+  "dev": {},
+  "holdout": {},
+  "mechanism": null,
+  "amplifier_fd_series_label": null,
+  "evidence_limits": [
+    "n_tasks=12",
+    "single_repetition_per_task_per_harness",
+    "models_not_necessarily_matched_across_harnesses"
+  ]
+}

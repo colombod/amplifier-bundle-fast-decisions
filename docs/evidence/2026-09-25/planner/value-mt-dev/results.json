@@ -1,0 +1,141 @@
+{
+  "schema": "fast-decisions-evals/results/v1",
+  "suite": "s1m",
+  "split": "m-dev",
+  "reps": 3,
+  "cells": [
+    {
+      "cell": "orch-default",
+      "anchor": "plain",
+      "reps": 3,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 0.3957271243848271,
+        "ci95_low": 0.31526914468608985,
+        "ci95_high": 0.45283531586531706,
+        "sign_test_p": 0.25
+      },
+      "cost_ratio": 0.6486180215450402,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 3,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen",
+      "vs_plain": {
+        "anchor": "plain-sonnet",
+        "exec_time_ratio": {
+          "geomean": 0.8632617008535349,
+          "ci95_low": 0.7603656471673134,
+          "ci95_high": 0.9263364889110335,
+          "sign_test_p": 0.25
+        },
+        "cost_ratio": 1.2376219699953008,
+        "quality": {
+          "candidate_successes": 3,
+          "anchor_successes": 3,
+          "non_inferior": true
+        }
+      }
+    },
+    {
+      "cell": "orch-default-opus",
+      "anchor": "plain-opus",
+      "reps": 3,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 1.0252439857171272,
+        "ci95_low": 0.84990971839644,
+        "ci95_high": 1.1860449147066239,
+        "sign_test_p": 1.0
+      },
+      "cost_ratio": 1.2497069209592464,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 3,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen",
+      "vs_plain": {
+        "anchor": "plain-sonnet",
+        "exec_time_ratio": {
+          "geomean": 0.8538799408848475,
+          "ci95_low": 0.7974631692585765,
+          "ci95_high": 0.8891981508145876,
+          "sign_test_p": 0.25
+        },
+        "cost_ratio": 1.0594897201551998,
+        "quality": {
+          "candidate_successes": 3,
+          "anchor_successes": 3,
+          "non_inferior": true
+        }
+      }
+    },
+    {
+      "cell": "orch-planner-value-opus",
+      "anchor": "plain-opus",
+      "reps": 3,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 1.0454012499980425,
+        "ci95_low": 0.9565357126189336,
+        "ci95_high": 1.1435595011279134,
+        "sign_test_p": 1.0
+      },
+      "cost_ratio": 1.1748623082064822,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 3,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen"
+    },
+    {
+      "cell": "orch-planner-value-fable",
+      "anchor": "plain",
+      "reps": 3,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 0.37077044388699704,
+        "ci95_low": 0.2970137885703296,
+        "ci95_high": 0.47532315406451714,
+        "sign_test_p": 0.25
+      },
+      "cost_ratio": 0.6116841074465004,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 3,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen"
+    }
+  ],
+  "q3": null,
+  "evidence_limits": [
+    "bootstrap_ci: 2000 resamples, seed=20260919",
+    "confirmed requires >= 3 reps, >= 8 paired passing tasks, and split=holdout",
+    "external_harness_exec_time_may_still_include_its_own_startup",
+    "models_not_necessarily_matched_across_campaigns_or_harnesses",
+    "models_not_necessarily_matched_across_harnesses",
+    "n_tasks=3",
+    "non_contemporaneous_runs_across_campaigns",
+    "single_repetition_per_task_per_harness"
+  ]
+}

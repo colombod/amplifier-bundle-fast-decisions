@@ -1,0 +1,107 @@
+{
+  "name": "orch-haiku-shaped-opus-s1-holdout2-r1-answer_shipping_zone_count-amplifier-fd-a1",
+  "task": "answer_shipping_zone_count",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T13:45:53.403345+00:00",
+  "ended_at": "2026-09-25T13:46:16.841117+00:00",
+  "wall_time_ms": 23436.816375004128,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2376548,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 170684.0,
+    "output_tokens": 510.0,
+    "cache_read_tokens": 170674.0,
+    "cache_write_tokens": 38656.0,
+    "cost_usd": 0.2376548
+  },
+  "num_turns": null,
+  "final_message": "`shipping.ZONES` in `shipping.py` has 5 keys: `NA-EAST`, `NA-WEST`, `EU-CENTRAL`, `EU-NORTH` and `APAC-SE`. Importing the module and checking `len(shipping.ZONES)` also returns 5.\n\nNone of the other files change the count, as the README says:\n- **`decoy_legacy_zones.py`:** an old zone table kept for reference (`ZONE-A` to `ZONE-D`).\n- **`decoy_partner_regions.py`:** a partner carrier's region names, not zone codes.\n- **`decoy_warehouse_map.py`:** maps warehouses to zones; its values reuse three of the real codes but don't add any.\n- **`checkout.py`:** only calls `fee_for` from `shipping.py`.\n- **`notify.py`:** message templates with no zone data.\n- **`.amplifier/settings.local.yaml`:** empty settings with no zone data.\n\nANSWER: 5",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 10588.924,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.59,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_216617fa71e54e989753b38d56c4a074",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 87,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36595
+      },
+      {
+        "provider_call_id": "provider_b13b4dc2ecf44d208c613965fd4b7ee4",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68456,
+        "output_tokens": 87,
+        "cache_read_tokens": 68452,
+        "cache_write_tokens": 1913
+      },
+      {
+        "provider_call_id": "provider_a30e0498bc7040ec81d0cb4d823e64f1",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 70367,
+        "output_tokens": 336,
+        "cache_read_tokens": 70365,
+        "cache_write_tokens": 148
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.237655
+    }
+  }
+}

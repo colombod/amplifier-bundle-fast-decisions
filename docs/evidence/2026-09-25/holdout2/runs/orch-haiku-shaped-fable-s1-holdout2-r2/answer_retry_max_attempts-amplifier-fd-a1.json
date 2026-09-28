@@ -1,0 +1,106 @@
+{
+  "name": "orch-haiku-shaped-fable-s1-holdout2-r2-answer_retry_max_attempts-amplifier-fd-a1",
+  "task": "answer_retry_max_attempts",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T14:14:52.409876+00:00",
+  "ended_at": "2026-09-25T14:15:22.640257+00:00",
+  "wall_time_ms": 30229.485749994637,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.95945175,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 138267.0,
+    "output_tokens": 626.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": 71479.0,
+    "cost_usd": 0.95945175
+  },
+  "num_turns": null,
+  "final_message": "In `retry.py`, `call_with_retry()` falls back to `DEFAULT_MAX_ATTEMPTS = 4` when `max_attempts` is `None` (retry.py:3, retry.py:7), and the loop `for _ in range(attempts)` runs exactly that many times, including the first try. The constants in `decoy_backoff.py` (`RETRY_LIMIT = 5`) and `decoy_network.py` (`MAX_RETRIES = 3`) are never imported by `retry.py` and don't affect the result.\n\nANSWER: 4",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 14064.271,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 2,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.56,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_0b2f20d2f4d04c5c920b9798c0ebcab2",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 4,
+        "output_tokens": 158,
+        "cache_write_tokens": 68432
+      },
+      {
+        "provider_call_id": "provider_c3b560694ead48a4a1b3246a023366bd",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68436,
+        "output_tokens": 278,
+        "cache_read_tokens": 68432,
+        "cache_write_tokens": 1393
+      },
+      {
+        "provider_call_id": "provider_b7f6bc56823f4883b508c0093c9e32a9",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69827,
+        "output_tokens": 190,
+        "cache_read_tokens": 69825,
+        "cache_write_tokens": 1654
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.959452
+    }
+  }
+}

@@ -105,20 +105,39 @@ def _side(model: str | None, calls: int, cost_usd: float | None, seconds: float 
 
 
 def receipt(*, lever: str, mechanism: str, decision: str, baseline: dict, actual: dict, method: str,
-            project: str | None, traffic: str) -> dict:
+            project: str | None, traffic: str, harness: str | None = None, detail: dict | None = None) -> dict:
     """Build receipt data with the deltas fixed (baseline minus actual)."""
     if lever not in LEVERS:
         raise ValueError(f"unknown efficiency lever: {lever}")
     b_cost, a_cost = _num(baseline.get("cost_usd")), _num(actual.get("cost_usd"))
     b_s, a_s = _num(baseline.get("seconds")), _num(actual.get("seconds"))
-    return {
+    data = {
         "lever": lever, "mechanism": mechanism[:80], "decision": decision[:80],
-        "baseline": baseline, "actual": actual, "method": method[:120],
+        "baseline": baseline, "actual": actual, "method": method[:200],
         "calls_saved": int(baseline.get("calls", 0)) - int(actual.get("calls", 0)),
         "usd_saved": None if b_cost is None or a_cost is None else round(b_cost - a_cost, 8),
         "seconds_saved": None if b_s is None or a_s is None else round(b_s - a_s, 4),
         "project": (project or "(unknown)")[:120], "traffic": traffic,
     }
+    if harness:
+        data["harness"] = str(harness)[:40]
+    if detail:
+        data["detail"] = {k: v for k, v in detail.items() if isinstance(v, (int, float, str, bool)) or v is None}
+    return data
+
+
+def side(model: str | None, calls: int, cost_usd: float | None, seconds: float | None, **extra: Any) -> dict:
+    """One side (baseline or actual) of a receipt."""
+    return _side(model, calls, cost_usd, seconds, **extra)
+
+
+def guard_receipt(*, lever: str, mechanism: str, decision: str, baseline: dict, actual: dict, method: str,
+                  project: str | None, traffic: str, harness: str | None = None, detail: dict | None = None) -> dict:
+    """Receipt for a waste guard firing (guards.py). Same shape as every
+    other receipt, plus ``harness`` and a small numeric ``detail`` block with
+    the inputs of the estimate so it can be recomputed."""
+    return receipt(lever=lever, mechanism=mechanism, decision=decision, baseline=baseline, actual=actual,
+                   method=method, project=project, traffic=traffic, harness=harness, detail=detail)
 
 
 def _tokens(fields: dict) -> dict:
@@ -290,6 +309,63 @@ def loop_stop(*, kinds: list[str], tools: list[str], expected_further_calls: int
                    actual=_side(host_model, calls, act_usd, act_s, tools=sorted(set(tools))[:8], measured=measured),
                    method=method, project=project, traffic=traffic)
 
+def judge_only(*, lever: str, mechanism: str, decision: str, judge_seconds: float, host_model: str | None,
+               project: str | None, traffic: str) -> dict:
+    """Receipt for a judge call whose answer changed nothing (it abstained,
+    or kept the step on the host): its latency is pure overhead."""
+    return receipt(lever=lever, mechanism=mechanism, decision=decision,
+                   baseline=_side(host_model, 0, 0.0, 0.0),
+                   actual=_side(host_model, 0, 0.0, judge_seconds, judge_calls=1),
+                   method="judge latency only", project=project, traffic=traffic)
+
+
+def prepared_step(*, tool: str, decision_seconds: float, host_model: str | None, skipped_prompt_tokens: int,
+                  skipped_output_tokens: int, skipped_seconds: float | None, mechanism: str, project: str | None,
+                  traffic: str, repeated: bool = False, prepared_tokens: int = 0, rates: dict | None = None) -> dict:
+    """Receipt for one model call replaced by a prepared action, priced once
+    the next model call is known (per-step decision point).
+
+    The skipped call is the same step on the default (host) model: its prompt
+    is the next call's prompt minus the prepared result, all of it a cache
+    read (the conversation prefix was already cached or is written by the next
+    call either way), plus a typical tool-call step's output. When the model
+    re-fetched what the prepared action fetched (``repeated``), nothing was
+    saved: the prepared result was extra context, charged as one host cache
+    write, and the decision time is lost."""
+    rates = rates or DEFAULT_RATES
+    if repeated:
+        extra = price(host_model, {"input": prepared_tokens, "cache_write": prepared_tokens}, rates) \
+            if prepared_tokens else 0.0
+        return receipt(lever="prepared_action", mechanism=mechanism, decision="prepared_repeated_by_model",
+                       baseline=_side(host_model, 0, 0.0, 0.0),
+                       actual=_side(None, 0, extra, decision_seconds),
+                       method="model re-fetched the prepared result; its tokens charged as a host cache write",
+                       project=project, traffic=traffic)
+    tokens = {"input": max(0, skipped_prompt_tokens), "cache_read": max(0, skipped_prompt_tokens),
+              "output": max(0, skipped_output_tokens)}
+    return receipt(lever="prepared_action", mechanism=mechanism, decision="prepared_" + tool,
+                   baseline=_side(host_model, 1, price(host_model, tokens, rates), skipped_seconds,
+                                  prompt_tokens=tokens["input"], output_tokens=tokens["output"]),
+                   actual=_side(None, 0, 0.0, decision_seconds),
+                   method=("skipped host call: next call's prompt minus the prepared result as cache reads, "
+                           "typical tool-step output; seconds from the next call's latency"),
+                   project=project, traffic=traffic)
+
+
+def discarded_cheap_step(*, usage: dict, seconds: float | None, served_model: str | None, host_model: str | None,
+                         mechanism: str, reason: str, project: str | None, traffic: str,
+                         rates: dict | None = None) -> dict:
+    """Receipt for a cheaper-model step whose response was discarded (it
+    edited or ended the turn) and re-run on the host: the cheap call is a
+    pure loss."""
+    rates = rates or DEFAULT_RATES
+    cost = _num(usage.get("cost_usd"))
+    if cost is None:
+        cost = price(served_model, _tokens(usage), rates)
+    return receipt(lever="cheaper_model", mechanism=mechanism, decision="cheap_step_discarded_" + reason,
+                   baseline=_side(host_model, 0, 0.0, 0.0), actual=_side(served_model, 1, cost, seconds),
+                   method="discarded cheaper-model call (host re-ran the step)", project=project, traffic=traffic)
+
 
 def _empty() -> dict:
     return {"receipts": 0, "calls_saved": 0, "usd_saved": 0.0, "seconds_saved": 0.0,
@@ -342,7 +418,7 @@ def iter_receipts(events_dir: str | Path) -> Iterable[dict]:
 def aggregate(events: Iterable[dict], *, include_test: bool = False, since: str | None = None) -> dict:
     """Sum receipts by lever and by project x lever. Exact: plain sums of the
     stored ``calls_saved`` / ``usd_saved`` / ``seconds_saved`` fields."""
-    totals, by_lever, by_project = _empty(), {lever: _empty() for lever in LEVERS}, {}
+    totals, by_lever, by_project, by_harness = _empty(), {lever: _empty() for lever in LEVERS}, {}, {}
     excluded = 0
     for event in events:
         data = event.get("data") or {}
@@ -358,10 +434,12 @@ def aggregate(events: Iterable[dict], *, include_test: bool = False, since: str 
         _add(totals, data)
         _add(by_lever[lever], data)
         _add(by_project.setdefault(project, {lv: _empty() for lv in LEVERS}).setdefault(lever, _empty()), data)
+        _add(by_harness.setdefault(str(data.get("harness") or "Amplifier"), _empty()), data)
     return {
         "totals": _round(totals),
         "by_lever": {lv: dict(_round(v), label=LEVER_LABELS[lv]) for lv, v in by_lever.items()},
         "by_project": {p: {lv: _round(v) for lv, v in levers.items()} for p, levers in sorted(by_project.items())},
+        "by_harness": {h: _round(v) for h, v in sorted(by_harness.items())},
         "excluded_test_receipts": excluded,
         "include_test": include_test,
         "method": "Sums of per-decision receipts (fast_decisions:efficiency). Each receipt fixes its baseline "

@@ -75,6 +75,28 @@ SAFE_FIELDS = {
     "seconds_saved",
     "project",
     "traffic",
+    # Per-step decision point (step_decided): the step's class and reason
+    # (tool names only), the action taken, the judge's expected saving, and
+    # the per-step price math -- never arguments, paths or results.
+    "step_class",
+    "step_reason",
+    "step_action",
+    "step_index",
+    "expected_saving_s",
+    "judge_asked",
+    "candidate_origin",
+    "prompt_tokens_est",
+    "cheap_model",
+    "host_saving_usd",
+    "cheap_cost_usd",
+    # Routing levers: where served_model came from ("response" | "requested"),
+    # the chosen tier label and the user-facing profile name.
+    "served_model_source",
+    "tier",
+    "profile",
+    # Waste-guard receipts: the numeric inputs of the estimate (token and
+    # poll counts, step cost) -- never commands, paths or outputs.
+    "detail",
     "tool",
     "tool_call_id",
     "status",
@@ -234,6 +256,35 @@ SAFE_FIELDS = {
     "destructive",
     "touches_production",
     "latency_ms",
+    # HC12 ("easy-turn shaping", opt-in): the LENGTH of the guidance text
+    # actually appended (never the guidance text itself) and the list of
+    # tool NAMES actually hidden from one call's advertised tool list --
+    # never tool arguments/outputs or message content. `provider_call_id`,
+    # `mode` (already listed above) are reused verbatim.
+    "guidance_chars",
+    "hidden_tools",
+    # Turn planner (opt-in): the objective used, the estimated prompt-token
+    # context size, the per-option {model, warm, cold, cost, time} table,
+    # and the chosen model id -- all small numeric/label scalars derived
+    # from token counts already recorded elsewhere (never raw messages,
+    # tool arguments or model output). `host_model`, `provider_call_id`,
+    # `mode` (already listed above) are reused verbatim.
+    "objective",
+    "ctx",
+    "options",
+    # Turn planner lookahead (opt-in): the resolved continuation
+    # probability used to price the risk of leaving the host cache
+    # stale, and the session-kind label it came from -- both small,
+    # already-derived scalars (see contracts.DEFAULT_PLANNER_CONTINUE_PROBABILITY),
+    # never raw session content.
+    "p_continue",
+    "session_kind",
+    # "value" objective (opt-in): the resolved USD/hour used to convert
+    # TOTAL time into money -- a config-level policy scalar, never
+    # session content. Each option's own "utility" rides along inside
+    # "options" (already allowlisted above), not as a separate top-level
+    # field.
+    "value_of_time_usd_per_hour",
 }
 
 

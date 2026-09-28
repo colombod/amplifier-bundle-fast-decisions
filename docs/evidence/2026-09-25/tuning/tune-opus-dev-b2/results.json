@@ -1,0 +1,144 @@
+{
+  "schema": "fast-decisions-evals/results/v1",
+  "suite": "s1",
+  "split": "dev",
+  "reps": 1,
+  "cells": [
+    {
+      "cell": "orch-default-opus",
+      "anchor": "plain-opus",
+      "reps": 1,
+      "split": "dev",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 0.8162537471695034,
+        "ci95_low": 0.7098799471891041,
+        "ci95_high": 0.9402180355300563,
+        "sign_test_p": 0.14599609375
+      },
+      "cost_ratio": 0.9771991057132481,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "verdict": "screen",
+      "vs_plain": {
+        "anchor": "plain-sonnet",
+        "exec_time_ratio": {
+          "geomean": 0.7780597334151356,
+          "ci95_low": 0.615606696793461,
+          "ci95_high": 0.9366687826516241,
+          "sign_test_p": 0.03857421875
+        },
+        "cost_ratio": 0.9875106141089922,
+        "quality": {
+          "candidate_successes": 12,
+          "anchor_successes": 12,
+          "non_inferior": true
+        }
+      }
+    },
+    {
+      "cell": "orch-haiku-opus",
+      "anchor": "plain-opus",
+      "reps": 1,
+      "split": "dev",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 1.2382730299694886,
+        "ci95_low": 1.028631260228514,
+        "ci95_high": 1.4662772170160032,
+        "sign_test_p": 0.14599609375
+      },
+      "cost_ratio": 0.4558082872775519,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "verdict": "screen"
+    },
+    {
+      "cell": "orch-haiku-low-opus",
+      "anchor": "plain-opus",
+      "reps": 1,
+      "split": "dev",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 1.1701593666035695,
+        "ci95_low": 0.9702183999100626,
+        "ci95_high": 1.4019360812589703,
+        "sign_test_p": 0.3876953125
+      },
+      "cost_ratio": 0.4436936061363188,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "verdict": "screen"
+    },
+    {
+      "cell": "orch-opuslow-opus",
+      "anchor": "plain-opus",
+      "reps": 1,
+      "split": "dev",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 0.9695436373848252,
+        "ci95_low": 0.7874429016668575,
+        "ci95_high": 1.2315097996522597,
+        "sign_test_p": 1.0
+      },
+      "cost_ratio": 0.9547769901894622,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "verdict": "screen"
+    },
+    {
+      "cell": "orch-sonnetlow-opus",
+      "anchor": "plain-opus",
+      "reps": 1,
+      "split": "dev",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 0.8340483306525395,
+        "ci95_low": 0.7123510667924916,
+        "ci95_high": 0.987319054617893,
+        "sign_test_p": 0.03857421875
+      },
+      "cost_ratio": 1.0019701706496202,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "verdict": "screen"
+    }
+  ],
+  "q3": null,
+  "evidence_limits": [
+    "bootstrap_ci: 2000 resamples, seed=20260919",
+    "confirmed requires >= 3 reps, >= 8 paired passing tasks, and split=holdout",
+    "external_harness_exec_time_may_still_include_its_own_startup",
+    "models_not_necessarily_matched_across_campaigns_or_harnesses",
+    "models_not_necessarily_matched_across_harnesses",
+    "n_tasks=12",
+    "non_contemporaneous_runs_across_campaigns",
+    "single_repetition_per_task_per_harness"
+  ]
+}

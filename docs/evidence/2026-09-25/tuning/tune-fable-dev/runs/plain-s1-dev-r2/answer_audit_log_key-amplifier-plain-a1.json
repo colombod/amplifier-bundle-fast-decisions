@@ -1,0 +1,57 @@
+{
+  "name": "plain-s1-dev-r2-answer_audit_log_key-amplifier-plain-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T12:46:56.748645+00:00",
+  "ended_at": "2026-09-25T12:47:28.263364+00:00",
+  "wall_time_ms": 31513.89949998702,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.633291,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 241996.0,
+    "output_tokens": 1259.0,
+    "cache_read_tokens": 241984.0,
+    "cache_write_tokens": 40778.0,
+    "cost_usd": 0.633291
+  },
+  "num_turns": null,
+  "final_message": "Trace of `service.checkout(\"7781\")`:\n\n- `service.py:6` calls `write_audit(\"order\", order_id)` with `order_id = \"7781\"`.\n- `audit.py:11` sets `key = [REDACTED:SECRET]'s display masked this line, so I confirmed the raw bytes with `od`).\n- `audit.py:6` builds `f\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"`, with `AUDIT_PREFIX = \"AUD\"` from `config.py:3`, `\"order\".upper()` \u2192 `\"ORDER\"`, and `ident = \"7781\"`.\n- `audit.py:12` writes `log[key] = True`.\n\n`decoy_metrics.py` and `decoy_cache.py` never touch the audit log (the metrics module uses `METRICS_PREFIX = \"MET\"` and a separate dict). Executing the code locally confirms the log is `{'AUD-ORDER-7781': True}`.\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 19212.212,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 4,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-fable-5-1": 4
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.633291
+    }
+  }
+}

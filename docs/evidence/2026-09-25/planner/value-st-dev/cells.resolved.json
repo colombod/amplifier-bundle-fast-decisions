@@ -1,0 +1,134 @@
+[
+  {
+    "id": "plain",
+    "experiments": [
+      "plain-s1-dev-r1",
+      "plain-s1-dev-r2"
+    ],
+    "seeds": [
+      20261008,
+      20261009
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "plain-sonnet",
+    "experiments": [
+      "plain-sonnet-s1-dev-r1",
+      "plain-sonnet-s1-dev-r2"
+    ],
+    "seeds": [
+      20261008,
+      20261009
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-default",
+    "experiments": [
+      "orch-default-s1-dev-r1",
+      "orch-default-s1-dev-r2"
+    ],
+    "seeds": [
+      20261008,
+      20261009
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "plain-opus",
+    "experiments": [
+      "plain-opus-s1-dev-r1",
+      "plain-opus-s1-dev-r2"
+    ],
+    "seeds": [
+      20261008,
+      20261009
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-default-opus",
+    "experiments": [
+      "orch-default-opus-s1-dev-r1",
+      "orch-default-opus-s1-dev-r2"
+    ],
+    "seeds": [
+      20261008,
+      20261009
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-planner-value-sub-opus",
+    "experiments": [
+      "orch-planner-value-sub-opus-s1-dev-r1",
+      "orch-planner-value-sub-opus-s1-dev-r2"
+    ],
+    "seeds": [
+      20261008,
+      20261009
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-planner-value-sub-fable",
+    "experiments": [
+      "orch-planner-value-sub-fable-s1-dev-r1",
+      "orch-planner-value-sub-fable-s1-dev-r2"
+    ],
+    "seeds": [
+      20261008,
+      20261009
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  }
+]

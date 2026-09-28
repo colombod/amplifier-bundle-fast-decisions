@@ -241,7 +241,14 @@ class StopServerTests(unittest.TestCase):
             self.assertEqual(code, 1)
 
     def test_stops_a_live_pid_and_removes_state(self):
-        proc = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+        # The command line must contain "amplifier_fast_decisions" so
+        # ``pid_looks_like_viewer`` (identity check before signalling, see
+        # ``observatory.py``) treats this stand-in process as a plausible
+        # viewer -- a real ``afast serve`` invocation always carries that
+        # module name in its argv.
+        proc = subprocess.Popen(
+            [sys.executable, "-c", "import time; time.sleep(30)  # amplifier_fast_decisions"]
+        )
         try:
             with tempfile.TemporaryDirectory() as tmp:
                 state_file = Path(tmp) / "serve.json"
@@ -273,6 +280,63 @@ class StopServerTests(unittest.TestCase):
             code = stop_server(state_file)
             self.assertEqual(code, 0)
             self.assertFalse(state_file.exists())
+
+    def test_reused_pid_is_not_signalled(self):
+        """Hardening: if the recorded pid is alive but its command line no
+        longer looks like a viewer (the classic pid-reuse race -- the viewer
+        died and the OS handed that pid to an unrelated process), the
+        production ``stop_server`` path must NOT send it a signal. The state
+        file is still cleared (the recorded viewer is gone either way) and
+        the call still exits 0.
+        """
+        proc = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                state_file = Path(tmp) / "serve.json"
+                observatory.write_state_atomic(
+                    state_file,
+                    {
+                        "pid": proc.pid,
+                        "port": 8799,
+                        "url": "http://127.0.0.1:8799/#token=t",
+                    },
+                )
+                code = stop_server(state_file)
+                self.assertEqual(code, 0)
+                self.assertFalse(state_file.exists())
+                # Give a would-be signal a moment to land, then confirm the
+                # process is still alive -- it was never signalled.
+                time.sleep(0.2)
+                self.assertIsNone(proc.poll())
+        finally:
+            proc.kill()
+            proc.wait(timeout=5)
+
+    def test_pid_looks_like_viewer_true_for_marked_process(self):
+        proc = subprocess.Popen(
+            [sys.executable, "-c", "import time; time.sleep(5)  # amplifier_fast_decisions"]
+        )
+        try:
+            time.sleep(0.2)
+            self.assertTrue(observatory.pid_looks_like_viewer(proc.pid))
+        finally:
+            proc.kill()
+            proc.wait(timeout=5)
+
+    def test_pid_looks_like_viewer_false_for_unrelated_process(self):
+        proc = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(5)"])
+        try:
+            time.sleep(0.2)
+            self.assertFalse(observatory.pid_looks_like_viewer(proc.pid))
+        finally:
+            proc.kill()
+            proc.wait(timeout=5)
+
+    def test_pid_looks_like_viewer_true_when_pid_gone(self):
+        # Can't verify identity of a pid that no longer exists -- fail open
+        # (this pid is essentially guaranteed never to exist; see
+        # test_stale_pid_still_removes_state_and_exits_0 above).
+        self.assertTrue(observatory.pid_looks_like_viewer(2**30))
 
 
 class ServePortFallbackTests(unittest.TestCase):

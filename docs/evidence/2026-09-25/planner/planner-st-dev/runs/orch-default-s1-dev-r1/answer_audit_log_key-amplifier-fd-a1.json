@@ -1,0 +1,121 @@
+{
+  "name": "orch-default-s1-dev-r1-answer_audit_log_key-amplifier-fd-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T18:06:01.569663+00:00",
+  "ended_at": "2026-09-25T18:08:21.600287+00:00",
+  "wall_time_ms": 140027.59245902416,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.6292125000000001,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 241982.0,
+    "output_tokens": 1185.0,
+    "cache_read_tokens": 241970.0,
+    "cache_write_tokens": 40748.0,
+    "cost_usd": 0.6292125000000001
+  },
+  "num_turns": null,
+  "final_message": "Trace of `service.checkout(\"7781\")`:\n\n1. `service.checkout` (service.py:6) calls `write_audit(\"order\", order_id)`.\n2. `audit.write_audit` (audit.py:11) computes `key = [REDACTED:SECRET]\n3. `_format_key` (audit.py:6) returns `f\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"`, with `AUDIT_PREFIX = \"AUD\"` from config.py:3.\n4. So the key is `\"AUD\" + \"-\" + \"ORDER\" + \"-\" + \"7781\"`.\n\nThe `decoy_metrics.py` (prefix `MET`, writes to a metrics dict) and `decoy_cache.py` files never touch the audit log. Verified by executing the code locally: `write_audit('order','7781')` returns `{'AUD-ORDER-7781': True}`.\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": null,
+  "exec_time_ms": 24204.049000000003,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 4,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.56,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_46d919abd69c408a99b5f4938474b129",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 213,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36531
+      },
+      {
+        "provider_call_id": "provider_cdde3f1eab514f3fa430113692f7ae4b",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68392,
+        "output_tokens": 362,
+        "cache_read_tokens": 68388,
+        "cache_write_tokens": 1168
+      },
+      {
+        "provider_call_id": "provider_2769c0b8d60341029541906e8f00006b",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69558,
+        "output_tokens": 293,
+        "cache_read_tokens": 69556,
+        "cache_write_tokens": 2613
+      },
+      {
+        "provider_call_id": "provider_cd945fcbae104e068d11786756a61a82",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 72171,
+        "output_tokens": 317,
+        "cache_read_tokens": 72169,
+        "cache_write_tokens": 436
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 4
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 4
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.629213
+    }
+  }
+}

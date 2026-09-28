@@ -36,6 +36,8 @@ Session identity is read from the coordinator/session if exposed. A generated fa
 | `decided_batch` | HC08 (opt-in, off unless `Policy.decision_batching` is `true`): emitted once per request where the phase judge AND the escalation judge were both due and combined into ONE `ask_many()` backend call instead of two separate `ask()` calls; carries `backend`, `question_ids` (the batched question names), `n_questions`, `duration_ms`, and `mode`. Never fires when only one judge is due (nothing to batch) or when the batched call itself failed (see `TurnState.batch_fallbacks`) |
 | `escalation_signals` | HC10 (opt-in, off unless `Policy.model_routing.escalation_judge == "decomposed"`): emitted once per slow request past the turn's first, while not yet escalated, in place of `escalation_judged`; the five atomic yes/no signals (`plan_derailed`, `repeated_tool_errors`, `tests_failing`, `unfamiliar_code`, `beyond_tier`) are asked in ONE `ask_many()` call and combined in code via a weighted sum -- never a single trusted verdict. Carries `backend`, `signal_probabilities` (`{signal_name: probability_of_yes}`, each `null` on abstain/blocked/error), `score` (the weighted sum), `gate` (HC09's stake-scaled confidence floor for `escalation`), `band` (the uncertain-band half-width, `0.1`), `decided` (`escalate` / `continue` / `uncertain_rules_only` / `fallback_rules`), `duration_ms`, `phase`, `slow_requests_seen`, and `mode`. `escalate` only when `score >= gate + band`; `continue` only when `score <= gate - band`; the band in between is `uncertain_rules_only` -- deliberately not acted on. Never fires when a deterministic trigger (`test_failure` / `max_requests`) already escalated this same request |
 | `tool_risk` | HC11 (opt-in, off unless `Policy.tool_risk_shadow` is `true`): emitted once per tool call, immediately before `ObservedTool.execute` invokes the real tool; asks three atomic questions (`destructive`, `touches_production`, `category`) in ONE `ask_many()` call. Carries `tool`, `destructive` (`yes`/`no`/`null`), `touches_production` (`yes`/`no`/`null`), `category` (`read`/`write`/`execute`/`network`/`other`/`null`), `probabilities` (per-question probability distributions), `latency_ms`, `backend`, and `mode`. Purely observational: the answer is never consulted to block, modify, or approve the call -- native approvals remain the sole authority. Only the tool name and argument KEYS are sent to the backend; argument VALUES never leave this process |
+| `easy_turn_shaped` | HC12 (opt-in, off unless `model_routing.easy_turn_guidance` and/or `model_routing.easy_turn_hide_tools` is configured): emitted at most ONCE per turn, on the first slow (`RoutedProvider.complete`) request where shaping actually changed something, while `turn.start_tier == "cheap"`. Carries `guidance_chars` (the length of the guidance text actually appended to the system prompt this call, `0` when no guidance was applied -- e.g. no system message was found), `hidden_tools` (the tool NAMES actually removed from this call's advertised tool list, `[]` when none matched), `provider_call_id`, and `mode`. Never the guidance text itself, never tool arguments/outputs. `turn.start_tier == "strong"`, or a turn where `model_routing` never fires, is byte-for-byte untouched: no event, no shaped request |
+| `turn_planned` | Turn planner (opt-in, off unless `model_routing.planner.enabled` is `true`): emitted at most ONCE per turn, on the first easy-turn (`turn.start_tier == "cheap"`) slow request, immediately after the pure `planner.plan_turn()` call decided something (never emitted on abstain -- see below). Carries `objective` (`speed`/`cost`/`balanced`/`value`), `ctx` (the estimated prompt-token size of this turn's first request), `session_kind` (`sub_session`/`first_turn`/`later_turn`, see "Lookahead" in docs/proposals/TURN-PLANNER.md), `p_continue` (the resolved continuation probability for that kind), `options` (one `{model, warm, cold, cost, time, lookahead_cost, lookahead_time}` entry per priced/priored option, host included -- `lookahead_cost`/`lookahead_time` are always `0` for the host; each option also carries `utility` when `objective: value`, see "Objectives" in docs/proposals/TURN-PLANNER.md), `choice` (the chosen model id, equal to `host_model` when the host itself was chosen), `host_model`, `provider_call_id`, and `mode`; a top-level `value_of_time_usd_per_hour` is present only when `objective: value`. Never raw messages, tool arguments or model output. Abstains (the host has no price or prior in `savings.DEFAULT_RATES`/`planner.priors`) emit nothing here -- the turn falls back to the pre-planner `model_routed` behavior (`reason_code: start_model`) unchanged |
 
 Fast tool IDs match the synthesized core ToolCall ID when the argument fingerprint still matches. If upstream modifies a call, or for ordinary slow-path calls, the tool facade may allocate an `observed_*` correlation ID instead. The native hook bridge can carry the original native ID. Do not assume these are identical in every path.
 
@@ -211,6 +213,44 @@ key always overrides its legacy alias when both are set. `gate` and
 `escalation_judged` so every judged decision's receipt shows the floor it
 was measured against and whether it cleared it.
 
+**HC12 (easy-turn shaping) builds a shaped COPY of the request per call; it never mutates the original.** `model_routing.easy_turn_guidance` (a string) and `model_routing.easy_turn_hide_tools` (a list of tool names) apply only while `turn.start_tier == "cheap"` -- decided once by the turn-start difficulty router (HC04, above) and never re-evaluated mid-turn. `orchestrator._shape_easy_turn_request` returns a new request object with the guidance text appended to the END of the last system message's text content (a fixed suffix of an otherwise-identical prefix, so every call of the turn sends byte-identical system-prompt text -- the least cache-disruptive place to add it) and/or the named tools removed from `request.tools` for that one call; the original `request`, its `messages` list, and every message/content object it references are left untouched, so a request object reused by reference across calls (or turns) is never corrupted. A tool hidden this way still exists in the session: if the model calls it anyway, nothing special happens, only that one call's advertised list was smaller. Fails closed (no-op) when there is no system message, or its content shape isn't a plain string or a list with a `type: "text"` block -- it never invents a system message. Both knobs default to `None`/`[]` (fully inert): no request field is read or written and no `easy_turn_shaped` event is emitted.
+
+**The turn planner (opt-in) picks the model for one easy turn by comparing
+a small cost/time model, not a fixed `start_model`.** `model_routing.planner`
+(default off -- the key is optional and `enabled` defaults to `False`) runs
+`planner.plan_turn()`, a pure function, once per turn at the first request
+where `turn.start_tier == "cheap"` and the turn is otherwise untouched
+(unescalated, provider-matched, not host-pinned) -- exactly the same
+decision point that used to unconditionally assign `start_model`. It never
+runs for a hard, scope-gated, or user-pinned turn; those are decided
+entirely by the turn-start difficulty router (HC04, above) before the
+planner is ever consulted. For each option (the host plus each configured
+candidate, defaulting to `[start_model]` when `planner.candidates` is
+empty), it estimates whether that model is still "warm" (served a call in
+this session within `planner.cache_ttl_seconds`) using per-session cache
+state recorded from every real provider response's usage
+(`orchestrator.RoutedProvider`'s `last_used_at` + reported prompt-token
+size, keyed by model), then prices the turn's expected calls at
+`savings.DEFAULT_RATES` and the configured `priors` (per-model-family
+latency/cold-cache measurements). `speed`/`cost` pick the least time/cost
+option; `balanced` (the default objective) picks the least time among
+options within `cost_tolerance` of the host's own cost -- the host always
+qualifies, and ties go to the host. Choosing the host behaves exactly like
+a hard turn (`reason_code: planner_host`, no `request.model`/`kwargs["model"]`
+override); choosing a candidate behaves exactly like today's easy turn
+with that model as the start model for the whole turn
+(`reason_code: planner_<objective>`). When the host itself has no price or
+prior, the planner abstains for that turn and the pre-planner
+`start_model` assignment applies unchanged (`reason_code: start_model`) --
+this is the only case where `planner.enabled: true` produces no
+`turn_planned` receipt and no behavior change. HC12's easy-turn shaping
+(`easy_turn_guidance`/`easy_turn_hide_tools`, above) still keys off
+`turn.start_tier == "cheap"` only -- it is NOT gated on which model the
+planner chose, so a `planner_host` turn (which runs on the host, same as
+`start_strong`) does not receive easy-turn shaping even though
+`turn.start_tier` reads `"cheap"`; shaping only ever fires on a request
+that actually carries a routed (non-host) model override.
+
 **HC04 (opt-in model routing with escalation) never bypasses approvals or the upstream tool-call loop.**
 `Policy.model_routing` (default `None`) lets a host start a turn's generative
 requests pinned to a cheaper/faster `start_model` (and optionally a starting
@@ -225,3 +265,12 @@ An explicit host-set `request.model` is always respected
 is `true`. `model_routed` is the only new event surface; it never changes
 tool approvals, never touches `stream()`, and never overrides an
 already-applied HC03 `effort_routed` result on the same request.
+
+### Judge usage accounting
+
+`judge_usage` records each sequential Choice judge or batched phase/escalation
+backend attempt: question IDs, backend, returned model/token usage, duration,
+synthetic flag, and status. It contains no state or question text. Policy-blocked
+calls emit no usage event. Errors/cancellations retain unknown usage as null,
+not zero. These receipts supplement generative-provider and cache-refresh usage;
+they are cost evidence, not billed-dollar records.

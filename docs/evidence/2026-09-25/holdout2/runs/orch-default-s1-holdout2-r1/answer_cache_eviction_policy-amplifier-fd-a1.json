@@ -1,0 +1,93 @@
+{
+  "name": "orch-default-s1-holdout2-r1-answer_cache_eviction_policy-amplifier-fd-a1",
+  "task": "answer_cache_eviction_policy",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T13:42:52.514605+00:00",
+  "ended_at": "2026-09-25T13:43:15.587508+00:00",
+  "wall_time_ms": 23072.314124990953,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.92169025,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 68399.0,
+    "output_tokens": 445.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": 70581.0,
+    "cost_usd": 0.92169025
+  },
+  "num_turns": null,
+  "final_message": "`cache.make_cache()` falls back to `DEFAULT_POLICY` when `policy` is `None` (cache.py:3, cache.py:7-8), and `DEFAULT_POLICY = \"lru\"`. The `\"random\"` in decoy_config.py and `\"fifo\"` in decoy_policies.py are never imported by cache.py, so they don't affect the default.\n\nANSWER: lru",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 9763.154,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 2,
+  "concurrency_at_launch": 2,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.56,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_8c59e712db66411c8535b175efcd5f2b",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 4,
+        "output_tokens": 311,
+        "cache_write_tokens": 68391
+      },
+      {
+        "provider_call_id": "provider_75ddb44b59964a4ebbb9cd2e7d19ffa8",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68395,
+        "output_tokens": 134,
+        "cache_read_tokens": 68391,
+        "cache_write_tokens": 2190
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 2
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.92169
+    }
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "name": "plain-sonnet-s1m-m-dev-r3-scn_dev_2-amplifier-plain-a1",
+  "task": "scn_dev_2",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T20:56:09.517129+00:00",
+  "ended_at": "2026-09-25T20:57:48.918592+00:00",
+  "wall_time_ms": 99396.75979100866,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.8052361499999999,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1458455.0,
+    "output_tokens": 3775.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.8052361499999999
+  },
+  "num_turns": null,
+  "final_message": "Test passes.\n\nDONE: Fixed `session_ttl_expired` in `t4-bugfix_session_ttl_naive_tz/session_ttl.py` by removing the asymmetric `.replace(tzinfo=None)` on `now` so both timestamps stay timezone-aware for subtraction; verified via `python3 -m unittest -v test_public.py` (1 test OK).",
+  "quality": {
+    "checks": 45,
+    "passed": 45,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_merge_intervals/README.md": true,
+    "t1-repair_merge_intervals/test_public.py": true,
+    "t2-answer_compute_fee/README.md": true,
+    "t3-edit_dequeue_validation/README.md": true,
+    "t4-bugfix_session_ttl_naive_tz/README.md": true,
+    "t4-bugfix_session_ttl_naive_tz/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_merge_intervals",
+      "started_at": "2026-09-25T20:56:09.517129+00:00",
+      "ended_at": "2026-09-25T20:56:45.715869+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 36197.799457993824,
+      "final_message": "Both tests pass.\n\nDONE: Repaired `merge_intervals` in `t1-repair_merge_intervals/solution.py` to validate input (TypeError for non-list, ValueError for malformed/non-int/bool/start>end intervals), sort without mutating input, and merge overlapping/touching intervals; verified via `python3 -m unittest -v test_public.py` (2 tests OK).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 33,
+        "passed": 33,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 17824.992000000002,
+      "provider_requests": 5,
+      "cost_usd": 0.376221,
+      "model_counts": {
+        "claude-sonnet-5": 5
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_compute_fee",
+      "started_at": "2026-09-25T20:56:45.716680+00:00",
+      "ended_at": "2026-09-25T20:57:05.095981+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 19379.08199999947,
+      "final_message": "`compute_fee` calls `pricing.base_fee` (500 + 1000//10 = 600) then `discounts.apply_discount` (600 \u2212 20% = 480); `decoy_shipping`/`decoy_tax` are unused.\n\nANSWER: 480",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 11291.911,
+      "provider_requests": 4,
+      "cost_usd": 0.11819505000000001,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T20:57:02.946307+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_dequeue_validation",
+      "started_at": "2026-09-25T20:57:05.097049+00:00",
+      "ended_at": "2026-09-25T20:57:27.580442+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 22483.1445000018,
+      "final_message": "DONE: Added empty-queue validation to `dequeue` in `t3-edit_dequeue_validation/queue_util.py`, raising `ValueError('queue is empty')` when empty while preserving existing pop-first behavior for non-empty input.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 3,
+        "passed": 3,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 16470.897999999997,
+      "provider_requests": 6,
+      "cost_usd": 0.16466025,
+      "model_counts": {
+        "claude-sonnet-5": 6
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_session_ttl_naive_tz",
+      "started_at": "2026-09-25T20:57:27.581620+00:00",
+      "ended_at": "2026-09-25T20:57:48.918592+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 21336.733833013568,
+      "final_message": "Test passes.\n\nDONE: Fixed `session_ttl_expired` in `t4-bugfix_session_ttl_naive_tz/session_ttl.py` by removing the asymmetric `.replace(tzinfo=None)` on `now` so both timestamps stay timezone-aware for subtraction; verified via `python3 -m unittest -v test_public.py` (1 test OK).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 8,
+        "passed": 8,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 14942.114,
+      "provider_requests": 5,
+      "cost_usd": 0.14615985,
+      "model_counts": {
+        "claude-sonnet-5": 5
+      },
+      "background_calls": []
+    }
+  ],
+  "exec_time_ms": 60529.915,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 20,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 20,
+      "claude-haiku-4-5-20251001": 1
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.802044,
+      "claude-haiku-4-5-20251001": 0.003192
+    }
+  }
+}

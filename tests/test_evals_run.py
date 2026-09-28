@@ -469,6 +469,19 @@ class ExitCodeTests(unittest.TestCase):
         self.assertEqual(rc, 2)
         self.assertEqual(calls, [])
 
+    def test_holdout2_without_preregistration_exits_2_with_zero_launches(self):
+        calls = []
+        rc = self._run(["--suite", "s1", "--split", "holdout2", "--cells", "plain",
+                         "--candidate-sha", "deadbeef", "--baseline-source", "/b"], calls)
+        self.assertEqual(rc, 2)
+        self.assertEqual(calls, [])
+
+    def test_holdout_split_helper(self):
+        for name in ("holdout", "holdout2", "holdout3", "m-holdout3"):
+            self.assertTrue(run.is_holdout_split(name), name)
+        for name in ("dev", "m-dev", "", None):
+            self.assertFalse(run.is_holdout_split(name), name)
+
     def test_missing_candidate_sha_exits_2_with_zero_launches(self):
         calls = []
         rc = self._run(["--suite", "s1", "--split", "dev", "--cells", "plain",
@@ -622,6 +635,19 @@ class AggregateTaskPairsTests(unittest.TestCase):
         pairs = run.aggregate_task_pairs([None, {}])
         self.assertEqual(pairs, {})
 
+    def test_rep_numbers_track_position_including_none_gaps(self):
+        comp1 = {"cross": {"baselines": {"amplifier-plain": {"per_task": {
+            "t1": {"candidate_exec_s": 8.0, "candidate_passed": True,
+                   "amplifier-plain_exec_s": 10.0, "amplifier-plain_passed": True},
+        }}}}}
+        comp3 = {"cross": {"baselines": {"amplifier-plain": {"per_task": {
+            "t1": {"candidate_exec_s": 7.0, "candidate_passed": False,
+                   "amplifier-plain_exec_s": 9.0, "amplifier-plain_passed": True},
+        }}}}}
+        # rep 2 is None (e.g. an infra failure); rep numbers must still read 1 and 3.
+        pairs = run.aggregate_task_pairs([comp1, None, comp3])
+        self.assertEqual(pairs["t1"]["rep"], [1, 3])
+
 
 class PerTaskLogRatiosAndQualityTests(unittest.TestCase):
     def test_median_across_reps_then_log_ratio(self):
@@ -651,6 +677,97 @@ class PerTaskLogRatiosAndQualityTests(unittest.TestCase):
         self.assertEqual(cand, 1)   # t1 majority pass, t2 majority fail
         self.assertEqual(anchor, 1)  # t1 majority fail, t2 majority pass
         self.assertEqual(n, 2)
+
+
+class OutcomeRegressionFailuresTests(unittest.TestCase):
+    def test_flags_candidate_failed_where_anchor_passed(self):
+        task_pairs = {
+            "repair_roman_to_int": {
+                "candidate_passed": [True, False, False], "anchor_passed": [True, True, True],
+                "candidate_exec_s": [], "anchor_exec_s": [], "rep": [1, 2, 3],
+            },
+        }
+        failures = run.outcome_regression_failures(task_pairs)
+        self.assertEqual(len(failures), 2)
+        self.assertEqual([f["rep"] for f in failures], [2, 3])
+        for f in failures:
+            self.assertEqual(f["task"], "repair_roman_to_int")
+            self.assertEqual(f["labels"], ["candidate_failed_where_anchor_passed"])
+
+    def test_no_failure_when_both_pass_or_both_fail_or_candidate_alone_passes(self):
+        task_pairs = {
+            "t1": {"candidate_passed": [True, False], "anchor_passed": [True, False],
+                   "candidate_exec_s": [], "anchor_exec_s": [], "rep": [1, 2]},
+            "t2": {"candidate_passed": [True], "anchor_passed": [False],
+                   "candidate_exec_s": [], "anchor_exec_s": [], "rep": [1]},
+        }
+        self.assertEqual(run.outcome_regression_failures(task_pairs), [])
+
+    def test_falls_back_to_positional_rep_numbers_when_rep_key_absent(self):
+        task_pairs = {"t1": {"candidate_passed": [False], "anchor_passed": [True],
+                              "candidate_exec_s": [], "anchor_exec_s": []}}
+        failures = run.outcome_regression_failures(task_pairs)
+        self.assertEqual(failures, [{"task": "t1", "rep": 1, "labels": ["candidate_failed_where_anchor_passed"]}])
+
+
+class ProtectedFileAndCrashFailuresTests(unittest.TestCase):
+    def test_empty_without_campaign_root_or_experiments(self):
+        self.assertEqual(run.protected_file_and_crash_failures(None, ["exp-r1"]), [])
+        self.assertEqual(run.protected_file_and_crash_failures("/campaign", None), [])
+
+    def test_detects_protected_file_violation_and_evaluator_crash(self):
+        assigned = {
+            ("repair_roman_to_int", "amplifier-fd"): {"result": {
+                "protected_files_unchanged": {"protected.py": False, "readme.md": True},
+                "quality": {"failure_labels": []},
+            }},
+            ("other_task", "amplifier-fd"): {"result": {
+                "protected_files_unchanged": {"protected.py": True},
+                "quality": {"failure_labels": ["evaluate_error:boom"]},
+            }},
+            ("plain_task", "amplifier-plain"): {"result": {  # wrong harness, ignored
+                "protected_files_unchanged": {"protected.py": False},
+            }},
+        }
+        fake_battery = SimpleNamespace(
+            experiment_dir_for=lambda root, exp: Path(root) / exp,
+            _load_experiment_assigned=lambda experiment_dir: ({}, assigned),
+        )
+        with patch.dict(sys.modules, {"battery": fake_battery}):
+            failures = run.protected_file_and_crash_failures("/campaign", ["exp-r1"])
+        by_task = {f["task"]: f for f in failures if f["labels"][0].startswith("protected_file_modified")}
+        self.assertIn("protected_file_modified:protected.py", by_task["repair_roman_to_int"]["labels"])
+        crash = next(f for f in failures if f["task"] == "other_task" and "evaluator_crash" in f["labels"][0])
+        self.assertEqual(crash["rep"], 1)
+        self.assertIn("evaluator_crash:evaluate_error:boom", crash["labels"])
+
+    def test_ordinary_task_check_failure_label_is_not_mistaken_for_a_crash(self):
+        # battery_tasks.py's own check-failure labels (e.g. "<case-id>:expected-
+        # error-got-ok") contain the substring "error" but are NOT an evaluator
+        # crash -- only the two literal exception-wrapper prefixes battery.py's
+        # _evaluate_quality actually raises under (or the timeout sentinel) count.
+        assigned = {("repair_roman_to_int", "amplifier-fd"): {"result": {
+            "protected_files_unchanged": {},
+            "quality": {"failure_labels": ["rand-4:expected-error-got-ok", "answer_mismatch"]},
+        }}}
+        fake_battery = SimpleNamespace(
+            experiment_dir_for=lambda root, exp: Path(root) / exp,
+            _load_experiment_assigned=lambda experiment_dir: ({}, assigned),
+        )
+        with patch.dict(sys.modules, {"battery": fake_battery}):
+            failures = run.protected_file_and_crash_failures("/campaign", ["exp-r1"])
+        self.assertEqual(failures, [])
+
+    def test_unloadable_experiment_is_skipped_not_raised(self):
+        def _boom(experiment_dir):
+            raise FileNotFoundError("no manifest")
+        fake_battery = SimpleNamespace(
+            experiment_dir_for=lambda root, exp: Path(root) / exp,
+            _load_experiment_assigned=_boom,
+        )
+        with patch.dict(sys.modules, {"battery": fake_battery}):
+            failures = run.protected_file_and_crash_failures("/campaign", ["exp-r1", None])
+        self.assertEqual(failures, [])
 
 
 class BootstrapCiTests(unittest.TestCase):
@@ -728,6 +845,44 @@ class ClassifyVerdictTests(unittest.TestCase):
         kwargs = {**self.BASE, "ratio_point": 1.0, "ratio_ci_high": 1.05, "sign_p": 0.8}
         self.assertEqual(run.classify_verdict(**kwargs), "no-effect")
 
+    def test_confirmed_on_holdout2_split(self):
+        # holdout2 is a fresh holdout split (evals/suites.yaml) -- it must be
+        # eligible for "confirmed" exactly like "holdout", never like "dev".
+        kwargs = {**self.BASE, "split": "holdout2"}
+        self.assertEqual(run.classify_verdict(**kwargs), "confirmed")
+
+    def test_dev_split_never_confirmed_even_named_like_holdout2(self):
+        kwargs = {**self.BASE, "split": "dev"}
+        self.assertEqual(run.classify_verdict(**kwargs), "screen")
+
+    def test_m_dev_split_never_confirmed(self):
+        kwargs = {**self.BASE, "split": "m-dev"}
+        self.assertEqual(run.classify_verdict(**kwargs), "screen")
+
+    def test_confirmed_on_holdout3_split(self):
+        # holdout3 is a second fresh holdout split (evals/suites.yaml) -- it
+        # must be eligible for "confirmed" exactly like "holdout"/"holdout2".
+        kwargs = {**self.BASE, "split": "holdout3"}
+        self.assertEqual(run.classify_verdict(**kwargs), "confirmed")
+
+    def test_confirmed_on_m_holdout3_split(self):
+        # m-holdout3 is the multi-turn scenario split built from holdout3
+        # tasks -- it must be eligible for "confirmed" too, unlike "m-dev".
+        kwargs = {**self.BASE, "split": "m-holdout3"}
+        self.assertEqual(run.classify_verdict(**kwargs), "confirmed")
+
+    def test_critical_failure_disqualifies_even_with_full_bar(self):
+        kwargs = {**self.BASE, "critical_failure_count": 1}
+        self.assertEqual(run.classify_verdict(**kwargs), "disqualified (critical failure)")
+
+    def test_critical_failure_is_never_merely_quality_regressed(self):
+        kwargs = {**self.BASE, "critical_failure_count": 2, "quality_non_inferior": False}
+        self.assertEqual(run.classify_verdict(**kwargs), "disqualified (critical failure)")
+
+    def test_gate_failed_still_outranks_critical_failure(self):
+        kwargs = {**self.BASE, "critical_failure_count": 1, "gate_passed": False}
+        self.assertEqual(run.classify_verdict(**kwargs), "gate-failed")
+
 
 class BuildCellResultTests(unittest.TestCase):
     def test_end_to_end_confirmed(self):
@@ -744,6 +899,73 @@ class BuildCellResultTests(unittest.TestCase):
         self.assertAlmostEqual(row["exec_time_ratio"]["geomean"], 0.8)
         self.assertAlmostEqual(row["cost_ratio"], 0.8)
         self.assertEqual(row["quality"]["candidate_successes"], 10)
+        self.assertEqual(row["critical_failures"], [])
+
+    def test_end_to_end_disqualified_when_candidate_fails_where_anchor_passed(self):
+        # Same shape as test_end_to_end_confirmed, but on rep 2 one task's
+        # candidate fails while the anchor still passes -- STUDY-DESIGN.md
+        # section 8's third critical-failure kind. Must never be "confirmed".
+        def _per_task(rep):
+            table = {
+                f"t{i}": {"candidate_exec_s": 8.0, "candidate_passed": True,
+                          "amplifier-plain_exec_s": 10.0, "amplifier-plain_passed": True}
+                for i in range(10)
+            }
+            if rep == 2:
+                table["t0"] = {"candidate_exec_s": None, "candidate_passed": False,
+                               "amplifier-plain_exec_s": 10.0, "amplifier-plain_passed": True}
+            return table
+
+        comparisons = [
+            {"cross": {"baselines": {"amplifier-plain": {"per_task": _per_task(rep)}}},
+             "per_harness": {"amplifier-fd": {"mean_cost_known_usd": 0.4, "unknown_cost_count": 0}}}
+            for rep in (1, 2, 3)
+        ]
+        anchor_comparisons = [{"per_harness": {"amplifier-plain": {"mean_cost_known_usd": 0.5,
+                                                                    "unknown_cost_count": 0}}}] * 3
+        row = run.build_cell_result("judge-local+effort", "plain", comparisons, anchor_comparisons,
+                                     True, "holdout", 3)
+        self.assertEqual(row["verdict"], "disqualified (critical failure)")
+        self.assertEqual(len(row["critical_failures"]), 1)
+        self.assertEqual(row["critical_failures"][0]["task"], "t0")
+        self.assertEqual(row["critical_failures"][0]["rep"], 2)
+
+    def test_protected_file_and_crash_failures_feed_into_verdict(self):
+        comparisons = [{"cross": {"baselines": {"amplifier-plain": {"per_task": {
+            f"t{i}": {"candidate_exec_s": 8.0, "candidate_passed": True,
+                      "amplifier-plain_exec_s": 10.0, "amplifier-plain_passed": True}
+            for i in range(10)
+        }}}}, "per_harness": {"amplifier-fd": {"mean_cost_known_usd": 0.4, "unknown_cost_count": 0}}}] * 3
+        anchor_comparisons = [{"per_harness": {"amplifier-plain": {"mean_cost_known_usd": 0.5,
+                                                                    "unknown_cost_count": 0}}}] * 3
+        assigned = {("t0", "amplifier-fd"): {"result": {
+            "protected_files_unchanged": {"protected.py": False},
+            "quality": {"failure_labels": []},
+        }}}
+        with (
+            patch.object(battery, "experiment_dir_for", lambda root, exp: Path(root) / exp),
+            patch.object(battery, "_load_experiment_assigned", lambda experiment_dir: ({}, assigned)),
+        ):
+            row = run.build_cell_result(
+                "judge-local+effort", "plain", comparisons, anchor_comparisons, True, "holdout", 3,
+                campaign_root="/campaign", candidate_experiments=["exp-r1", "exp-r2", "exp-r3"],
+            )
+        self.assertEqual(row["verdict"], "disqualified (critical failure)")
+        self.assertTrue(any("protected_file_modified" in lbl
+                             for cf in row["critical_failures"] for lbl in cf["labels"]))
+
+    def test_no_campaign_root_means_no_protected_file_check_but_still_works(self):
+        comparisons = [{"cross": {"baselines": {"amplifier-plain": {"per_task": {
+            f"t{i}": {"candidate_exec_s": 8.0, "candidate_passed": True,
+                      "amplifier-plain_exec_s": 10.0, "amplifier-plain_passed": True}
+            for i in range(10)
+        }}}}, "per_harness": {"amplifier-fd": {"mean_cost_known_usd": 0.4, "unknown_cost_count": 0}}}] * 3
+        anchor_comparisons = [{"per_harness": {"amplifier-plain": {"mean_cost_known_usd": 0.5,
+                                                                    "unknown_cost_count": 0}}}] * 3
+        row = run.build_cell_result("judge-local+effort", "plain", comparisons, anchor_comparisons,
+                                     True, "holdout", 3)
+        self.assertEqual(row["critical_failures"], [])
+        self.assertEqual(row["verdict"], "confirmed")
 
 
 class Q3ComparisonTests(unittest.TestCase):
@@ -836,6 +1058,27 @@ class RenderResultsMarkdownTests(unittest.TestCase):
         self.assertIn("judge-local+effort", md)
         self.assertIn("screen", md)
         self.assertIn("n_tasks=10", md)
+
+    def test_disqualified_verdict_and_critical_failure_notes_are_rendered(self):
+        results = {
+            "suite": "s1", "split": "holdout2", "reps": 3,
+            "cells": [{
+                "cell": "orch-haiku-shaped", "anchor": "plain", "reps": 3, "split": "holdout2",
+                "gate_passed": True, "paired_task_count": 12,
+                "exec_time_ratio": {"geomean": 0.7, "ci95_low": 0.6, "ci95_high": 0.8, "sign_test_p": 0.01},
+                "cost_ratio": 0.8, "unknown_cost_count": 0,
+                "quality": {"candidate_successes": 11, "anchor_successes": 12, "non_inferior": True},
+                "critical_failures": [{"task": "repair_roman_to_int", "rep": 2,
+                                       "labels": ["candidate_failed_where_anchor_passed"]}],
+                "verdict": "disqualified (critical failure)",
+            }],
+            "q3": None, "evidence_limits": [],
+        }
+        md = run.render_results_markdown(results)
+        self.assertIn("disqualified (critical failure)", md)
+        self.assertIn("CRITICAL FAILURE", md)
+        self.assertIn("repair_roman_to_int", md)
+        self.assertIn("rep=2", md)
 
 
 class CampaignRootTests(unittest.TestCase):
@@ -1551,6 +1794,160 @@ class InitOrAdoptCampaignBudgetMappingTests(unittest.TestCase):
         import campaign
 
         self.assertEqual(campaign._get(proposal, "budgets.estimated_total_usd", 150.0), 150.0)
+
+
+class CellOrderForRepTests(unittest.TestCase):
+    """Unit tests for the pure `cell_order_for_rep` helper -- section 7
+    amendment (confound fix): removes the 'every batch runs cells in
+    cells.yaml declared order, plain always first' confound."""
+
+    CELL_IDS = ["plain", "plain-sonnet", "judge-local+effort"]
+
+    def test_declared_mode_reproduces_declared_order(self):
+        order = run.cell_order_for_rep(self.CELL_IDS, 1, mode="declared", base_seed=20260919)
+        self.assertEqual(order, self.CELL_IDS)
+        # declared mode ignores rep -- always the same
+        order2 = run.cell_order_for_rep(self.CELL_IDS, 7, mode="declared", base_seed=20260919)
+        self.assertEqual(order2, self.CELL_IDS)
+
+    def test_shuffle_is_deterministic_for_a_fixed_seed_and_rep(self):
+        a = run.cell_order_for_rep(self.CELL_IDS, 2, mode="shuffle", base_seed=20260919)
+        b = run.cell_order_for_rep(self.CELL_IDS, 2, mode="shuffle", base_seed=20260919)
+        self.assertEqual(a, b)
+        self.assertEqual(sorted(a), sorted(self.CELL_IDS))
+
+    def test_shuffle_order_is_not_always_identical_across_reps(self):
+        orders = [run.cell_order_for_rep(self.CELL_IDS, rep, mode="shuffle", base_seed=20260919)
+                  for rep in (1, 2, 3, 4, 5)]
+        self.assertGreater(len(set(tuple(o) for o in orders)), 1,
+                            "shuffled per-rep order should vary across reps for >=3 cells")
+        for order in orders:
+            self.assertEqual(sorted(order), sorted(self.CELL_IDS))
+
+
+class RepMajorSchedulingTests(unittest.TestCase):
+    """Integration tests for main()'s rep-major loop: every rep runs every
+    requested cell once (in shuffled or declared order) before any cell's
+    `evaluate` step for that rep, so an anchor_cell's raw run+reevaluate is
+    always on disk before a dependent cell reads it as a baseline."""
+
+    def _fake_invoke(self, reevaluated, evaluate_calls):
+        def fake_invoke(tool, argv):
+            if tool == "campaign" and argv[0] == "init":
+                root = Path(argv[argv.index("--root") + 1])
+                root.mkdir(parents=True, exist_ok=True)
+                (root / "protocol.json").write_text("{}")
+                return {"initialized": str(root)}
+            if tool == "campaign" and argv[:2] == ["budget", "status"]:
+                return {"remaining": 1000.0}
+            if tool == "battery" and argv[0] == "prepare":
+                flags = {}
+                it = iter(argv[1:])
+                for a in it:
+                    if a.startswith("--"):
+                        flags[a] = next(it, True)
+                exp_dir = battery.experiment_dir_for(Path(flags["--root"]), flags["--experiment"])
+                exp_dir.mkdir(parents=True, exist_ok=True)
+                (exp_dir / "proposal.json").write_text(json.dumps({
+                    "tasks": ["t1"], "claude_permission_mode": "bypassPermissions",
+                    "commands": {}, "task_source": None, "candidate_source_snapshot": None,
+                    "frozen_run_schedule": [],
+                }))
+                return {"prepared": str(exp_dir)}
+            if tool == "battery" and argv[0] == "run":
+                return {"experiment": argv[argv.index("--experiment") + 1]}
+            if tool == "battery" and argv[0] == "reevaluate":
+                exp = argv[argv.index("--experiment") + 1]
+                reevaluated.add(exp)
+                return {"experiment": exp, "changed": []}
+            if tool == "battery" and argv[0] == "evaluate":
+                exp = argv[argv.index("--experiment") + 1]
+                evaluate_calls.append(exp)
+                if "--baseline-experiment" in argv:
+                    baseline_exp = argv[argv.index("--baseline-experiment") + 1]
+                    if baseline_exp not in reevaluated:
+                        raise AssertionError(
+                            f"evaluate({exp}) read anchor {baseline_exp} before its run+reevaluate")
+                if exp.startswith("plain-"):
+                    mechanism = None
+                else:
+                    mechanism = {
+                        "mechanism_engaged": True, "mechanism_reason": None,
+                        "scored_by_backend": {"ollama": 1}, "fallback_count": 0,
+                        "routed_by_route": {}, "effort_routed_by_phase_effort": {"implement:high": 1},
+                        "model_routed_requested_models": {}, "model_routed_escalations_by_reason": {},
+                    }
+                return {"experiment": exp, "mechanism": mechanism, "amplifier_fd_series_label": None}
+            if tool == "battery_report":
+                return {"report": str(Path(argv[argv.index("--out") + 1]))}
+            raise AssertionError(f"unexpected invoke_tool call: {tool} {argv}")
+        return fake_invoke
+
+    def test_anchor_run_precedes_candidate_evaluate_regardless_of_launch_order(self):
+        reevaluated = set()
+        evaluate_calls = []
+        orig_invoke = run.invoke_tool
+        orig_verify = run.run_verification
+        run.invoke_tool = self._fake_invoke(reevaluated, evaluate_calls)
+        run.run_verification = lambda *a, **k: (True, {"checks": {}}, {"ok": True, "tasks": {}})
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                out = str(Path(tmp) / "out")
+                rc = run.main([
+                    "--suite", "s1", "--split", "dev", "--cells", "plain,judge-local+effort",
+                    "--reps", "3", "--out", out, "--baseline-source", "/b",
+                    "--candidate-source", "/c", "--candidate-sha", "deadbeef",
+                    "--installed-cache", "/ic", "--history-index", "/hi", "--events-dir", "/ev",
+                ])
+                self.assertEqual(rc, 0)
+                # every rep's evaluate actually ran (no exception raised by the
+                # anchor-ordering assertion embedded in the fake above)
+                self.assertEqual(len(evaluate_calls), 6)  # 2 cells x 3 reps
+                manifest = json.loads((Path(out) / "manifest.json").read_text())
+        finally:
+            run.invoke_tool = orig_invoke
+            run.run_verification = orig_verify
+
+        cell_order = manifest["invocation"]["cell_order"]
+        self.assertEqual(cell_order["mode"], "shuffle")
+        for rep in ("1", "2", "3"):
+            self.assertEqual(set(cell_order["per_rep"][rep]), {"plain", "judge-local+effort"})
+
+        timing = manifest["timing"]
+        for cid in ("plain", "judge-local+effort"):
+            for rep in ("1", "2", "3"):
+                entry = timing[cid][rep]
+                self.assertIsNotNone(entry["started_at"])
+                self.assertIsNotNone(entry["ended_at"])
+
+    def test_declared_cell_order_flag_reproduces_old_declared_order(self):
+        reevaluated = set()
+        evaluate_calls = []
+        orig_invoke = run.invoke_tool
+        orig_verify = run.run_verification
+        run.invoke_tool = self._fake_invoke(reevaluated, evaluate_calls)
+        run.run_verification = lambda *a, **k: (True, {"checks": {}}, {"ok": True, "tasks": {}})
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                out = str(Path(tmp) / "out")
+                rc = run.main([
+                    "--suite", "s1", "--split", "dev", "--cells", "plain,judge-local+effort",
+                    "--reps", "2", "--out", out, "--baseline-source", "/b",
+                    "--candidate-source", "/c", "--candidate-sha", "deadbeef",
+                    "--installed-cache", "/ic", "--history-index", "/hi", "--events-dir", "/ev",
+                    "--cell-order", "declared",
+                ])
+                self.assertEqual(rc, 0)
+                manifest = json.loads((Path(out) / "manifest.json").read_text())
+        finally:
+            run.invoke_tool = orig_invoke
+            run.run_verification = orig_verify
+
+        cell_order = manifest["invocation"]["cell_order"]
+        self.assertEqual(cell_order["mode"], "declared")
+        declared = run.resolve_cell_ids("plain,judge-local+effort", _load_test_cells())
+        for rep in ("1", "2"):
+            self.assertEqual(cell_order["per_rep"][rep], declared)
 
 
 if __name__ == "__main__":

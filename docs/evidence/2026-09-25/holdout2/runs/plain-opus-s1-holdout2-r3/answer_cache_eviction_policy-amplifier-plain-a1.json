@@ -1,0 +1,57 @@
+{
+  "name": "plain-opus-s1-holdout2-r3-answer_cache_eviction_policy-amplifier-plain-a1",
+  "task": "answer_cache_eviction_policy",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T14:24:06.988597+00:00",
+  "ended_at": "2026-09-25T14:24:29.135340+00:00",
+  "wall_time_ms": 22146.22287498787,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2314138,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 170029.0,
+    "output_tokens": 356.0,
+    "cache_read_tokens": 170019.0,
+    "cache_write_tokens": 38050.0,
+    "cost_usd": 0.2314138
+  },
+  "num_turns": null,
+  "final_message": "When `make_cache()` gets no `policy` argument, it falls back to `DEFAULT_POLICY` in `cache.py:3`, which is `\"lru\"`.\n\nI read every file in the directory. `main6.py` calls `make_cache()` with no arguments, so it gets this default. `decoy_config.py` (`\"random\"`) and `decoy_policies.py` (`\"fifo\"`) aren't imported by `cache.py`, so they don't change the result. `.amplifier/settings.local.yaml` contains only bundle config and nothing about the cache.\n\nANSWER: lru",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 9722.011999999999,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 1,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.231414
+    }
+  }
+}

@@ -1,0 +1,1111 @@
+{
+  "implementation_sha": "c75499c197670fe101771ba544b6414269f6a651",
+  "source_tree_sha256": "9b312b3f095f7b9aca2dc084d4a48dfc096c7f9b3f94b1be07a22d81eac6705e",
+  "created_at": "2026-09-28T03:07:16.971566+00:00",
+  "task": "repair_parse_duration",
+  "run_order": [
+    "baseline-1",
+    "fast-1",
+    "fast-2",
+    "baseline-2",
+    "baseline-3",
+    "fast-3",
+    "fast-4",
+    "baseline-4"
+  ],
+  "packages": {
+    "amplifier-app-cli": "0.1.1",
+    "amplifier-core": "2.0.1",
+    "amplifier-foundation": "1.0.0",
+    "amplifier-module-loop-streaming": "1.0.0"
+  },
+  "python": "3.12.11",
+  "hardware": "macOS-26.7-arm64-arm-64bit",
+  "limits": {
+    "timeout_seconds": 300,
+    "max_iterations": 20,
+    "extended_thinking": true
+  },
+  "summary": {
+    "baseline": {
+      "successful_runs": 4,
+      "runs": 4,
+      "mean_seconds": 37.522684291749556,
+      "median_seconds": 35.207424395999624,
+      "total_seconds": 150.09073716699822,
+      "mean_estimate_usd": 0.743723125,
+      "total_estimate_usd": 2.9748925,
+      "provider_calls": 18,
+      "tool_calls": 23,
+      "judge_calls": 0
+    },
+    "fast": {
+      "successful_runs": 4,
+      "runs": 4,
+      "mean_seconds": 20.240062302000297,
+      "median_seconds": 19.696734228999958,
+      "total_seconds": 80.96024920800119,
+      "mean_estimate_usd": 0.27303342750000004,
+      "total_estimate_usd": 1.0921337100000001,
+      "provider_calls": 19,
+      "tool_calls": 23,
+      "judge_calls": 4
+    }
+  },
+  "time_saved_percent": 46.059130139442985,
+  "estimated_cost_saved_percent": 63.28829663592885,
+  "jev_input_usd_per_million": 0.042,
+  "pricing_source": "https://docs.typesafe.ai/models",
+  "rows": [
+    {
+      "name": "baseline-1",
+      "side": "baseline",
+      "session_id": "6020842d-3b3b-48c6-ab07-42b0ab30599f",
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "source_match": true,
+      "mode_match": true,
+      "public_tests_passed": true,
+      "protected_files_unchanged": {
+        "README.md": true,
+        "test_public.py": true
+      },
+      "final_solution_sha256": "f72d14c6de5c0c861a8cbc648188e947800279936c7210a5db6e7321f2cb0a1d",
+      "started_at": "2026-09-28T03:07:17.290844+00:00",
+      "ended_at": "2026-09-28T03:07:55.058781+00:00",
+      "outcome_passed": true,
+      "seconds": 37.767554959000336,
+      "provider_estimate_usd": 1.0362965,
+      "judge_estimate_usd": 0.0,
+      "total_estimate_usd": 1.0362965,
+      "native": {
+        "provider_requests": 4,
+        "provider_responses": 4,
+        "provider_retries": 0,
+        "provider_errors": 0,
+        "tool_results": 5,
+        "tool_names": {
+          "read_file": 3,
+          "write_file": 1,
+          "bash": 1
+        },
+        "tool_failures_reported": 0,
+        "execution_completed": true,
+        "provider_response_duration_ms": 30531,
+        "usage": {
+          "input_tokens": 208918.0,
+          "output_tokens": 1849.0,
+          "cache_read_tokens": null,
+          "cache_write_tokens": 71320.0,
+          "cost_usd": 1.0362965
+        },
+        "usage_known_calls": {
+          "input_tokens": 4,
+          "output_tokens": 4,
+          "cache_write_tokens": 4,
+          "cost_usd": 4,
+          "cache_read_tokens": 3
+        },
+        "cost_evidence": "provider_reported_estimate_not_billing"
+      },
+      "provider_calls": [
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_write_tokens": 68211,
+            "cost_usd": "0.8709275",
+            "input_tokens": 4,
+            "output_tokens": 365
+          },
+          "duration_ms": 6839
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 68211,
+            "cache_write_tokens": 1775,
+            "cost_usd": "0.07068025",
+            "input_tokens": 68215,
+            "output_tokens": 628
+          },
+          "duration_ms": 10235
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 69986,
+            "cache_write_tokens": 723,
+            "cost_usd": "0.0502040",
+            "input_tokens": 69988,
+            "output_tokens": 473
+          },
+          "duration_ms": 7259
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70709,
+            "cache_write_tokens": 611,
+            "cost_usd": "0.04448475",
+            "input_tokens": 70711,
+            "output_tokens": 383
+          },
+          "duration_ms": 6198
+        }
+      ],
+      "judge_calls": [],
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "difficulty": [],
+      "waste_guard_count": 0
+    },
+    {
+      "name": "fast-1",
+      "side": "fast",
+      "session_id": "e70a6ea2-4581-462c-a502-07247b7ee1ea",
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "source_match": true,
+      "mode_match": true,
+      "public_tests_passed": true,
+      "protected_files_unchanged": {
+        "README.md": true,
+        "test_public.py": true
+      },
+      "final_solution_sha256": "4de5c214749b6dbb14ce07537906cdeadd1b2f7a78b49542e9a2d33f95efc701",
+      "started_at": "2026-09-28T03:07:56.682941+00:00",
+      "ended_at": "2026-09-28T03:08:15.502840+00:00",
+      "outcome_passed": true,
+      "seconds": 18.819437542000742,
+      "provider_estimate_usd": 0.3599964,
+      "judge_estimate_usd": 2.394e-05,
+      "total_estimate_usd": 0.36002034,
+      "native": {
+        "provider_requests": 5,
+        "provider_responses": 5,
+        "provider_retries": 0,
+        "provider_errors": 0,
+        "tool_results": 6,
+        "tool_names": {
+          "read_file": 3,
+          "write_file": 1,
+          "python_check": 1,
+          "bash": 1
+        },
+        "tool_failures_reported": 0,
+        "execution_completed": true,
+        "provider_response_duration_ms": 11016,
+        "usage": {
+          "input_tokens": 279023.0,
+          "output_tokens": 728.0,
+          "cache_read_tokens": null,
+          "cache_write_tokens": 70758.0,
+          "cost_usd": 0.3599964
+        },
+        "usage_known_calls": {
+          "input_tokens": 5,
+          "output_tokens": 5,
+          "cache_write_tokens": 5,
+          "cost_usd": 5,
+          "cache_read_tokens": 4
+        },
+        "cost_evidence": "provider_reported_estimate_not_billing"
+      },
+      "provider_calls": [
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_write_tokens": 68303,
+            "cost_usd": "0.25854225",
+            "input_tokens": 2,
+            "output_tokens": 160
+          },
+          "duration_ms": 2306
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 68303,
+            "cache_write_tokens": 1565,
+            "cost_usd": "0.03091065",
+            "input_tokens": 68305,
+            "output_tokens": 303
+          },
+          "duration_ms": 3411
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 69868,
+            "cache_write_tokens": 458,
+            "cost_usd": "0.0238239",
+            "input_tokens": 69870,
+            "output_tokens": 76
+          },
+          "duration_ms": 1288
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70326,
+            "cache_write_tokens": 190,
+            "cost_usd": "0.0234963",
+            "input_tokens": 70328,
+            "output_tokens": 112
+          },
+          "duration_ms": 1821
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70516,
+            "cache_write_tokens": 242,
+            "cost_usd": "0.0232233",
+            "input_tokens": 70518,
+            "output_tokens": 77
+          },
+          "duration_ms": 2190
+        }
+      ],
+      "judge_calls": [
+        {
+          "backend": "jev",
+          "duration_ms": 148.71745799973723,
+          "input_tokens": 570,
+          "model": "jev-1.13.0",
+          "output_tokens": 57,
+          "question_ids": [
+            "task_difficulty"
+          ],
+          "status": "ok",
+          "synthetic": false
+        }
+      ],
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "difficulty": [
+        {
+          "backend": "jev",
+          "choice": "cheap",
+          "duration_ms": 148.7141249999695,
+          "mode": "active",
+          "probabilities": {
+            "complex": 0.050000000000000044
+          },
+          "reason_code": "judge_cheap",
+          "state_chars": 435
+        }
+      ],
+      "waste_guard_count": 0
+    },
+    {
+      "name": "fast-2",
+      "side": "fast",
+      "session_id": "ba83cacd-e237-4dbb-9b94-36cff9304ae9",
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "source_match": true,
+      "mode_match": true,
+      "public_tests_passed": true,
+      "protected_files_unchanged": {
+        "README.md": true,
+        "test_public.py": true
+      },
+      "final_solution_sha256": "55621c6055f12d32d5668046b267daccb577d27bc6669aa0b48f2a7dbb9bef5f",
+      "started_at": "2026-09-28T03:08:16.935488+00:00",
+      "ended_at": "2026-09-28T03:08:36.464764+00:00",
+      "outcome_passed": true,
+      "seconds": 19.52882737499931,
+      "provider_estimate_usd": 0.25144785000000003,
+      "judge_estimate_usd": 2.394e-05,
+      "total_estimate_usd": 0.25147179000000003,
+      "native": {
+        "provider_requests": 5,
+        "provider_responses": 5,
+        "provider_retries": 0,
+        "provider_errors": 0,
+        "tool_results": 6,
+        "tool_names": {
+          "read_file": 3,
+          "write_file": 1,
+          "python_check": 1,
+          "bash": 1
+        },
+        "tool_failures_reported": 0,
+        "execution_completed": true,
+        "provider_response_duration_ms": 12591,
+        "usage": {
+          "input_tokens": 310832.0,
+          "output_tokens": 788.0,
+          "cache_read_tokens": 310822.0,
+          "cache_write_tokens": 39027.0,
+          "cost_usd": 0.25144785000000003
+        },
+        "usage_known_calls": {
+          "input_tokens": 5,
+          "output_tokens": 5,
+          "cache_read_tokens": 5,
+          "cache_write_tokens": 5,
+          "cost_usd": 5
+        },
+        "cost_evidence": "provider_reported_estimate_not_billing"
+      },
+      "provider_calls": [
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 31771,
+            "cache_write_tokens": 36513,
+            "cost_usd": "0.14904105",
+            "input_tokens": 31773,
+            "output_tokens": 172
+          },
+          "duration_ms": 3094
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 68284,
+            "cache_write_tokens": 1577,
+            "cost_usd": "0.03141495",
+            "input_tokens": 68286,
+            "output_tokens": 334
+          },
+          "duration_ms": 3360
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 69861,
+            "cache_write_tokens": 489,
+            "cost_usd": "0.02419305",
+            "input_tokens": 69863,
+            "output_tokens": 93
+          },
+          "duration_ms": 2675
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70350,
+            "cache_write_tokens": 206,
+            "cost_usd": "0.0235635",
+            "input_tokens": 70352,
+            "output_tokens": 112
+          },
+          "duration_ms": 1677
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70556,
+            "cache_write_tokens": 242,
+            "cost_usd": "0.0232353",
+            "input_tokens": 70558,
+            "output_tokens": 77
+          },
+          "duration_ms": 1785
+        }
+      ],
+      "judge_calls": [
+        {
+          "backend": "jev",
+          "duration_ms": 133.45750000007683,
+          "input_tokens": 570,
+          "model": "jev-1.13.0",
+          "output_tokens": 57,
+          "question_ids": [
+            "task_difficulty"
+          ],
+          "status": "ok",
+          "synthetic": false
+        }
+      ],
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "difficulty": [
+        {
+          "backend": "jev",
+          "choice": "cheap",
+          "duration_ms": 133.4520420004992,
+          "mode": "active",
+          "probabilities": {
+            "complex": 0.040000000000000036
+          },
+          "reason_code": "judge_cheap",
+          "state_chars": 435
+        }
+      ],
+      "waste_guard_count": 0
+    },
+    {
+      "name": "baseline-2",
+      "side": "baseline",
+      "session_id": "c738428a-6c37-4969-a2c5-ed6c7cdfe054",
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "source_match": true,
+      "mode_match": true,
+      "public_tests_passed": true,
+      "protected_files_unchanged": {
+        "README.md": true,
+        "test_public.py": true
+      },
+      "final_solution_sha256": "206c0367eab57252c3e5bfbc57cd568c73134274bcf283906a2c40dbf64f3d62",
+      "started_at": "2026-09-28T03:08:37.964535+00:00",
+      "ended_at": "2026-09-28T03:09:06.025646+00:00",
+      "outcome_passed": true,
+      "seconds": 28.06087262499932,
+      "provider_estimate_usd": 0.59666475,
+      "judge_estimate_usd": 0.0,
+      "total_estimate_usd": 0.59666475,
+      "native": {
+        "provider_requests": 4,
+        "provider_responses": 4,
+        "provider_retries": 0,
+        "provider_errors": 0,
+        "tool_results": 5,
+        "tool_names": {
+          "read_file": 3,
+          "write_file": 1,
+          "bash": 1
+        },
+        "tool_failures_reported": 0,
+        "execution_completed": true,
+        "provider_response_duration_ms": 20767,
+        "usage": {
+          "input_tokens": 240041.0,
+          "output_tokens": 1013.0,
+          "cache_read_tokens": 240029.0,
+          "cache_write_tokens": 38871.0,
+          "cost_usd": 0.59666475
+        },
+        "usage_known_calls": {
+          "input_tokens": 4,
+          "output_tokens": 4,
+          "cache_read_tokens": 4,
+          "cache_write_tokens": 4,
+          "cost_usd": 4
+        },
+        "cost_evidence": "provider_reported_estimate_not_billing"
+      },
+      "provider_calls": [
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 31767,
+            "cache_write_tokens": 36465,
+            "cost_usd": "0.47309425",
+            "input_tokens": 31771,
+            "output_tokens": 186
+          },
+          "duration_ms": 5040
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 68232,
+            "cache_write_tokens": 1596,
+            "cost_usd": "0.051048",
+            "input_tokens": 68236,
+            "output_tokens": 280
+          },
+          "duration_ms": 5705
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 69828,
+            "cache_write_tokens": 374,
+            "cost_usd": "0.037052",
+            "input_tokens": 69830,
+            "output_tokens": 298
+          },
+          "duration_ms": 5175
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70202,
+            "cache_write_tokens": 436,
+            "cost_usd": "0.0354705",
+            "input_tokens": 70204,
+            "output_tokens": 249
+          },
+          "duration_ms": 4847
+        }
+      ],
+      "judge_calls": [],
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "difficulty": [],
+      "waste_guard_count": 0
+    },
+    {
+      "name": "baseline-3",
+      "side": "baseline",
+      "session_id": "516ad688-1d67-4d20-bf20-2cae341a1fab",
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "source_match": true,
+      "mode_match": true,
+      "public_tests_passed": true,
+      "protected_files_unchanged": {
+        "README.md": true,
+        "test_public.py": true
+      },
+      "final_solution_sha256": "534839e96138da1543e27d4bd2e0c6066931063c574a4622e3b11f4e1c468e37",
+      "started_at": "2026-09-28T03:09:08.035955+00:00",
+      "ended_at": "2026-09-28T03:09:40.683811+00:00",
+      "outcome_passed": true,
+      "seconds": 32.64729383299891,
+      "provider_estimate_usd": 0.6097975,
+      "judge_estimate_usd": 0.0,
+      "total_estimate_usd": 0.6097975,
+      "native": {
+        "provider_requests": 4,
+        "provider_responses": 4,
+        "provider_retries": 0,
+        "provider_errors": 0,
+        "tool_results": 5,
+        "tool_names": {
+          "read_file": 3,
+          "write_file": 1,
+          "bash": 1
+        },
+        "tool_failures_reported": 0,
+        "execution_completed": true,
+        "provider_response_duration_ms": 22645,
+        "usage": {
+          "input_tokens": 240394.0,
+          "output_tokens": 1160.0,
+          "cache_read_tokens": 240380.0,
+          "cache_write_tokens": 39325.0,
+          "cost_usd": 0.6097975
+        },
+        "usage_known_calls": {
+          "input_tokens": 4,
+          "output_tokens": 4,
+          "cache_read_tokens": 4,
+          "cache_write_tokens": 4,
+          "cost_usd": 4
+        },
+        "cost_evidence": "provider_reported_estimate_not_billing"
+      },
+      "provider_calls": [
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 31767,
+            "cache_write_tokens": 36457,
+            "cost_usd": "0.47274425",
+            "input_tokens": 31771,
+            "output_tokens": 181
+          },
+          "duration_ms": 4408
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 68224,
+            "cache_write_tokens": 1591,
+            "cost_usd": "0.0562835",
+            "input_tokens": 68228,
+            "output_tokens": 386
+          },
+          "duration_ms": 5671
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 69815,
+            "cache_write_tokens": 759,
+            "cost_usd": "0.04588125",
+            "input_tokens": 69819,
+            "output_tokens": 378
+          },
+          "duration_ms": 7737
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70574,
+            "cache_write_tokens": 518,
+            "cost_usd": "0.0348885",
+            "input_tokens": 70576,
+            "output_tokens": 215
+          },
+          "duration_ms": 4829
+        }
+      ],
+      "judge_calls": [],
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "difficulty": [],
+      "waste_guard_count": 0
+    },
+    {
+      "name": "fast-3",
+      "side": "fast",
+      "session_id": "6905932b-8554-455a-ab0e-22664b8c0746",
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "source_match": true,
+      "mode_match": true,
+      "public_tests_passed": true,
+      "protected_files_unchanged": {
+        "README.md": true,
+        "test_public.py": true
+      },
+      "final_solution_sha256": "85cdae85c7f23fa8c33396f8590a77e00e8007733321feb641205ee0519a2f44",
+      "started_at": "2026-09-28T03:09:43.028368+00:00",
+      "ended_at": "2026-09-28T03:10:05.776286+00:00",
+      "outcome_passed": true,
+      "seconds": 22.74734320800053,
+      "provider_estimate_usd": 0.2521473,
+      "judge_estimate_usd": 2.394e-05,
+      "total_estimate_usd": 0.25217124,
+      "native": {
+        "provider_requests": 5,
+        "provider_responses": 5,
+        "provider_retries": 0,
+        "provider_errors": 0,
+        "tool_results": 6,
+        "tool_names": {
+          "read_file": 3,
+          "write_file": 1,
+          "python_check": 1,
+          "bash": 1
+        },
+        "tool_failures_reported": 0,
+        "execution_completed": true,
+        "provider_response_duration_ms": 12093,
+        "usage": {
+          "input_tokens": 310826.0,
+          "output_tokens": 831.0,
+          "cache_read_tokens": 310816.0,
+          "cache_write_tokens": 39042.0,
+          "cost_usd": 0.2521473
+        },
+        "usage_known_calls": {
+          "input_tokens": 5,
+          "output_tokens": 5,
+          "cache_read_tokens": 5,
+          "cache_write_tokens": 5,
+          "cost_usd": 5
+        },
+        "cost_evidence": "provider_reported_estimate_not_billing"
+      },
+      "provider_calls": [
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 31771,
+            "cache_write_tokens": 36510,
+            "cost_usd": "0.1488498",
+            "input_tokens": 31773,
+            "output_tokens": 160
+          },
+          "duration_ms": 2348
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 68281,
+            "cache_write_tokens": 1565,
+            "cost_usd": "0.03157905",
+            "input_tokens": 68283,
+            "output_tokens": 348
+          },
+          "duration_ms": 3346
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 69846,
+            "cache_write_tokens": 503,
+            "cost_usd": "0.02445105",
+            "input_tokens": 69848,
+            "output_tokens": 107
+          },
+          "duration_ms": 2702
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70349,
+            "cache_write_tokens": 220,
+            "cost_usd": "0.0236457",
+            "input_tokens": 70351,
+            "output_tokens": 114
+          },
+          "duration_ms": 1748
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70569,
+            "cache_write_tokens": 244,
+            "cost_usd": "0.0236217",
+            "input_tokens": 70571,
+            "output_tokens": 102
+          },
+          "duration_ms": 1949
+        }
+      ],
+      "judge_calls": [
+        {
+          "backend": "jev",
+          "duration_ms": 156.13624999969034,
+          "input_tokens": 570,
+          "model": "jev-1.13.0",
+          "output_tokens": 57,
+          "question_ids": [
+            "task_difficulty"
+          ],
+          "status": "ok",
+          "synthetic": false
+        }
+      ],
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "difficulty": [
+        {
+          "backend": "jev",
+          "choice": "cheap",
+          "duration_ms": 156.13037499861093,
+          "mode": "active",
+          "probabilities": {
+            "complex": 0.050000000000000044
+          },
+          "reason_code": "judge_cheap",
+          "state_chars": 435
+        }
+      ],
+      "waste_guard_count": 0
+    },
+    {
+      "name": "fast-4",
+      "side": "fast",
+      "session_id": "0f2171d2-8492-44b4-b01c-c9973a38b5fd",
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "source_match": true,
+      "mode_match": true,
+      "public_tests_passed": true,
+      "protected_files_unchanged": {
+        "README.md": true,
+        "test_public.py": true
+      },
+      "final_solution_sha256": "94e073b782bb580a75368b7e217fe1cc654fd8cf0b23c61c42931ed522f0698a",
+      "started_at": "2026-09-28T03:10:08.125433+00:00",
+      "ended_at": "2026-09-28T03:10:27.990691+00:00",
+      "outcome_passed": true,
+      "seconds": 19.864641083000606,
+      "provider_estimate_usd": 0.22844640000000002,
+      "judge_estimate_usd": 2.394e-05,
+      "total_estimate_usd": 0.22847034000000002,
+      "native": {
+        "provider_requests": 4,
+        "provider_responses": 4,
+        "provider_retries": 0,
+        "provider_errors": 0,
+        "tool_results": 5,
+        "tool_names": {
+          "read_file": 3,
+          "write_file": 1,
+          "bash": 1
+        },
+        "tool_failures_reported": 0,
+        "execution_completed": true,
+        "provider_response_duration_ms": 9845,
+        "usage": {
+          "input_tokens": 240241.0,
+          "output_tokens": 729.0,
+          "cache_read_tokens": 240233.0,
+          "cache_write_tokens": 38778.0,
+          "cost_usd": 0.22844640000000002
+        },
+        "usage_known_calls": {
+          "input_tokens": 4,
+          "output_tokens": 4,
+          "cache_read_tokens": 4,
+          "cache_write_tokens": 4,
+          "cost_usd": 4
+        },
+        "cost_evidence": "provider_reported_estimate_not_billing"
+      },
+      "provider_calls": [
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 31771,
+            "cache_write_tokens": 36525,
+            "cost_usd": "0.14890605",
+            "input_tokens": 31773,
+            "output_tokens": 160
+          },
+          "duration_ms": 2989
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 68296,
+            "cache_write_tokens": 1565,
+            "cost_usd": "0.03165855",
+            "input_tokens": 68298,
+            "output_tokens": 353
+          },
+          "duration_ms": 3143
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 69861,
+            "cache_write_tokens": 444,
+            "cost_usd": "0.0243393",
+            "input_tokens": 69863,
+            "output_tokens": 114
+          },
+          "duration_ms": 1862
+        },
+        {
+          "model": "claude-sonnet-5",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70305,
+            "cache_write_tokens": 244,
+            "cost_usd": "0.0235425",
+            "input_tokens": 70307,
+            "output_tokens": 102
+          },
+          "duration_ms": 1851
+        }
+      ],
+      "judge_calls": [
+        {
+          "backend": "jev",
+          "duration_ms": 168.55733300144493,
+          "input_tokens": 570,
+          "model": "jev-1.13.0",
+          "output_tokens": 57,
+          "question_ids": [
+            "task_difficulty"
+          ],
+          "status": "ok",
+          "synthetic": false
+        }
+      ],
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "difficulty": [
+        {
+          "backend": "jev",
+          "choice": "cheap",
+          "duration_ms": 168.5534580010426,
+          "mode": "active",
+          "probabilities": {
+            "complex": 0.040000000000000036
+          },
+          "reason_code": "judge_cheap",
+          "state_chars": 435
+        }
+      ],
+      "waste_guard_count": 0
+    },
+    {
+      "name": "baseline-4",
+      "side": "baseline",
+      "session_id": "a932e335-d1ee-4f3c-9bd2-f7f1f907b375",
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "source_match": true,
+      "mode_match": true,
+      "public_tests_passed": true,
+      "protected_files_unchanged": {
+        "README.md": true,
+        "test_public.py": true
+      },
+      "final_solution_sha256": "e77b7bc06afd41bb83dc761580ad65ce2b10f710c40ae6b8cb0292039dfdc204",
+      "started_at": "2026-09-28T03:10:29.516873+00:00",
+      "ended_at": "2026-09-28T03:11:21.132418+00:00",
+      "outcome_passed": true,
+      "seconds": 51.61501574999966,
+      "provider_estimate_usd": 0.73213375,
+      "judge_estimate_usd": 0.0,
+      "total_estimate_usd": 0.73213375,
+      "native": {
+        "provider_requests": 6,
+        "provider_responses": 6,
+        "provider_retries": 0,
+        "provider_errors": 0,
+        "tool_results": 8,
+        "tool_names": {
+          "read_file": 3,
+          "write_file": 1,
+          "bash": 2,
+          "edit_file": 2
+        },
+        "tool_failures_reported": 1,
+        "execution_completed": true,
+        "provider_response_duration_ms": 43247,
+        "usage": {
+          "input_tokens": 383611.0,
+          "output_tokens": 2563.0,
+          "cache_read_tokens": 383595.0,
+          "cache_write_tokens": 40634.0,
+          "cost_usd": 0.73213375
+        },
+        "usage_known_calls": {
+          "input_tokens": 6,
+          "output_tokens": 6,
+          "cache_read_tokens": 6,
+          "cache_write_tokens": 6,
+          "cost_usd": 6
+        },
+        "cost_evidence": "provider_reported_estimate_not_billing"
+      },
+      "provider_calls": [
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 31767,
+            "cache_write_tokens": 36468,
+            "cost_usd": "0.48203175",
+            "input_tokens": 31771,
+            "output_tokens": 364
+          },
+          "duration_ms": 6533
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 68235,
+            "cache_write_tokens": 1774,
+            "cost_usd": "0.06257375",
+            "input_tokens": 68239,
+            "output_tokens": 466
+          },
+          "duration_ms": 7585
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70009,
+            "cache_write_tokens": 560,
+            "cost_usd": "0.04482225",
+            "input_tokens": 70011,
+            "output_tokens": 406
+          },
+          "duration_ms": 6064
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 70569,
+            "cache_write_tokens": 552,
+            "cost_usd": "0.05051225",
+            "input_tokens": 70571,
+            "output_tokens": 519
+          },
+          "duration_ms": 8001
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 71121,
+            "cache_write_tokens": 773,
+            "cost_usd": "0.04591275",
+            "input_tokens": 71123,
+            "output_tokens": 369
+          },
+          "duration_ms": 7832
+        },
+        {
+          "model": "claude-fable-5-1",
+          "provider": "anthropic",
+          "usage": {
+            "cache_read_tokens": 71894,
+            "cache_write_tokens": 507,
+            "cost_usd": "0.0462810",
+            "input_tokens": 71896,
+            "output_tokens": 439
+          },
+          "duration_ms": 7232
+        }
+      ],
+      "judge_calls": [],
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "difficulty": [],
+      "waste_guard_count": 0
+    }
+  ]
+}

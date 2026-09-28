@@ -1,0 +1,184 @@
+{
+  "name": "plain-sonnet-s1m-m-dev-r3-scn_dev_2-amplifier-plain-a1",
+  "task": "scn_dev_2",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T19:53:30.238126+00:00",
+  "ended_at": "2026-09-25T19:55:33.900525+00:00",
+  "wall_time_ms": 123656.04733399232,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.69285875,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1487151.0,
+    "output_tokens": 3740.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.69285875
+  },
+  "num_turns": null,
+  "final_message": "Test passes.\n\nDONE: Fixed `session_ttl_expired` by removing the asymmetric `tzinfo=None` strip on `now` so both tz-aware datetimes subtract cleanly; `test_public.py` passes (1/1).",
+  "quality": {
+    "checks": 45,
+    "passed": 45,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_merge_intervals/README.md": true,
+    "t1-repair_merge_intervals/test_public.py": true,
+    "t2-answer_compute_fee/README.md": true,
+    "t3-edit_dequeue_validation/README.md": true,
+    "t4-bugfix_session_ttl_naive_tz/README.md": true,
+    "t4-bugfix_session_ttl_naive_tz/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_merge_intervals",
+      "started_at": "2026-09-25T19:53:30.238126+00:00",
+      "ended_at": "2026-09-25T19:54:13.445411+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 43203.809041995555,
+      "final_message": "Both public tests pass. The lint warnings (TRY004) are false positives here: the README explicitly requires `ValueError` for non-int/bool/length/order violations on interval elements, and `TypeError` only for a non-list `intervals` argument \u2014 which the code already does correctly.\n\nDONE: Repaired `merge_intervals` in solution.py to validate/reject malformed intervals (TypeError for non-list input, ValueError for bad elements/bool/order), then sort and merge overlapping/touching intervals without mutating input; `test_public.py` passes (2/2).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 33,
+        "passed": 33,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 18187.203,
+      "provider_requests": 4,
+      "cost_usd": 0.23807804999999996,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_compute_fee",
+      "started_at": "2026-09-25T19:54:13.446228+00:00",
+      "ended_at": "2026-09-25T19:54:36.529713+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 23083.10916600749,
+      "final_message": "`service2.compute_fee(1000, \"gold\")` calls `pricing.base_fee(1000)` \u2192 500 + 1000//10 = 600, then `discounts.apply_discount(600, \"gold\")` \u2192 600 - (600*20)//100 = 480. The `decoy_tax.py` and `decoy_shipping.py` modules are unused.\n\nANSWER: 480",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 13969.537,
+      "provider_requests": 4,
+      "cost_usd": 0.1175552,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T19:54:34.564831+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_dequeue_validation",
+      "started_at": "2026-09-25T19:54:36.530327+00:00",
+      "ended_at": "2026-09-25T19:55:09.791922+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 33261.19595899945,
+      "final_message": "Verified: empty queue raises `ValueError(\"queue is empty\")`, and non-empty behavior (pop first element) is unchanged.\n\nDONE: Added empty-queue validation to `dequeue()` in queue_util.py \u2014 raises `ValueError('queue is empty')` when items is empty, otherwise unchanged pop(0) behavior.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 3,
+        "passed": 3,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 25372.781,
+      "provider_requests": 7,
+      "cost_usd": 0.191019,
+      "model_counts": {
+        "claude-sonnet-5": 7
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_session_ttl_naive_tz",
+      "started_at": "2026-09-25T19:55:09.792319+00:00",
+      "ended_at": "2026-09-25T19:55:33.900525+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 24107.933166989824,
+      "final_message": "Test passes.\n\nDONE: Fixed `session_ttl_expired` by removing the asymmetric `tzinfo=None` strip on `now` so both tz-aware datetimes subtract cleanly; `test_public.py` passes (1/1).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 8,
+        "passed": 8,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 15300.981,
+      "provider_requests": 5,
+      "cost_usd": 0.1462065,
+      "model_counts": {
+        "claude-sonnet-5": 5
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T19:55:32.856142+00:00"
+        }
+      ]
+    }
+  ],
+  "exec_time_ms": 72830.50200000001,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 20,
+  "concurrency_at_launch": 1,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 20,
+      "claude-haiku-4-5-20251001": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.688033,
+      "claude-haiku-4-5-20251001": 0.004826
+    }
+  }
+}

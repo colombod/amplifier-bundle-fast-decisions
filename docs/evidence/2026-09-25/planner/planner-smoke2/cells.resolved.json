@@ -1,0 +1,98 @@
+[
+  {
+    "id": "plain",
+    "experiments": [
+      "plain-s1m-m-dev-r1"
+    ],
+    "seeds": [
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "plain-sonnet",
+    "experiments": [
+      "plain-sonnet-s1m-m-dev-r1"
+    ],
+    "seeds": [
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "plain-opus",
+    "experiments": [
+      "plain-opus-s1m-m-dev-r1"
+    ],
+    "seeds": [
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-default-opus",
+    "experiments": [
+      "orch-default-opus-s1m-m-dev-r1"
+    ],
+    "seeds": [
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-planner-opus",
+    "experiments": [
+      "orch-planner-opus-s1m-m-dev-r1"
+    ],
+    "seeds": [
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-planner-fable",
+    "experiments": [
+      "orch-planner-fable-s1m-m-dev-r1"
+    ],
+    "seeds": [
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  }
+]

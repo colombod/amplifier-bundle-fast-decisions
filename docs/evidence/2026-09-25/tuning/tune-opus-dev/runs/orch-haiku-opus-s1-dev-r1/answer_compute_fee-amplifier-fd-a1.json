@@ -1,0 +1,107 @@
+{
+  "name": "orch-haiku-opus-s1-dev-r1-answer_compute_fee-amplifier-fd-a1",
+  "task": "answer_compute_fee",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T12:10:49.851125+00:00",
+  "ended_at": "2026-09-25T12:11:15.855282+00:00",
+  "wall_time_ms": 26003.449083000305,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2342978,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 170424.0,
+    "output_tokens": 397.0,
+    "cache_read_tokens": 170414.0,
+    "cache_write_tokens": 38447.0,
+    "cost_usd": 0.2342978
+  },
+  "num_turns": null,
+  "final_message": "`service2.compute_fee(1000, \"gold\")` returns **480**. Running it confirms this.\n\n1. `service2.py` imports only `pricing.base_fee` and `discounts.apply_discount`.\n2. `base_fee(1000)` = 500 + 1000 // 10 = **600**\n3. `apply_discount(600, \"gold\")`: gold is 20%, so 600 \u2212 (600 \u00d7 20) // 100 = 600 \u2212 120 = **480**\n\nNothing imports `decoy_tax.py` or `decoy_shipping.py`, so they don't change the result.\n\nANSWER: 480",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 10812.765000000001,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.58,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_de59c75d2fe145b38cb0a2dbaaa11c2a",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 92,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36551
+      },
+      {
+        "provider_call_id": "provider_16960b206da646669b7a8762cbeb36a7",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68412,
+        "output_tokens": 106,
+        "cache_read_tokens": 68408,
+        "cache_write_tokens": 1741
+      },
+      {
+        "provider_call_id": "provider_888f7807b02d40198b47a2b94ea51ac2",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 70151,
+        "output_tokens": 199,
+        "cache_read_tokens": 70149,
+        "cache_write_tokens": 155
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.234298
+    }
+  }
+}

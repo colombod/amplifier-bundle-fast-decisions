@@ -1,0 +1,137 @@
+{
+  "schema": "fast-decisions-evals/results/v1",
+  "suite": "s1m",
+  "split": "m-dev",
+  "reps": 3,
+  "cells": [
+    {
+      "cell": "orch-default",
+      "anchor": "plain",
+      "reps": 3,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 0.4461401518441108,
+        "ci95_low": 0.3317886173346805,
+        "ci95_high": 0.6102910547957351,
+        "sign_test_p": 0.25
+      },
+      "cost_ratio": 0.6615710926691319,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 3,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "verdict": "screen",
+      "vs_plain": {
+        "anchor": "plain-sonnet",
+        "exec_time_ratio": {
+          "geomean": 0.8148908727779266,
+          "ci95_low": 0.6174641418082535,
+          "ci95_high": 0.9963630597515946,
+          "sign_test_p": 0.25
+        },
+        "cost_ratio": 1.1212384277788967,
+        "quality": {
+          "candidate_successes": 3,
+          "anchor_successes": 3,
+          "non_inferior": true
+        }
+      }
+    },
+    {
+      "cell": "orch-default-opus",
+      "anchor": "plain-opus",
+      "reps": 3,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 0.8883704121049802,
+        "ci95_low": 0.8152608495373127,
+        "ci95_high": 0.9755395290330275,
+        "sign_test_p": 0.25
+      },
+      "cost_ratio": 1.3445086936094934,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 3,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "verdict": "screen",
+      "vs_plain": {
+        "anchor": "plain-sonnet",
+        "exec_time_ratio": {
+          "geomean": 0.8557627233584543,
+          "ci95_low": 0.6885776892282715,
+          "ci95_high": 0.9711349891161303,
+          "sign_test_p": 0.25
+        },
+        "cost_ratio": 1.022464215896668,
+        "quality": {
+          "candidate_successes": 3,
+          "anchor_successes": 3,
+          "non_inferior": true
+        }
+      }
+    },
+    {
+      "cell": "orch-haiku-shaped-opus",
+      "anchor": "plain-opus",
+      "reps": 3,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 1.185491189236405,
+        "ci95_low": 1.183284317805635,
+        "ci95_high": 1.1877021765685174,
+        "sign_test_p": 0.5
+      },
+      "cost_ratio": 0.7186956242449376,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 2,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "verdict": "screen"
+    },
+    {
+      "cell": "orch-haiku-shaped-fable",
+      "anchor": "plain",
+      "reps": 3,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 0.7827674208848354,
+        "ci95_low": 0.572254166869115,
+        "ci95_high": 1.0107363063637307,
+        "sign_test_p": 1.0
+      },
+      "cost_ratio": 0.5114123916513427,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 3,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "verdict": "screen"
+    }
+  ],
+  "q3": null,
+  "evidence_limits": [
+    "bootstrap_ci: 2000 resamples, seed=20260919",
+    "confirmed requires >= 3 reps, >= 8 paired passing tasks, and split=holdout",
+    "external_harness_exec_time_may_still_include_its_own_startup",
+    "models_not_necessarily_matched_across_campaigns_or_harnesses",
+    "models_not_necessarily_matched_across_harnesses",
+    "n_tasks=3",
+    "non_contemporaneous_runs_across_campaigns",
+    "single_repetition_per_task_per_harness"
+  ]
+}

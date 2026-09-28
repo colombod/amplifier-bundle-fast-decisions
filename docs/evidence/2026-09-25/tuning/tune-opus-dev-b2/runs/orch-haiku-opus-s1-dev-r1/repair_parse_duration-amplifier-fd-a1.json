@@ -1,0 +1,147 @@
+{
+  "name": "orch-haiku-opus-s1-dev-r1-repair_parse_duration-amplifier-fd-a1",
+  "task": "repair_parse_duration",
+  "family": "repair",
+  "split": "dev",
+  "kind": "code",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-haiku-4-5-20251001",
+  "started_at": "2026-09-25T12:27:39.427484+00:00",
+  "ended_at": "2026-09-25T12:28:27.504116+00:00",
+  "wall_time_ms": 48075.6491249922,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.0794702,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 273247.0,
+    "output_tokens": 3294.0,
+    "cache_read_tokens": 273202.0,
+    "cache_write_tokens": 28508.0,
+    "cost_usd": 0.0794702
+  },
+  "num_turns": null,
+  "final_message": null,
+  "quality": {
+    "checks": 32,
+    "passed": 32,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true,
+    "test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 34722.631,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 6,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.040000000000000036,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_d569c1cde35f4ec9b649334c68daf19d",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 22877,
+        "output_tokens": 275,
+        "cache_read_tokens": 22867,
+        "cache_write_tokens": 25588
+      },
+      {
+        "provider_call_id": "provider_694b2065c699478cb02c7b24641811f5",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 48465,
+        "output_tokens": 2323,
+        "cache_read_tokens": 48455,
+        "cache_write_tokens": 1379
+      },
+      {
+        "provider_call_id": "provider_931f50c4bef14ee49a05cce170d12ef8",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 49844,
+        "output_tokens": 111,
+        "cache_read_tokens": 49834,
+        "cache_write_tokens": 644
+      },
+      {
+        "provider_call_id": "provider_576f8c610a1245c4b0ccb36e1fa87f51",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50483,
+        "output_tokens": 77,
+        "cache_read_tokens": 50478,
+        "cache_write_tokens": 216
+      },
+      {
+        "provider_call_id": "provider_9f04b27adb714f509cd5e1eaff243cc8",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50699,
+        "output_tokens": 453,
+        "cache_read_tokens": 50694,
+        "cache_write_tokens": 180
+      },
+      {
+        "provider_call_id": "provider_1b4e79502a73481fa7265539eaa33b6b",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50879,
+        "output_tokens": 55,
+        "cache_read_tokens": 50874,
+        "cache_write_tokens": 501
+      }
+    ],
+    "served_model_counts": {
+      "claude-haiku-4-5-20251001": 6
+    },
+    "native_served_model_counts": {
+      "claude-haiku-4-5-20251001": 6
+    },
+    "native_cost_usd_by_model": {
+      "claude-haiku-4-5-20251001": 0.07947
+    }
+  }
+}

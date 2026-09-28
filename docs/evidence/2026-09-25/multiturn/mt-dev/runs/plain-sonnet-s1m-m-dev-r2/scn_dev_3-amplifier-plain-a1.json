@@ -1,0 +1,177 @@
+{
+  "name": "plain-sonnet-s1m-m-dev-r2-scn_dev_3-amplifier-plain-a1",
+  "task": "scn_dev_3",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T15:08:20.689679+00:00",
+  "ended_at": "2026-09-25T15:09:35.254585+00:00",
+  "wall_time_ms": 74560.34558202373,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.67268295,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1121341.0,
+    "output_tokens": 2480.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.67268295
+  },
+  "num_turns": null,
+  "final_message": "DONE: Replaced `add_tag`'s mutable default `tags=[]` with `tags=None` + `if tags is None: tags = []`, leaving `remove_tag` untouched; `test_public.py` passes 1/1.",
+  "quality": {
+    "checks": 40,
+    "passed": 40,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_semver_compare/README.md": true,
+    "t1-repair_semver_compare/test_public.py": true,
+    "t2-answer_sqlite_import_module/README.md": true,
+    "t3-edit_record_to_json/README.md": true,
+    "t4-bugfix_add_tag_mutable_default/README.md": true,
+    "t4-bugfix_add_tag_mutable_default/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_semver_compare",
+      "started_at": "2026-09-25T15:08:20.689679+00:00",
+      "ended_at": "2026-09-25T15:08:46.669805+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 25979.164582997328,
+      "final_message": "Both tests pass.\n\nDONE: Repaired `semver_compare` to validate `MAJOR.MINOR.PATCH` strings (no leading zeros, non-string \u2192 TypeError, malformed \u2192 ValueError) and compare via tuple ordering; `test_public.py` passes 2/2.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 31,
+        "passed": 31,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 10659.571,
+      "provider_requests": 4,
+      "cost_usd": 0.34087665,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_sqlite_import_module",
+      "started_at": "2026-09-25T15:08:46.670497+00:00",
+      "ended_at": "2026-09-25T15:09:01.225630+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 14554.953833023319,
+      "final_message": "ANSWER: storage",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 6563.1449999999995,
+      "provider_requests": 3,
+      "cost_usd": 0.08791739999999999,
+      "model_counts": {
+        "claude-sonnet-5": 3
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T15:08:59.447828+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_record_to_json",
+      "started_at": "2026-09-25T15:09:01.226361+00:00",
+      "ended_at": "2026-09-25T15:09:18.710321+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 17483.75329101691,
+      "final_message": "DONE: Added `import json` and a `to_json()` method to `Record` that returns `json.dumps(self.to_dict(), sort_keys=True)`, leaving `to_dict()`/`__init__` unchanged; clean per python_check.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 3,
+        "passed": 3,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 11872.544,
+      "provider_requests": 5,
+      "cost_usd": 0.1332312,
+      "model_counts": {
+        "claude-sonnet-5": 5
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_add_tag_mutable_default",
+      "started_at": "2026-09-25T15:09:18.711905+00:00",
+      "ended_at": "2026-09-25T15:09:35.254585+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 16542.47387498617,
+      "final_message": "DONE: Replaced `add_tag`'s mutable default `tags=[]` with `tags=None` + `if tags is None: tags = []`, leaving `remove_tag` untouched; `test_public.py` passes 1/1.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 5,
+        "passed": 5,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 10003.779,
+      "provider_requests": 4,
+      "cost_usd": 0.1106577,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    }
+  ],
+  "exec_time_ms": 39099.039000000004,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 16,
+  "concurrency_at_launch": 2,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 16,
+      "claude-haiku-4-5-20251001": 1
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.670343,
+      "claude-haiku-4-5-20251001": 0.00234
+    }
+  }
+}

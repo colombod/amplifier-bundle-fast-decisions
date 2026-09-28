@@ -1,0 +1,319 @@
+{
+  "schema": "fast-decisions-evals/manifest/v1",
+  "created_at_utc": "2026-09-25T20:01:01Z",
+  "invocation": {
+    "argv": [
+      "--suite",
+      "s1",
+      "--split",
+      "dev",
+      "--cells",
+      "plain,plain-opus,plain-sonnet,orch-default,orch-default-opus,orch-planner-value-sub-opus,orch-planner-value-sub-fable",
+      "--reps",
+      "2",
+      "--candidate-sha",
+      "d0b6e95",
+      "--baseline-source",
+      "~/dev/afast-orch-primary-20260924/baseline-main",
+      "--installed-cache",
+      "~/dev/afast-orch-primary-20260924/baseline-main",
+      "--history-index",
+      "~/dev/afast-orch-primary-20260924/history-index.json",
+      "--host-python",
+      "~/.local/share/uv/tools/amplifier/bin/python",
+      "--events-dir",
+      "~/.amplifier/fast-decisions/events",
+      "--allow-external-state",
+      "--parallel",
+      "3",
+      "--base-seed",
+      "20261007",
+      "--out",
+      "~/dev/afast-orch-primary-20260924/value-st-dev"
+    ],
+    "suite": "s1",
+    "split": "dev",
+    "reps": 2,
+    "cell_order": {
+      "mode": "shuffle",
+      "per_rep": {
+        "1": [
+          "orch-default",
+          "orch-planner-value-sub-opus",
+          "plain-opus",
+          "orch-default-opus",
+          "plain",
+          "plain-sonnet",
+          "orch-planner-value-sub-fable"
+        ],
+        "2": [
+          "orch-default",
+          "orch-default-opus",
+          "orch-planner-value-sub-fable",
+          "orch-planner-value-sub-opus",
+          "plain-sonnet",
+          "plain-opus",
+          "plain"
+        ]
+      }
+    }
+  },
+  "suite": {
+    "label": "S1 synthetic battery (32 tasks, 4 families)",
+    "task_source": "battery",
+    "deadline_seconds": 600,
+    "splits": {
+      "dev": {
+        "tasks_flag": "dev",
+        "expected_task_count": 12
+      },
+      "holdout": {
+        "tasks_flag": "holdout",
+        "expected_task_count": 8
+      },
+      "holdout2": {
+        "tasks_flag": "holdout2",
+        "expected_task_count": 12
+      },
+      "holdout3": {
+        "tasks_flag": "holdout3",
+        "expected_task_count": 12
+      }
+    },
+    "required_toolchains": [
+      "python3"
+    ]
+  },
+  "candidate": {
+    "source": "~/dev/fd-planner",
+    "requested_sha": "d0b6e95"
+  },
+  "baseline": {
+    "source": "~/dev/afast-orch-primary-20260924/baseline-main"
+  },
+  "cells": [
+    {
+      "id": "plain",
+      "experiments": [
+        "plain-s1-dev-r1",
+        "plain-s1-dev-r2"
+      ],
+      "seeds": [
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": []
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "plain-sonnet",
+      "experiments": [
+        "plain-sonnet-s1-dev-r1",
+        "plain-sonnet-s1-dev-r2"
+      ],
+      "seeds": [
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": []
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-default",
+      "experiments": [
+        "orch-default-s1-dev-r1",
+        "orch-default-s1-dev-r2"
+      ],
+      "seeds": [
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "plain-opus",
+      "experiments": [
+        "plain-opus-s1-dev-r1",
+        "plain-opus-s1-dev-r2"
+      ],
+      "seeds": [
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": []
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-default-opus",
+      "experiments": [
+        "orch-default-opus-s1-dev-r1",
+        "orch-default-opus-s1-dev-r2"
+      ],
+      "seeds": [
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-planner-value-sub-opus",
+      "experiments": [
+        "orch-planner-value-sub-opus-s1-dev-r1",
+        "orch-planner-value-sub-opus-s1-dev-r2"
+      ],
+      "seeds": [
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-planner-value-sub-fable",
+      "experiments": [
+        "orch-planner-value-sub-fable-s1-dev-r1",
+        "orch-planner-value-sub-fable-s1-dev-r2"
+      ],
+      "seeds": [
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    }
+  ],
+  "budget": {
+    "per_launch_usd": 12.0,
+    "estimated_total_usd": 1800.0,
+    "max_benchmark_worker_launches": 2400,
+    "max_infrastructure_retries_per_run": 1,
+    "max_parallel_timed_runs": 3,
+    "wall_hours": 24
+  },
+  "verification": {
+    "prompt_hashes": "prompt-verification.json",
+    "preflight": "preflight.json"
+  },
+  "tool_shas": {
+    "battery.py": "36fc8a475f0cdf9177dc64794943bf83fe5208fef487dbd5ef0dda2182d1244d",
+    "battery_tasks.py": "8ed6f626aa3325241d4c0451ae57558ff865110b9ae9047438d550f0f8fc1cff",
+    "polyglot_tasks.py": "62ac12eae2747d97a33b0546981764e7797175b84749b17f103b9283e1a61271",
+    "battery_report.py": "0cdbbcb41703f9aa564db1db88a08837de7835077a8a814e919de8fe3aaf92e0",
+    "forge_workloads.py": "f5111afe10286634edde75a3539425ed0ea7206c5c11aebe33003c974fcf08a2"
+  },
+  "timing": {
+    "plain": {
+      "1": {
+        "started_at": "2026-09-25T19:32:34.148284Z",
+        "ended_at": "2026-09-25T19:36:00.281284Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:57:32.428556Z",
+        "ended_at": "2026-09-25T20:00:59.465775Z"
+      }
+    },
+    "plain-sonnet": {
+      "1": {
+        "started_at": "2026-09-25T19:36:00.281351Z",
+        "ended_at": "2026-09-25T19:38:36.042421Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:52:20.848334Z",
+        "ended_at": "2026-09-25T19:55:03.494387Z"
+      }
+    },
+    "orch-default": {
+      "1": {
+        "started_at": "2026-09-25T19:22:52.578048Z",
+        "ended_at": "2026-09-25T19:25:31.282830Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:41:22.400039Z",
+        "ended_at": "2026-09-25T19:44:15.296698Z"
+      }
+    },
+    "plain-opus": {
+      "1": {
+        "started_at": "2026-09-25T19:27:56.841507Z",
+        "ended_at": "2026-09-25T19:30:18.421983Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:55:03.494446Z",
+        "ended_at": "2026-09-25T19:57:32.428507Z"
+      }
+    },
+    "orch-default-opus": {
+      "1": {
+        "started_at": "2026-09-25T19:30:18.422038Z",
+        "ended_at": "2026-09-25T19:32:34.148241Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:44:15.296749Z",
+        "ended_at": "2026-09-25T19:46:35.434867Z"
+      }
+    },
+    "orch-planner-value-sub-opus": {
+      "1": {
+        "started_at": "2026-09-25T19:25:31.282888Z",
+        "ended_at": "2026-09-25T19:27:56.841455Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:49:45.239286Z",
+        "ended_at": "2026-09-25T19:52:20.848287Z"
+      }
+    },
+    "orch-planner-value-sub-fable": {
+      "1": {
+        "started_at": "2026-09-25T19:38:36.042467Z",
+        "ended_at": "2026-09-25T19:41:21.292016Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:46:35.434917Z",
+        "ended_at": "2026-09-25T19:49:45.239234Z"
+      }
+    }
+  }
+}

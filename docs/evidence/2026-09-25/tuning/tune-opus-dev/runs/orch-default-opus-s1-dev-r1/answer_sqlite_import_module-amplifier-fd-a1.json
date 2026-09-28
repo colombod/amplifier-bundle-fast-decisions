@@ -1,0 +1,94 @@
+{
+  "name": "orch-default-opus-s1-dev-r1-answer_sqlite_import_module-amplifier-fd-a1",
+  "task": "answer_sqlite_import_module",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T12:06:53.543865+00:00",
+  "ended_at": "2026-09-25T12:07:15.787124+00:00",
+  "wall_time_ms": 22242.040084005566,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2133398,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 100272.0,
+    "output_tokens": 222.0,
+    "cache_read_tokens": 100264.0,
+    "cache_write_tokens": 37763.0,
+    "cost_usd": 0.2133398
+  },
+  "num_turns": null,
+  "final_message": "The only module that imports `sqlite3` is `storage.py`. It has `import sqlite3` and uses `sqlite3.connect(path)`.\n\n`decoy_db_helpers.py` mentions \"sqlite\" in its docstring and a string, but it never imports `sqlite3`. The other files (`cache.py`, `network.py`, `utils.py`) import nothing at all.\n\nANSWER: storage",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 6386.459000000001,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 2,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.56,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_c144eeb91244492bb5cc39d19714eafa",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 87,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36550
+      },
+      {
+        "provider_call_id": "provider_74453fb6f57341fbb3771c8fcfb2bbea",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68411,
+        "output_tokens": 135,
+        "cache_read_tokens": 68407,
+        "cache_write_tokens": 1213
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 2
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.21334
+    }
+  }
+}

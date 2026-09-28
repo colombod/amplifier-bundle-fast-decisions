@@ -1,0 +1,107 @@
+{
+  "name": "orch-haiku-shaped-opus-s1-dev-r2-answer_sqlite_import_module-amplifier-fd-a1",
+  "task": "answer_sqlite_import_module",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T13:23:19.158743+00:00",
+  "ended_at": "2026-09-25T13:23:40.470635+00:00",
+  "wall_time_ms": 21311.3712920167,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2291386,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 169928.0,
+    "output_tokens": 281.0,
+    "cache_read_tokens": 169918.0,
+    "cache_write_tokens": 37899.0,
+    "cost_usd": 0.2291386
+  },
+  "num_turns": null,
+  "final_message": "I read all six files. The only one that imports `sqlite3` is `storage.py`, with the line `import sqlite3`. `decoy_db_helpers.py` mentions \"sqlite\" in its text but never imports it. `cache.py`, `network.py` and `utils.py` import nothing. `.amplifier/settings.local.yaml` is just a config file with no Python in it.\n\nANSWER: storage",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 8054.057000000001,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.58,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_c2101eba3bfc4f55a94cf36c3f0c8777",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 87,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36567
+      },
+      {
+        "provider_call_id": "provider_e6016703504e4d7f82d17aba9def5a64",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68428,
+        "output_tokens": 61,
+        "cache_read_tokens": 68424,
+        "cache_write_tokens": 1213
+      },
+      {
+        "provider_call_id": "provider_4615bb31fed94933bcf6a4a848015362",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69639,
+        "output_tokens": 133,
+        "cache_read_tokens": 69637,
+        "cache_write_tokens": 119
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.229139
+    }
+  }
+}

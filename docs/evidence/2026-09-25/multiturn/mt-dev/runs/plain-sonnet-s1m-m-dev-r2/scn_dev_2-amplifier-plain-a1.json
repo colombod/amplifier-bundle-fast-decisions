@@ -1,0 +1,184 @@
+{
+  "name": "plain-sonnet-s1m-m-dev-r2-scn_dev_2-amplifier-plain-a1",
+  "task": "scn_dev_2",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T15:08:22.735407+00:00",
+  "ended_at": "2026-09-25T15:09:46.554803+00:00",
+  "wall_time_ms": 83815.50104200142,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.70235845,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1137730.0,
+    "output_tokens": 3507.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.70235845
+  },
+  "num_turns": null,
+  "final_message": "DONE: Fixed `session_ttl_expired` in session_ttl.py by removing the asymmetric `.replace(tzinfo=None)` on `now` (which stripped tzinfo from `now` while `created` stayed timezone-aware, causing a naive/aware subtraction TypeError); both timestamps now stay aware as parsed. `python3 -m unittest -v test_public.py` passes (1 test, OK).",
+  "quality": {
+    "checks": 45,
+    "passed": 45,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_merge_intervals/README.md": true,
+    "t1-repair_merge_intervals/test_public.py": true,
+    "t2-answer_compute_fee/README.md": true,
+    "t3-edit_dequeue_validation/README.md": true,
+    "t4-bugfix_session_ttl_naive_tz/README.md": true,
+    "t4-bugfix_session_ttl_naive_tz/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_merge_intervals",
+      "started_at": "2026-09-25T15:08:22.735407+00:00",
+      "ended_at": "2026-09-25T15:08:51.604477+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 28868.428582994966,
+      "final_message": "Both public tests pass. The lint hint (TRY004) suggesting `TypeError` for those branches is a stylistic ruff heuristic that doesn't apply here \u2014 the README explicitly requires `ValueError` for wrong-length/non-int/bool/`start>end` interval contents, reserving `TypeError` only for a non-list `intervals` argument (which is what I raise). Kept as-is per the documented contract.\n\nDONE: Rewrote `merge_intervals` to validate types (list check \u2192 TypeError; per-interval shape/int/bool/order checks \u2192 ValueError), sort by start without mutating input, merge overlapping/touching intervals, and return a new list; verified via `python3 -m unittest -v test_public.py` (2 tests, OK).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 33,
+        "passed": 33,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 15276.756000000001,
+      "provider_requests": 4,
+      "cost_usd": 0.34961595,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_compute_fee",
+      "started_at": "2026-09-25T15:08:51.604990+00:00",
+      "ended_at": "2026-09-25T15:09:06.455143+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 14849.968374997843,
+      "final_message": "base_fee(1000) = 500 + 1000//10 = 600; apply_discount(600, \"gold\") = 600 - (600*20)//100 = 600 - 120 = 480.\n\nANSWER: 480",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 7272.599999999999,
+      "provider_requests": 3,
+      "cost_usd": 0.09224235,
+      "model_counts": {
+        "claude-sonnet-5": 3
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T15:09:04.664834+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_dequeue_validation",
+      "started_at": "2026-09-25T15:09:06.456600+00:00",
+      "ended_at": "2026-09-25T15:09:26.850099+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 20393.254292022903,
+      "final_message": "Formatting auto-fixed (quote style), message text unchanged (`\"queue is empty\"` \u2014 exact required string).\n\nDONE: Added empty-queue validation to `dequeue(items)` in queue_util.py \u2014 raises `ValueError(\"queue is empty\")` when `items` is empty, otherwise unchanged pop(0) behavior; no test_public.py present in this directory to run.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 3,
+        "passed": 3,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 14219.67,
+      "provider_requests": 5,
+      "cost_usd": 0.13675394999999999,
+      "model_counts": {
+        "claude-sonnet-5": 5
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_session_ttl_naive_tz",
+      "started_at": "2026-09-25T15:09:26.850719+00:00",
+      "ended_at": "2026-09-25T15:09:46.554803+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 19703.849791985704,
+      "final_message": "DONE: Fixed `session_ttl_expired` in session_ttl.py by removing the asymmetric `.replace(tzinfo=None)` on `now` (which stripped tzinfo from `now` while `created` stayed timezone-aware, causing a naive/aware subtraction TypeError); both timestamps now stay aware as parsed. `python3 -m unittest -v test_public.py` passes (1 test, OK).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 8,
+        "passed": 8,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 12514.614,
+      "provider_requests": 4,
+      "cost_usd": 0.12374620000000001,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T15:09:45.404007+00:00"
+        }
+      ]
+    }
+  ],
+  "exec_time_ms": 49283.64,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 16,
+  "concurrency_at_launch": 1,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 16,
+      "claude-haiku-4-5-20251001": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.696744,
+      "claude-haiku-4-5-20251001": 0.005614
+    }
+  }
+}

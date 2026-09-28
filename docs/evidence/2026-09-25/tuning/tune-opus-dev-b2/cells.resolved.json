@@ -1,0 +1,120 @@
+[
+  {
+    "id": "plain-sonnet",
+    "experiments": [
+      "plain-sonnet-s1-dev-r1"
+    ],
+    "seeds": [
+      20260927
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "plain-opus",
+    "experiments": [
+      "plain-opus-s1-dev-r1"
+    ],
+    "seeds": [
+      20260927
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-default-opus",
+    "experiments": [
+      "orch-default-opus-s1-dev-r1"
+    ],
+    "seeds": [
+      20260927
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-haiku-opus",
+    "experiments": [
+      "orch-haiku-opus-s1-dev-r1"
+    ],
+    "seeds": [
+      20260927
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-haiku-low-opus",
+    "experiments": [
+      "orch-haiku-low-opus-s1-dev-r1"
+    ],
+    "seeds": [
+      20260927
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-opuslow-opus",
+    "experiments": [
+      "orch-opuslow-opus-s1-dev-r1"
+    ],
+    "seeds": [
+      20260927
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-sonnetlow-opus",
+    "experiments": [
+      "orch-sonnetlow-opus-s1-dev-r1"
+    ],
+    "seeds": [
+      20260927
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  }
+]

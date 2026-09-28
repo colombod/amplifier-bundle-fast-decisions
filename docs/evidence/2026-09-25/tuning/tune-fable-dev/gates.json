@@ -1,0 +1,37 @@
+{
+  "plain": {
+    "passed": true,
+    "flags": []
+  },
+  "plain-sonnet": {
+    "passed": true,
+    "flags": []
+  },
+  "orch-default": {
+    "passed": true,
+    "flags": [],
+    "latency_within_budget_by_rep": [
+      true,
+      true
+    ],
+    "latency_within_budget": true
+  },
+  "orch-haiku-fable": {
+    "passed": true,
+    "flags": [],
+    "latency_within_budget_by_rep": [
+      true,
+      true
+    ],
+    "latency_within_budget": true
+  },
+  "orch-fablelow": {
+    "passed": true,
+    "flags": [],
+    "latency_within_budget_by_rep": [
+      true,
+      true
+    ],
+    "latency_within_budget": true
+  }
+}

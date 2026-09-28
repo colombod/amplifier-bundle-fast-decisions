@@ -1,0 +1,57 @@
+{
+  "name": "plain-s1-holdout2-r3-answer_retry_max_attempts-amplifier-plain-a1",
+  "task": "answer_retry_max_attempts",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T14:30:24.027295+00:00",
+  "ended_at": "2026-09-25T14:30:46.349078+00:00",
+  "wall_time_ms": 22321.05591701111,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.53696675,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 100255.0,
+    "output_tokens": 531.0,
+    "cache_read_tokens": 100247.0,
+    "cache_write_tokens": 38822.0,
+    "cost_usd": 0.53696675
+  },
+  "num_turns": null,
+  "final_message": "In `retry.py:3`, `DEFAULT_MAX_ATTEMPTS = 4`. When `max_attempts` is `None` (the default), `call_with_retry()` sets `attempts = DEFAULT_MAX_ATTEMPTS` and loops `for _ in range(attempts)`, so it makes exactly 4 attempts including the first try before re-raising the last exception.\n\nThe other constants (`RETRY_LIMIT = 5` in `decoy_backoff.py`, `MAX_RETRIES = 3` in `decoy_network.py`) are never imported by `retry.py` and do not affect the result.\n\nANSWER: 4",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 9431.652,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 2,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-fable-5-1": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.536967
+    }
+  }
+}

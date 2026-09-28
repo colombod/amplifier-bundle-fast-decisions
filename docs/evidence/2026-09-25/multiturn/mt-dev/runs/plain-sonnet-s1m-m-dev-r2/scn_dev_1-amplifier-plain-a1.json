@@ -1,0 +1,177 @@
+{
+  "name": "plain-sonnet-s1m-m-dev-r2-scn_dev_1-amplifier-plain-a1",
+  "task": "scn_dev_1",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T15:08:24.694768+00:00",
+  "ended_at": "2026-09-25T15:10:11.186544+00:00",
+  "wall_time_ms": 106486.94937699474,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.7252522499999999,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1495369.0,
+    "output_tokens": 5171.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.7252522499999999
+  },
+  "num_turns": null,
+  "final_message": "Test passes.\n\nDONE: Fixed the off-by-one in `paginate()` \u2014 changed `start = page * page_size` to `start = (page - 1) * page_size` so 1-indexed pages slice correctly; `python3 -m unittest -v test_public.py` now passes.",
+  "quality": {
+    "checks": 47,
+    "passed": 47,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_parse_duration/README.md": true,
+    "t1-repair_parse_duration/test_public.py": true,
+    "t2-answer_audit_log_key/README.md": true,
+    "t3-edit_cli_dry_run/README.md": true,
+    "t4-bugfix_paginate_off_by_one/README.md": true,
+    "t4-bugfix_paginate_off_by_one/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_parse_duration",
+      "started_at": "2026-09-25T15:08:24.694768+00:00",
+      "ended_at": "2026-09-25T15:08:49.477130+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 24781.788666994544,
+      "final_message": "Both tests pass.\n\nDONE: Rewrote `parse_duration` in solution.py to use a regex (`(\\d+h)?(\\d+m)?(\\d+s)?`) enforcing strict h/m/s order with no extra chars, raising ValueError for invalid/empty input and TypeError for non-strings; `python3 -m unittest -v test_public.py` now passes both tests.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 11134.97,
+      "provider_requests": 4,
+      "cost_usd": 0.2314266,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_audit_log_key",
+      "started_at": "2026-09-25T15:08:49.478835+00:00",
+      "ended_at": "2026-09-25T15:09:35.516508+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 46037.137292005355,
+      "final_message": "Trace: `service.checkout(\"7781\")` calls `write_audit(\"order\", \"7781\")` in audit.py. The only key-building helper in that file, `_format_key(kind, ident)`, returns `f\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"` and is otherwise unused \u2014 it's what populates the redacted `key = ...` line. With `AUDIT_PREFIX = \"AUD\"` (config.py), `kind=\"order\"`, `ident=\"7781\"`, that yields `AUD-ORDER-7781`. (decoy_cache.py and decoy_metrics.py are unrelated \u2014 metrics uses prefix `MET`, not the audit log.)\n\nANSWER: AUD-ORDER-7781",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 38183.678,
+      "provider_requests": 8,
+      "cost_usd": 0.2523573,
+      "model_counts": {
+        "claude-sonnet-5": 8
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T15:09:33.344194+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_cli_dry_run",
+      "started_at": "2026-09-25T15:09:35.517098+00:00",
+      "ended_at": "2026-09-25T15:09:55.024106+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 19506.773583998438,
+      "final_message": "Verified: dry-run prints the expected message and creates no file; without the flag, behavior is unchanged.\n\nDONE: Added a `--dry-run` (`store_true`, default False) flag to cli_tool.py; when set, it prints `DRY RUN: would {action} {path}` and skips file create/delete, while normal invocation still performs the action and prints `DONE: {action} {path}` unchanged.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 4,
+        "passed": 4,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 13524.101,
+      "provider_requests": 4,
+      "cost_usd": 0.1234416,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_paginate_off_by_one",
+      "started_at": "2026-09-25T15:09:55.025099+00:00",
+      "ended_at": "2026-09-25T15:10:11.186544+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 16161.249833996408,
+      "final_message": "Test passes.\n\nDONE: Fixed the off-by-one in `paginate()` \u2014 changed `start = page * page_size` to `start = (page - 1) * page_size` so 1-indexed pages slice correctly; `python3 -m unittest -v test_public.py` now passes.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 10,
+        "passed": 10,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 10591.601,
+      "provider_requests": 4,
+      "cost_usd": 0.11802675,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    }
+  ],
+  "exec_time_ms": 73434.35,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 20,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 20,
+      "claude-haiku-4-5-20251001": 1
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.721868,
+      "claude-haiku-4-5-20251001": 0.003384
+    }
+  }
+}

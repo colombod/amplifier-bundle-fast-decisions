@@ -1,0 +1,417 @@
+{
+  "name": "orch-default-opus-s1m-m-dev-r1-scn_dev_1-amplifier-fd-a1",
+  "task": "scn_dev_1",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T17:38:48.335369+00:00",
+  "ended_at": "2026-09-25T17:42:24.312047+00:00",
+  "wall_time_ms": 215961.9025819993,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.5795590499999999,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1157436.0,
+    "output_tokens": 3073.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.5795590499999999
+  },
+  "num_turns": null,
+  "final_message": "DONE: Fixed off-by-one in `paginate()` by changing `start = page * page_size` to `start = (page - 1) * page_size`; test_public.py passes.",
+  "quality": {
+    "checks": 47,
+    "passed": 47,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_parse_duration/README.md": true,
+    "t1-repair_parse_duration/test_public.py": true,
+    "t2-answer_audit_log_key/README.md": true,
+    "t3-edit_cli_dry_run/README.md": true,
+    "t4-bugfix_paginate_off_by_one/README.md": true,
+    "t4-bugfix_paginate_off_by_one/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_parse_duration",
+      "started_at": "2026-09-25T17:38:48.335369+00:00",
+      "ended_at": "2026-09-25T17:40:47.865152+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 119527.85154100275,
+      "final_message": "DONE: Repaired `parse_duration` with a regex-based implementation matching the h/m/s contract (type/value checks, order enforcement); both public tests pass.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 15889.422,
+      "provider_requests": 5,
+      "cost_usd": 0.2531769,
+      "model_counts": {
+        "claude-sonnet-5": 5
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_audit_log_key",
+      "started_at": "2026-09-25T17:40:47.869702+00:00",
+      "ended_at": "2026-09-25T17:41:19.499923+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 31629.92325000232,
+      "final_message": "ANSWER: AUD-ORDER-7781",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 11589.336,
+      "provider_requests": 3,
+      "cost_usd": 0.092157,
+      "model_counts": {
+        "claude-sonnet-5": 3
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T17:41:17.431161+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_cli_dry_run",
+      "started_at": "2026-09-25T17:41:19.502360+00:00",
+      "ended_at": "2026-09-25T17:41:55.815243+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 36312.53941601608,
+      "final_message": "Verified: dry-run avoids file creation/deletion and prints the correct message; normal behavior unchanged.\n\nDONE: Added `--dry-run` flag to cli_tool.py that skips file create/delete and prints `DRY RUN: would {action} {path}`, leaving non-dry-run behavior unchanged.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 4,
+        "passed": 4,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 18099.546,
+      "provider_requests": 4,
+      "cost_usd": 0.12145635,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_paginate_off_by_one",
+      "started_at": "2026-09-25T17:41:55.820191+00:00",
+      "ended_at": "2026-09-25T17:42:24.312047+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 28491.588374978164,
+      "final_message": "DONE: Fixed off-by-one in `paginate()` by changing `start = page * page_size` to `start = (page - 1) * page_size`; test_public.py passes.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 10,
+        "passed": 10,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 9129.185,
+      "provider_requests": 4,
+      "cost_usd": 0.1127688,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    }
+  ],
+  "exec_time_ms": 54707.489,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 16,
+  "concurrency_at_launch": 1,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.0,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      },
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.0,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      },
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.06999999999999995,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      },
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.28,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_a9f51e135c0340a0b765f8dbe1d3da98",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 75171,
+        "output_tokens": 195,
+        "cache_read_tokens": 75169,
+        "cache_write_tokens": 863
+      },
+      {
+        "provider_call_id": "provider_e2e04fb746ff401c9575b8bf0fa1a694",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 76034,
+        "output_tokens": 450,
+        "cache_read_tokens": 76032,
+        "cache_write_tokens": 1249
+      },
+      {
+        "provider_call_id": "provider_a28d27136fb545da858baf26fef39dce",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 77283,
+        "output_tokens": 357,
+        "cache_read_tokens": 77281,
+        "cache_write_tokens": 624
+      },
+      {
+        "provider_call_id": "provider_84efb50fbfdf48f99c7d1564bfba49c8",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 77907,
+        "output_tokens": 107,
+        "cache_read_tokens": 77905,
+        "cache_write_tokens": 699
+      },
+      {
+        "provider_call_id": "provider_28c88dfd2f304865abd033dcf1c7471f",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 78606,
+        "output_tokens": 205,
+        "cache_read_tokens": 78604,
+        "cache_write_tokens": 285
+      },
+      {
+        "provider_call_id": "provider_25fd4a83ff104a9c9aa6f07870e56306",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 78891,
+        "output_tokens": 155,
+        "cache_read_tokens": 78889,
+        "cache_write_tokens": 1744
+      },
+      {
+        "provider_call_id": "provider_388ef7b23fac40a39b0fe447cafc0470",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 80635,
+        "output_tokens": 80,
+        "cache_read_tokens": 80633,
+        "cache_write_tokens": 332
+      },
+      {
+        "provider_call_id": "provider_4e4f64317d9547518a0f4c1d0f8ed3d7",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 80967,
+        "output_tokens": 58,
+        "cache_read_tokens": 80965,
+        "cache_write_tokens": 185
+      },
+      {
+        "provider_call_id": "provider_bdae8a543e6e41ce896f93292ce35c4f",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 31863,
+        "output_tokens": 198,
+        "cache_read_tokens": 31861,
+        "cache_write_tokens": 36683
+      },
+      {
+        "provider_call_id": "provider_3ea8b56cd15e419aad0d52e5d870c406",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 68546,
+        "output_tokens": 338,
+        "cache_read_tokens": 68544,
+        "cache_write_tokens": 1805
+      },
+      {
+        "provider_call_id": "provider_af8a25b1853d4c3e8d456f726b835e0c",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 70351,
+        "output_tokens": 88,
+        "cache_read_tokens": 70349,
+        "cache_write_tokens": 572
+      },
+      {
+        "provider_call_id": "provider_aee5526cdb1c4e469804475ceb8102bd",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 70923,
+        "output_tokens": 74,
+        "cache_read_tokens": 70921,
+        "cache_write_tokens": 202
+      },
+      {
+        "provider_call_id": "provider_e9de7e914c534a6187af4b7e27c56e90",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 71125,
+        "output_tokens": 56,
+        "cache_read_tokens": 71123,
+        "cache_write_tokens": 204
+      },
+      {
+        "provider_call_id": "provider_43dc44786370445391af9bbab166815b",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 71329,
+        "output_tokens": 83,
+        "cache_read_tokens": 71327,
+        "cache_write_tokens": 1042
+      },
+      {
+        "provider_call_id": "provider_a1d941966b104c688674c21ffbebb9e2",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 72371,
+        "output_tokens": 381,
+        "cache_read_tokens": 72369,
+        "cache_write_tokens": 230
+      },
+      {
+        "provider_call_id": "provider_75c4d3473b48493fb997c8e242af5f60",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 72601,
+        "output_tokens": 181,
+        "cache_read_tokens": 72599,
+        "cache_write_tokens": 2570
+      }
+    ],
+    "served_model_counts": {
+      "claude-sonnet-5": 16
+    },
+    "native_served_model_counts": {
+      "claude-sonnet-5": 16,
+      "claude-haiku-4-5-20251001": 1
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.576391,
+      "claude-haiku-4-5-20251001": 0.003168
+    }
+  }
+}

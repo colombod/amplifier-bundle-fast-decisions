@@ -1,0 +1,120 @@
+{
+  "name": "orch-default-opus-s1-dev-r1-answer_audit_log_key-amplifier-fd-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T13:14:05.050910+00:00",
+  "ended_at": "2026-09-25T13:14:35.546854+00:00",
+  "wall_time_ms": 30495.022249990143,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2595206,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 240450.0,
+    "output_tokens": 900.0,
+    "cache_read_tokens": 240438.0,
+    "cache_write_tokens": 38677.0,
+    "cost_usd": 0.2595206
+  },
+  "num_turns": null,
+  "final_message": "The key written to the audit log is `AUD-ORDER-7781`. I confirmed this by running the code.\n\nHow it gets there:\n1. `service.checkout(\"7781\")` calls `write_audit(\"order\", \"7781\")` in `audit.py`.\n2. `_format_key` builds the key as `f\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"`.\n3. `AUDIT_PREFIX` is `\"AUD\"` in `config.py`, so the key becomes `AUD-ORDER-7781`.\n\nThe `key = [REDACTED:SECRET]'t see it directly. I ran `write_audit('order','7781')` instead: the key it wrote has 14 characters, and its only non-alphanumeric characters are two hyphens, which matches `AUD-ORDER-7781`.\n\n`decoy_metrics.py` builds a similar-looking `MET-...` key, but it writes to a metrics dict, not the audit log. `decoy_cache.py` doesn't touch the audit log either.\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 17628.702,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 4,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.54,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_5834a32954454986809c386c2bc59e21",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 83,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36555
+      },
+      {
+        "provider_call_id": "provider_a1b2e6d142ba4461be7cce1a52373dc4",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68416,
+        "output_tokens": 211,
+        "cache_read_tokens": 68412,
+        "cache_write_tokens": 1501
+      },
+      {
+        "provider_call_id": "provider_af622ec376e34f13aa5cc5c1aa75e318",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69915,
+        "output_tokens": 223,
+        "cache_read_tokens": 69913,
+        "cache_write_tokens": 343
+      },
+      {
+        "provider_call_id": "provider_c5afe4b268c7428d9d31c423b00148d8",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 70258,
+        "output_tokens": 383,
+        "cache_read_tokens": 70256,
+        "cache_write_tokens": 278
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 4
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 4
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.259521
+    }
+  }
+}

@@ -60,6 +60,20 @@ session:
           strong: null
         max_explore_requests: 6
         escalate_after_provider_errors: 1
+      # Research levers (default off; see src/amplifier_fast_decisions/routing_levers.py):
+      # one knob, profile: frugal | balanced | careful (balanced = this file),
+      # or the individual model_routing keys tiers / large_repo / strong_effort.
+      # profile: balanced
+      # Per-step action set (default off; src/amplifier_fast_decisions/step_actions.py):
+      # before every model call inside a turn, classify the step from the last
+      # tool calls/results and pick a prepared read-only action (file window,
+      # whole file, git status summary -- judged by Jev next_action, asked only
+      # when the expected saving beats its ~0.15 s), a cheaper model for this
+      # step only when price- and cache-aware math says it is cheaper, or the
+      # full model. Every decision leaves a fast_decisions:efficiency receipt.
+      # step_actions:
+      #   prepared: true
+      #   cheaper_model: true      # rarely fires with an Opus 5.5 host (cheap cache reads)
       model_routing:
         start_model: claude-sonnet-5
         # Only ever send the Anthropic start model to Anthropic providers.
@@ -79,6 +93,21 @@ session:
         max_requests_before_escalation: null
         escalate_on_test_failure: false
         escalate_on_provider_error: true
+        # HC12 ("easy-turn shaping", opt-in, disabled by default): on a turn
+        # judged easy, a cheap model can still burn extra provider round
+        # trips on ceremony (one `todo` call, one `python_check` call, one
+        # tool per response) where the host model batches independent tool
+        # calls into one response and verifies once. Appending guidance to
+        # the END of the system prompt keeps every call of the turn
+        # byte-identical (cache-friendly); hiding tools by name removes them
+        # from just that call's advertised tool list. Left commented out
+        # until a benchmark shows it helps -- uncomment to enable:
+        # easy_turn_guidance: >-
+        #   This request was judged small. Work directly: read what you need
+        #   in one step, make independent tool calls together in a single
+        #   response, skip planning and checklist tools, verify once, then
+        #   give a short answer.
+        # easy_turn_hide_tools: [todo]
       # Cache keep-alive (levers.py): while a tool or helper runs past 270 s
       # since the prompt cache was last used, re-send the last request
       # unchanged with a 1-token output cap so the next call reads the cache
@@ -94,8 +123,32 @@ session:
         max_refreshes: 6
         min_prefix_tokens: 20000
         max_output_tokens: 1
-      # Loop-stop nudges stay off: their receipts did not reconcile with a
-      # measured A/B (evals/levers-2026-09-25).
+      # Loop-stop nudges (loop_stop) stay off: their receipts did not reconcile with a
+      # measured A/B (evals/levers-2026-09-25). The waste guards below replace
+      # them; with both on, the nudges stand down.
+      # Waste guards (docs/WASTE-GUARDS.md; measured in docs/evidence/
+      # 2026-09-25/waste-census): deterministic per-tool-call checks, on in
+      # every session regardless of repo size (the scope gate above decides
+      # model routing only). Each firing leaves an efficiency receipt.
+      #  - repeat stop: a call whose last 3 runs returned identical output
+      #    with nothing changed is not run a fourth time (the model is told
+      #    to use the earlier result; issuing it again runs it);
+      #  - retry stop: a command that failed twice with the same error and
+      #    nothing changed is not run a third time (transient errors exempt);
+      #  - poll wait: a repeated `sleep N && <read-only check>` is run in place
+      #    until a finish word appears or progress settles, at most 240 s;
+      #  - unchanged output: a second identical read/search/command output, or
+      #    a re-read of an unchanged file range already in context, is
+      #    returned as a one-line pointer instead of a second copy.
+      # Turn all off: waste_guards: {enabled: false}; one off, e.g.
+      # waste_guards: {enabled: true, poll_wait: false}.
+      waste_guards:
+        enabled: true
+        repeat_stop: true
+        retry_stop: true
+        poll_wait: true
+        identical_results: true
+        poll_max_wait_s: 240
       # Auto-observatory: on the top-level session's first session:start,
       # reuse-or-spawn a detached `afast serve` and open it. Skipped for
       # child sessions, when AFAST_OBSERVATORY=off or AMPLIFIER_NO_BROWSER=1,

@@ -1,0 +1,61 @@
+{
+  "completed_requests": 128,
+  "groups": {
+    "development/atomic": {
+      "abstentions": 11,
+      "complete_order_pairs": 16,
+      "correct_including_abstentions": 29,
+      "errors": 0,
+      "independent_families": 8,
+      "keyword_correct": 16,
+      "latency_median_ms_diagnostic_only": 222.3528545582667,
+      "order_stable_cases": 13,
+      "requests": 32,
+      "uniform_random_expected_correct": 10.666666666666666,
+      "wrong_nonabstaining_choices": 0
+    },
+    "development/direct": {
+      "abstentions": 9,
+      "complete_order_pairs": 16,
+      "correct_including_abstentions": 31,
+      "errors": 0,
+      "independent_families": 8,
+      "keyword_correct": 16,
+      "latency_median_ms_diagnostic_only": 215.51052085123956,
+      "order_stable_cases": 15,
+      "requests": 32,
+      "uniform_random_expected_correct": 10.666666666666666,
+      "wrong_nonabstaining_choices": 0
+    },
+    "evaluation/atomic": {
+      "abstentions": 24,
+      "complete_order_pairs": 16,
+      "correct_including_abstentions": 32,
+      "errors": 0,
+      "independent_families": 8,
+      "keyword_correct": 32,
+      "latency_median_ms_diagnostic_only": 175.15943746548146,
+      "order_stable_cases": 16,
+      "requests": 32,
+      "uniform_random_expected_correct": 10.666666666666666,
+      "wrong_nonabstaining_choices": 0
+    },
+    "evaluation/direct": {
+      "abstentions": 24,
+      "complete_order_pairs": 16,
+      "correct_including_abstentions": 32,
+      "errors": 0,
+      "independent_families": 8,
+      "keyword_correct": 32,
+      "latency_median_ms_diagnostic_only": 179.08375000115484,
+      "order_stable_cases": 16,
+      "requests": 32,
+      "uniform_random_expected_correct": 10.666666666666666,
+      "wrong_nonabstaining_choices": 0
+    }
+  },
+  "scope": "Synthetic decision feasibility only; not whole-task or speed evidence.",
+  "total_requests": 128,
+  "unknown_cost_requests": 0,
+  "usage_based_cost_usd": 0.0036558480000000006
+}
