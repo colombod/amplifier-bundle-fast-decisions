@@ -30,8 +30,8 @@ in the original worktree. No API keys or raw private sessions are included.
 Validation before measurement: 1,458 tests passed in the installed Amplifier
 Python environment (2 skipped). The separate archived atomic study passed its
 7 tests. Additional judge-usage tests cover measured/unknown usage, policy block,
-cancellation, and batched attempts. Full final regression and live matched
-comparison results are recorded alongside this audit when complete.
+cancellation, and batched attempts. Final installed-host regression passed 1,463 tests (2 skipped). All eight real
+Amplifier runs passed 32 independent checks; see [the measured report](REPORT.md).
 
 The matched example freezes implementation commit `c75499c`, alternates plain
 Amplifier and the composed default bundle over four pairs, and checks identical
