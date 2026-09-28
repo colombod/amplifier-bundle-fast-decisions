@@ -71,6 +71,11 @@ EVENT_NAMES = tuple(
         # HC12 ("easy-turn shaping", opt-in): guidance appended / tools
         # hidden on a turn judged easy. See orchestrator.py and docs/EVENTS.md.
         "easy_turn_shaped",
+        # Turn planner (model_routing.planner, opt-in): cache- and
+        # price-aware model choice for one easy turn. Emitted once per
+        # planned turn (never on abstain). See planner.py, orchestrator.py
+        # and docs/EVENTS.md.
+        "turn_planned",
     )
 )
 
@@ -199,6 +204,13 @@ MODEL_ROUTING_KEYS = frozenset(
         # orchestrator.py and docs/ARCHITECTURE.md.
         "easy_turn_guidance",
         "easy_turn_hide_tools",
+        # Turn planner (opt-in, nested dict): cache- and price-aware model
+        # choice for one easy turn, replacing the plain start_model
+        # assignment for that turn only when it decides something (never
+        # on abstain, never for hard/scope-gated/user-pinned turns, which
+        # never reach this decision point at all). See planner.py,
+        # orchestrator.py and docs/proposals/TURN-PLANNER.md.
+        "planner",
     }
 )
 
@@ -222,6 +234,206 @@ DEFAULT_ESCALATION_WEIGHTS: dict[str, float] = {
     "beyond_tier": 0.15,
     "unfamiliar_code": 0.10,
 }
+
+# Turn planner (model_routing.planner, opt-in): cache- and price-aware
+# model choice for one easy turn. See planner.py and
+# docs/proposals/TURN-PLANNER.md. Priors are per model FAMILY (prefix
+# match on the model id, mirroring savings._rates_for's dated-id
+# matching), measured 2026-09-25 -- see the spec for the underlying data.
+# output_tokens_per_call is each model's own measured median output
+# tokens per call (2026-09-25 dev runs); a model without one falls back
+# to the global planner.output_tokens_per_call. Added after a Fable-host
+# multi-turn dev regression: Fable writes ~2x the output tokens per call
+# of Sonnet/Opus at Fable's own $50/M output rate, which the single
+# global default was silently hiding, making Fable look marginally
+# cheaper than it actually is once warm.
+DEFAULT_PLANNER_PRIORS: dict[str, dict[str, float]] = {
+    "claude-fable-5-1": {
+        "latency_s": 5.4, "calls_factor": 1.0, "cold_s_per_100k": 2.0,
+        "output_tokens_per_call": 260,
+    },
+    "claude-opus-5-5": {
+        "latency_s": 3.3, "calls_factor": 1.0, "cold_s_per_100k": 1.95,
+        "output_tokens_per_call": 180,
+    },
+    "claude-sonnet-5": {
+        "latency_s": 2.4, "calls_factor": 1.15, "cold_s_per_100k": 0.65,
+        "output_tokens_per_call": 165,
+    },
+    "claude-haiku-4-5": {
+        "latency_s": 2.2, "calls_factor": 1.35, "cold_s_per_100k": 0.4,
+        "output_tokens_per_call": 185,
+    },
+}
+# Lookahead (opt-in, see planner.plan_turn): the probability that a LATER
+# turn in this session runs on the host, used to price the risk of
+# leaving the host's cache stale by choosing a candidate this turn.
+# Measured from this user's own last 14 days of local sessions
+# (~/.amplifier/projects/*/sessions/*/events.jsonl, prompt:submit and
+# llm:response events): of all provider calls, sub-session first turns
+# were 74%, root first turns 7%, root later turns 12%, sub-session later
+# turns 6%; 94% of sub-sessions and 77% of root sessions ended after one
+# turn. "sub_session" is deliberately the lowest -- a sub-session almost
+# never gets a second turn, so its host cache is very unlikely to ever
+# need to catch up; "later_turn" is the highest -- a session already past
+# its first turn is disproportionately likely (77% ended at one turn, so
+# surviving past it means the remaining ~23% is heavily multi-turn) to
+# keep going. See docs/proposals/TURN-PLANNER.md "Lookahead".
+DEFAULT_PLANNER_CONTINUE_PROBABILITY: dict[str, float] = {
+    "sub_session": 0.06,
+    "first_turn": 0.25,
+    "later_turn": 0.8,
+}
+DEFAULT_PLANNER_CONFIG: dict[str, Any] = {
+    "enabled": False,
+    "objective": "balanced",
+    "cost_tolerance": 0.05,
+    "candidates": [],
+    "cache_ttl_seconds": 300,
+    "expected_calls": 3.5,
+    "output_tokens_per_call": 170,
+    "priors": DEFAULT_PLANNER_PRIORS,
+    "continue_probability": DEFAULT_PLANNER_CONTINUE_PROBABILITY,
+    # "value" objective only (see planner.plan_turn): USD/hour used to
+    # convert TOTAL time (base + lookahead) into a dollar figure added to
+    # TOTAL cost, so the whole speed/cost/lookahead triangle collapses to
+    # one number to minimise. $36/hour is this team's default -- roughly
+    # a mid-market engineer's fully-loaded hourly cost -- but is just a
+    # policy knob or another calibration input; there is nothing
+    # measured/authoritative about it. See docs/proposals/TURN-PLANNER.md.
+    "value_of_time_usd_per_hour": 36,
+}
+PLANNER_KEYS = frozenset(DEFAULT_PLANNER_CONFIG)
+PLANNER_OBJECTIVES = frozenset({"speed", "cost", "balanced", "value"})
+PLANNER_PRIOR_KEYS = frozenset(
+    {"latency_s", "calls_factor", "cold_s_per_100k", "output_tokens_per_call"}
+)
+PLANNER_CONTINUE_PROBABILITY_KEYS = frozenset(DEFAULT_PLANNER_CONTINUE_PROBABILITY)
+
+
+def validate_planner(planner: Any) -> None:
+    """Fail loud on a malformed ``model_routing.planner`` policy at mount
+    time. ``None`` (the key absent from ``model_routing``) is the
+    default-off shape -- the planner never runs. Never silently ignores a
+    bad value.
+    """
+    if planner is None:
+        return
+    if not isinstance(planner, dict):
+        raise ValueError("model_routing.planner must be a dict")
+    unknown = set(planner) - PLANNER_KEYS
+    if unknown:
+        raise ValueError(f"model_routing.planner has unknown keys: {sorted(unknown)}")
+    enabled = planner.get("enabled")
+    if enabled is not None and not isinstance(enabled, bool):
+        raise ValueError("model_routing.planner.enabled must be a bool")
+    objective = planner.get("objective")
+    if objective is not None and objective not in PLANNER_OBJECTIVES:
+        raise ValueError(
+            f"model_routing.planner.objective must be one of {sorted(PLANNER_OBJECTIVES)}"
+        )
+    cost_tolerance = planner.get("cost_tolerance")
+    if cost_tolerance is not None and (
+        isinstance(cost_tolerance, bool)
+        or not isinstance(cost_tolerance, (int, float))
+        or cost_tolerance < 0
+    ):
+        raise ValueError("model_routing.planner.cost_tolerance must be a non-negative number")
+    candidates = planner.get("candidates")
+    if candidates is not None and (
+        not isinstance(candidates, (list, tuple))
+        or not all(isinstance(c, str) and c for c in candidates)
+    ):
+        raise ValueError("model_routing.planner.candidates must be a list of non-empty strings")
+    cache_ttl = planner.get("cache_ttl_seconds")
+    if cache_ttl is not None and (
+        isinstance(cache_ttl, bool) or not isinstance(cache_ttl, (int, float)) or cache_ttl <= 0
+    ):
+        raise ValueError("model_routing.planner.cache_ttl_seconds must be a positive number")
+    expected_calls = planner.get("expected_calls")
+    if expected_calls is not None and (
+        isinstance(expected_calls, bool)
+        or not isinstance(expected_calls, (int, float))
+        or expected_calls <= 0
+    ):
+        raise ValueError("model_routing.planner.expected_calls must be a positive number")
+    out_tokens = planner.get("output_tokens_per_call")
+    if out_tokens is not None and (
+        isinstance(out_tokens, bool) or not isinstance(out_tokens, (int, float)) or out_tokens < 0
+    ):
+        raise ValueError("model_routing.planner.output_tokens_per_call must be a non-negative number")
+    priors = planner.get("priors")
+    if priors is not None:
+        if not isinstance(priors, dict):
+            raise ValueError("model_routing.planner.priors must be a dict")
+        for model_id, prior in priors.items():
+            if not isinstance(model_id, str) or not model_id:
+                raise ValueError("model_routing.planner.priors keys must be non-empty strings")
+            if not isinstance(prior, dict):
+                raise ValueError(f"model_routing.planner.priors.{model_id} must be a dict")
+            unknown_prior = set(prior) - PLANNER_PRIOR_KEYS
+            if unknown_prior:
+                raise ValueError(
+                    f"model_routing.planner.priors.{model_id} has unknown keys: {sorted(unknown_prior)}"
+                )
+            for key in PLANNER_PRIOR_KEYS:
+                if key not in prior:
+                    continue
+                value = prior[key]
+                if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+                    raise ValueError(
+                        f"model_routing.planner.priors.{model_id}.{key} must be a non-negative number"
+                    )
+    continue_probability = planner.get("continue_probability")
+    if continue_probability is not None:
+        if not isinstance(continue_probability, dict):
+            raise ValueError("model_routing.planner.continue_probability must be a dict")
+        unknown_kinds = set(continue_probability) - PLANNER_CONTINUE_PROBABILITY_KEYS
+        if unknown_kinds:
+            raise ValueError(
+                f"model_routing.planner.continue_probability has unknown keys: {sorted(unknown_kinds)}"
+            )
+        for key, value in continue_probability.items():
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not 0 <= value <= 1:
+                raise ValueError(
+                    f"model_routing.planner.continue_probability.{key} must be a number in [0, 1]"
+                )
+    value_of_time = planner.get("value_of_time_usd_per_hour")
+    if value_of_time is not None and (
+        isinstance(value_of_time, bool)
+        or not isinstance(value_of_time, (int, float))
+        or value_of_time < 0
+    ):
+        raise ValueError(
+            "model_routing.planner.value_of_time_usd_per_hour must be a non-negative number"
+        )
+
+
+def effective_planner_config(model_routing: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Merged ``model_routing.planner`` config with defaults, or ``None``
+    when the turn planner is not enabled (``model_routing`` missing, no
+    ``planner`` key, or ``planner.enabled`` is not ``True``) -- fully
+    inert in that case, matching every other HC0x seam.
+
+    Defaults come from ``DEFAULT_PLANNER_CONFIG`` (including
+    ``DEFAULT_PLANNER_PRIORS`` and ``DEFAULT_PLANNER_CONTINUE_PROBABILITY``).
+    A caller-supplied ``priors`` entry for a given model id, or a
+    ``continue_probability`` entry for a given session kind, fully
+    replaces that one default value (no per-field merge below that);
+    anything the config does not name keeps its default.
+    """
+    if not model_routing:
+        return None
+    planner = model_routing.get("planner")
+    if not planner or not planner.get("enabled"):
+        return None
+    merged = {**DEFAULT_PLANNER_CONFIG, **planner}
+    merged["priors"] = {**DEFAULT_PLANNER_PRIORS, **(planner.get("priors") or {})}
+    merged["continue_probability"] = {
+        **DEFAULT_PLANNER_CONTINUE_PROBABILITY,
+        **(planner.get("continue_probability") or {}),
+    }
+    return merged
 
 
 def validate_model_routing(model_routing: Any) -> None:
@@ -321,6 +533,7 @@ def validate_model_routing(model_routing: Any) -> None:
                 raise ValueError(
                     f"model_routing.escalation_weights.{key} must be a number in [0, 1]"
                 )
+    validate_planner(model_routing.get("planner"))
 
 
 # HC09 ("stake-scaled confidence gates", opt-in): the three judged decision
@@ -877,6 +1090,14 @@ class TurnState:
     # fast_decisions:easy_turn_shaped receipt has already been emitted this
     # turn. Reset with the rest of TurnState at turn start.
     easy_turn_shaped: bool = False
+    # Turn planner (model_routing.planner, opt-in): decided once, at the
+    # turn's first easy-turn slow request, and reused for the rest of the
+    # turn (mirrors turn.start_tier's once-per-turn caching). ``None``
+    # until decided; afterwards holds the full planner.plan_turn() result
+    # dict (including on abstain, so the caller never recomputes it
+    # mid-turn -- it just re-checks ``abstained``).
+    planner_decided: bool = False
+    planner_plan: dict[str, Any] | None = None
 
 
 def candidate_read_identity(

@@ -603,6 +603,157 @@ cells:
     requires_cells: [plain]
     mechanism_gate: { max_scored: 0, model_routed_model: claude-haiku-4-5-20251001, min_model_routed: 1 }
 
+  # Turn planner cells.
+  orch-planner-opus:
+    harnesses: [amplifier-fd]
+    amplifier_model: claude-opus-5-5
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: balanced } } } }
+    role: "planner balanced, Opus 5.5 host"
+    purpose: "turn planner (docs/proposals/TURN-PLANNER.md): cache- and price-aware choice per easy turn"
+    anchor_cell: plain-opus
+    requires_cells: [plain-opus]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-fable:
+    harnesses: [amplifier-fd]
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: balanced } } } }
+    role: "planner balanced, Fable 5.1 host"
+    purpose: "turn planner (docs/proposals/TURN-PLANNER.md): cache- and price-aware choice per easy turn"
+    anchor_cell: plain
+    requires_cells: [plain]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-speed-opus:
+    harnesses: [amplifier-fd]
+    amplifier_model: claude-opus-5-5
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: speed } } } }
+    role: "planner speed, Opus 5.5 host"
+    purpose: "turn planner (docs/proposals/TURN-PLANNER.md): cache- and price-aware choice per easy turn"
+    anchor_cell: plain-opus
+    requires_cells: [plain-opus]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-sub-opus:
+    harnesses: [amplifier-fd]
+    amplifier_model: claude-opus-5-5
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: balanced, continue_probability: { first_turn: 0.06 } } } } }
+    role: "planner balanced with sub-session continuation prior, Opus host"
+    purpose: "single-turn benchmark sessions stand in for sub-agent sessions (74% of this user's provider calls); p_continue set to the measured sub-session value"
+    anchor_cell: plain-opus
+    requires_cells: [plain-opus]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-sub-fable:
+    harnesses: [amplifier-fd]
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: balanced, continue_probability: { first_turn: 0.06 } } } } }
+    role: "planner balanced with sub-session continuation prior, Fable host"
+    purpose: "single-turn benchmark sessions stand in for sub-agent sessions (74% of this user's provider calls); p_continue set to the measured sub-session value"
+    anchor_cell: plain
+    requires_cells: [plain]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-value-opus:
+    harnesses: [amplifier-fd]
+    amplifier_model: claude-opus-5-5
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: value } } } }
+    role: "planner value, Opus host"
+    purpose: "turn planner, value objective (cost + value of time)"
+    anchor_cell: plain-opus
+    requires_cells: [plain-opus]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-value-fable:
+    harnesses: [amplifier-fd]
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: value } } } }
+    role: "planner value, Fable host"
+    purpose: "turn planner, value objective (cost + value of time)"
+    anchor_cell: plain
+    requires_cells: [plain]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-value-sub-opus:
+    harnesses: [amplifier-fd]
+    amplifier_model: claude-opus-5-5
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: value, continue_probability: { first_turn: 0.06 } } } } }
+    role: "planner value, sub-session prior, Opus host"
+    purpose: "turn planner, value objective (cost + value of time)"
+    anchor_cell: plain-opus
+    requires_cells: [plain-opus]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-value-sub-fable:
+    harnesses: [amplifier-fd]
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: value, continue_probability: { first_turn: 0.06 } } } } }
+    role: "planner value, sub-session prior, Fable host"
+    purpose: "turn planner, value objective (cost + value of time)"
+    anchor_cell: plain
+    requires_cells: [plain]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-v12-opus:
+    harnesses: [amplifier-fd]
+    amplifier_model: claude-opus-5-5
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: value, value_of_time_usd_per_hour: 12 } } } }
+    role: "planner value $12/h, Opus host"
+    purpose: "turn planner, value objective at $12/hour of waiting"
+    anchor_cell: plain-opus
+    requires_cells: [plain-opus]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-v12-fable:
+    harnesses: [amplifier-fd]
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: value, value_of_time_usd_per_hour: 12 } } } }
+    role: "planner value $12/h, Fable host"
+    purpose: "turn planner, value objective at $12/hour of waiting"
+    anchor_cell: plain
+    requires_cells: [plain]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-v12-sub-opus:
+    harnesses: [amplifier-fd]
+    amplifier_model: claude-opus-5-5
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: value, value_of_time_usd_per_hour: 12, continue_probability: { first_turn: 0.06 } } } } }
+    role: "planner value $12/h, sub-session prior, Opus host"
+    purpose: "planner value $12/h; single-turn benchmark sessions stand in for sub-agent sessions (p_continue = measured sub-session value)"
+    anchor_cell: plain-opus
+    requires_cells: [plain-opus]
+    mechanism_gate: { max_scored: 0 }
+
+  orch-planner-v12-sub-fable:
+    harnesses: [amplifier-fd]
+    fd: { composition: composed, backend: jev, allow_external_state: true, effort_profile: all_phase,
+          model_routing_profile: sonnet_once,
+          overrides: { model_routing: { planner: { enabled: true, objective: value, value_of_time_usd_per_hour: 12, continue_probability: { first_turn: 0.06 } } } } }
+    role: "planner value $12/h, sub-session prior, Fable host"
+    purpose: "planner value $12/h; single-turn benchmark sessions stand in for sub-agent sessions (p_continue = measured sub-session value)"
+    anchor_cell: plain
+    requires_cells: [plain]
+    mechanism_gate: { max_scored: 0 }
+
   externals:
     harnesses: [claude, codex, opencode, amplifier-plain, amplifier-fd]
     fd: { backend: ollama, model: qwen3:0.6b, effort_profile: all_phase }   # = champion

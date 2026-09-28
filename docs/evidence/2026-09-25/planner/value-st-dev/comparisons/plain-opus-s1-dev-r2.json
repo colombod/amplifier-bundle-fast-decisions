@@ -1,0 +1,301 @@
+{
+  "per_harness": {
+    "amplifier-plain": {
+      "n": 12,
+      "success_rate": 1.0,
+      "deadline_failures": 0,
+      "mean_penalized_ms": 12708.953500000001,
+      "median_penalized_ms": 12423.45,
+      "mean_exec_ms": 12708.953500000001,
+      "median_exec_ms": 12423.45,
+      "mean_wall_ms": 32075.143187326223,
+      "median_wall_ms": 32665.31224999926,
+      "mean_cost_known_usd": 0.24458735,
+      "unknown_cost_count": 0,
+      "cost_per_success_usd": 0.24458735,
+      "tokens": {
+        "input_tokens": 2381047.0,
+        "output_tokens": 8704.0,
+        "cache_read_tokens": 2380921.0,
+        "cache_write_tokens": 456856.0,
+        "cost_usd": 2.9350482
+      }
+    }
+  },
+  "per_task": {
+    "answer_audit_log_key": {
+      "task": "answer_audit_log_key",
+      "amplifier-plain": {
+        "penalized_ms": 10855.546,
+        "outcome_passed": true,
+        "cost_usd": 0.23823439999999999
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "answer_compute_fee": {
+      "task": "answer_compute_fee",
+      "amplifier-plain": {
+        "penalized_ms": 12060.885,
+        "outcome_passed": true,
+        "cost_usd": 0.236029
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "answer_sqlite_import_module": {
+      "task": "answer_sqlite_import_module",
+      "amplifier-plain": {
+        "penalized_ms": 6567.898999999999,
+        "outcome_passed": true,
+        "cost_usd": 0.2135546
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "bugfix_add_tag_mutable_default": {
+      "task": "bugfix_add_tag_mutable_default",
+      "amplifier-plain": {
+        "penalized_ms": 9741.306,
+        "outcome_passed": true,
+        "cost_usd": 0.2285238
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "bugfix_paginate_off_by_one": {
+      "task": "bugfix_paginate_off_by_one",
+      "amplifier-plain": {
+        "penalized_ms": 9836.636999999999,
+        "outcome_passed": true,
+        "cost_usd": 0.2314218
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "bugfix_session_ttl_naive_tz": {
+      "task": "bugfix_session_ttl_naive_tz",
+      "amplifier-plain": {
+        "penalized_ms": 11463.956,
+        "outcome_passed": true,
+        "cost_usd": 0.23453799999999997
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "edit_cli_dry_run": {
+      "task": "edit_cli_dry_run",
+      "amplifier-plain": {
+        "penalized_ms": 13468.159,
+        "outcome_passed": true,
+        "cost_usd": 0.2527484
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "edit_dequeue_validation": {
+      "task": "edit_dequeue_validation",
+      "amplifier-plain": {
+        "penalized_ms": 17271.91,
+        "outcome_passed": true,
+        "cost_usd": 0.26990600000000003
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "edit_record_to_json": {
+      "task": "edit_record_to_json",
+      "amplifier-plain": {
+        "penalized_ms": 12423.45,
+        "outcome_passed": true,
+        "cost_usd": 0.2478334
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "repair_merge_intervals": {
+      "task": "repair_merge_intervals",
+      "amplifier-plain": {
+        "penalized_ms": 18105.772,
+        "outcome_passed": true,
+        "cost_usd": 0.2691268
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "repair_parse_duration": {
+      "task": "repair_parse_duration",
+      "amplifier-plain": {
+        "penalized_ms": 13567.121000000001,
+        "outcome_passed": true,
+        "cost_usd": 0.24346660000000003
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "repair_semver_compare": {
+      "task": "repair_semver_compare",
+      "amplifier-plain": {
+        "penalized_ms": 17144.801,
+        "outcome_passed": true,
+        "cost_usd": 0.2696654
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    }
+  },
+  "per_family": {
+    "answer": {
+      "amplifier-plain": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          10855.546,
+          12060.885,
+          6567.898999999999
+        ]
+      }
+    },
+    "bugfix": {
+      "amplifier-plain": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          9741.306,
+          9836.636999999999,
+          11463.956
+        ]
+      }
+    },
+    "edit": {
+      "amplifier-plain": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          13468.159,
+          17271.91,
+          12423.45
+        ]
+      }
+    },
+    "repair": {
+      "amplifier-plain": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          18105.772,
+          13567.121000000001,
+          17144.801
+        ]
+      }
+    }
+  },
+  "amplifier_fd_vs_plain": null,
+  "cross": null,
+  "dev": {
+    "bugfix_paginate_off_by_one": {
+      "task": "bugfix_paginate_off_by_one",
+      "amplifier-plain": {
+        "penalized_ms": 9836.636999999999,
+        "outcome_passed": true,
+        "cost_usd": 0.2314218
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "edit_cli_dry_run": {
+      "task": "edit_cli_dry_run",
+      "amplifier-plain": {
+        "penalized_ms": 13468.159,
+        "outcome_passed": true,
+        "cost_usd": 0.2527484
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "edit_dequeue_validation": {
+      "task": "edit_dequeue_validation",
+      "amplifier-plain": {
+        "penalized_ms": 17271.91,
+        "outcome_passed": true,
+        "cost_usd": 0.26990600000000003
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "repair_semver_compare": {
+      "task": "repair_semver_compare",
+      "amplifier-plain": {
+        "penalized_ms": 17144.801,
+        "outcome_passed": true,
+        "cost_usd": 0.2696654
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "answer_compute_fee": {
+      "task": "answer_compute_fee",
+      "amplifier-plain": {
+        "penalized_ms": 12060.885,
+        "outcome_passed": true,
+        "cost_usd": 0.236029
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "answer_sqlite_import_module": {
+      "task": "answer_sqlite_import_module",
+      "amplifier-plain": {
+        "penalized_ms": 6567.898999999999,
+        "outcome_passed": true,
+        "cost_usd": 0.2135546
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "edit_record_to_json": {
+      "task": "edit_record_to_json",
+      "amplifier-plain": {
+        "penalized_ms": 12423.45,
+        "outcome_passed": true,
+        "cost_usd": 0.2478334
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "bugfix_add_tag_mutable_default": {
+      "task": "bugfix_add_tag_mutable_default",
+      "amplifier-plain": {
+        "penalized_ms": 9741.306,
+        "outcome_passed": true,
+        "cost_usd": 0.2285238
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "answer_audit_log_key": {
+      "task": "answer_audit_log_key",
+      "amplifier-plain": {
+        "penalized_ms": 10855.546,
+        "outcome_passed": true,
+        "cost_usd": 0.23823439999999999
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "repair_merge_intervals": {
+      "task": "repair_merge_intervals",
+      "amplifier-plain": {
+        "penalized_ms": 18105.772,
+        "outcome_passed": true,
+        "cost_usd": 0.2691268
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "repair_parse_duration": {
+      "task": "repair_parse_duration",
+      "amplifier-plain": {
+        "penalized_ms": 13567.121000000001,
+        "outcome_passed": true,
+        "cost_usd": 0.24346660000000003
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    },
+    "bugfix_session_ttl_naive_tz": {
+      "task": "bugfix_session_ttl_naive_tz",
+      "amplifier-plain": {
+        "penalized_ms": 11463.956,
+        "outcome_passed": true,
+        "cost_usd": 0.23453799999999997
+      },
+      "fastest_passing_harness": "amplifier-plain"
+    }
+  },
+  "holdout": {},
+  "mechanism": null,
+  "amplifier_fd_series_label": null,
+  "evidence_limits": [
+    "n_tasks=12",
+    "single_repetition_per_task_per_harness",
+    "models_not_necessarily_matched_across_harnesses"
+  ]
+}

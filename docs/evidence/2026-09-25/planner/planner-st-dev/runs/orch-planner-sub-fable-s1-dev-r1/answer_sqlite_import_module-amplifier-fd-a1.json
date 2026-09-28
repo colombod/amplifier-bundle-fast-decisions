@@ -1,0 +1,95 @@
+{
+  "name": "orch-planner-sub-fable-s1-dev-r1-answer_sqlite_import_module-amplifier-fd-a1",
+  "task": "answer_sqlite_import_module",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T17:40:49.786352+00:00",
+  "ended_at": "2026-09-25T17:42:29.835202+00:00",
+  "wall_time_ms": 100046.52329199598,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.54630225,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 100297.0,
+    "output_tokens": 636.0,
+    "cache_read_tokens": 100289.0,
+    "cache_write_tokens": 39148.0,
+    "cost_usd": 0.54630225
+  },
+  "num_turns": null,
+  "final_message": "I've read all six files. Summary of what each one does regarding `sqlite3`:\n\n| File | Imports `sqlite3`? | Notes |\n|------|--------------------|-------|\n| `cache.py` | No | In-memory dict, no persistence |\n| `decoy_db_helpers.py` | No | Mentions \"sqlite\" only in a docstring and a string constant (`DB_KIND = \"sqlite-like\"`) \u2014 a decoy |\n| `network.py` | No | URL builder only |\n| `storage.py` | **Yes** | `import sqlite3` at storage.py:2, used in `connect()` via `sqlite3.connect(path)` |\n| `utils.py` | No | Generic `clamp` helper |\n\nOnly `storage.py` actually contains an `import sqlite3` statement.\n\nANSWER: storage",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": null,
+  "exec_time_ms": 13791.741,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 2,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.6,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_84533e8f7f154d1eb9a36a1cc593a662",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 364,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36575
+      },
+      {
+        "provider_call_id": "provider_7aa191d8a05f4b61af83c400c2c8fc91",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68436,
+        "output_tokens": 272,
+        "cache_read_tokens": 68432,
+        "cache_write_tokens": 2573
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 2
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.546302
+    }
+  }
+}

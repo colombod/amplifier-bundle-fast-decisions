@@ -1259,9 +1259,11 @@ def classify_verdict(*, reps, split, gate_passed, quality_non_inferior, ratio_po
     input here was already produced by battery.py or the pure helpers above.
 
     `split == "holdout"` or `split` starting with `"holdout"` (e.g.
-    `holdout2`, a fresh holdout split added alongside the original) is
-    eligible for `confirmed`; `dev`/`m-dev` never are (section 8: "confirmed
-    -- the full bar above, on the **holdout** split").
+    `holdout2`, `holdout3`, fresh holdout splits added alongside the
+    original) is eligible for `confirmed`; so is any split starting with
+    `"m-holdout"` (e.g. `m-holdout3`, the multi-turn scenario split built
+    from a holdout split's tasks). `dev`/`m-dev` never are (section 8:
+    "confirmed -- the full bar above, on the **holdout** split").
 
     Any critical failure (section 8: "One critical failure disqualifies a
     cell regardless of its speed") forces a distinct non-passing label,
@@ -1543,7 +1545,7 @@ def design_recommendation_text(results, cells_doc):
 def build_arg_parser():
     p = argparse.ArgumentParser(prog="evals/run.py")
     p.add_argument("--suite", choices=["s1", "s1m", "s2"])
-    p.add_argument("--split", choices=["dev", "holdout", "holdout2", "m-dev"])
+    p.add_argument("--split", choices=["dev", "holdout", "holdout2", "holdout3", "m-dev", "m-holdout3"])
     p.add_argument("--cells")
     p.add_argument("--reps", type=int, default=None,
                     help="default: 5 on --split holdout, else 3 (Decision 2026-09-20b, "

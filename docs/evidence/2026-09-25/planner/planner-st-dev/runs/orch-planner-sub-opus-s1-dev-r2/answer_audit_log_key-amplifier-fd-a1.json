@@ -1,0 +1,121 @@
+{
+  "name": "orch-planner-sub-opus-s1-dev-r2-answer_audit_log_key-amplifier-fd-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T18:34:52.383627+00:00",
+  "ended_at": "2026-09-25T18:36:09.482937+00:00",
+  "wall_time_ms": 77096.84954199474,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2588984,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 241014.0,
+    "output_tokens": 734.0,
+    "cache_read_tokens": 241002.0,
+    "cache_write_tokens": 39194.0,
+    "cost_usd": 0.2588984
+  },
+  "num_turns": null,
+  "final_message": "The key is `AUD-ORDER-7781`.\n\nWhen I read `audit.py`, line 11 showed up redacted, so I ran the code to get the real value:\n\n1. `service.checkout(\"7781\")` calls `write_audit(\"order\", \"7781\")`.\n2. `write_audit` sets `key = [REDACTED:SECRET]\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"`.\n3. `AUDIT_PREFIX` is `\"AUD\"` in `config.py`, so the result is `AUD-ORDER-7781`.\n\nRunning `checkout(\"7781\")` produced a log dict containing only that key. `decoy_metrics.py` builds keys the same way, but it writes to a metrics dict with the `MET` prefix and never touches the audit log. `decoy_cache.py` doesn't touch it either.\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": null,
+  "exec_time_ms": 19502.282,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 4,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.55,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_c02ede3bdcf4443cbadfdb810302e453",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 95,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36580
+      },
+      {
+        "provider_call_id": "provider_c0106d3441444c19bdf320aae783f79d",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68441,
+        "output_tokens": 139,
+        "cache_read_tokens": 68437,
+        "cache_write_tokens": 1529
+      },
+      {
+        "provider_call_id": "provider_27d484122a4444b1ad6c3fa084f0e14a",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69968,
+        "output_tokens": 196,
+        "cache_read_tokens": 69966,
+        "cache_write_tokens": 776
+      },
+      {
+        "provider_call_id": "provider_63cdbbe6439a4d23898a77be626fab1c",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 70744,
+        "output_tokens": 304,
+        "cache_read_tokens": 70742,
+        "cache_write_tokens": 309
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 4
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 4
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.258898
+    }
+  }
+}

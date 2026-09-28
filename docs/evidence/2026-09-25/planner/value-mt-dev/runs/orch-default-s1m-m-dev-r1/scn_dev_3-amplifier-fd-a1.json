@@ -1,0 +1,381 @@
+{
+  "name": "orch-default-s1m-m-dev-r1-scn_dev_3-amplifier-fd-a1",
+  "task": "scn_dev_3",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T19:35:17.835231+00:00",
+  "ended_at": "2026-09-25T19:36:40.984831+00:00",
+  "wall_time_ms": 83146.51450002566,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.9793094,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 871272.0,
+    "output_tokens": 2101.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.9793094
+  },
+  "num_turns": null,
+  "final_message": "DONE: Fixed `add_tag`'s mutable-default-argument bug by using `tags=None` and creating a fresh list per call when omitted; `test_public.py` passes (1/1).",
+  "quality": {
+    "checks": 40,
+    "passed": 40,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_semver_compare/README.md": true,
+    "t1-repair_semver_compare/test_public.py": true,
+    "t2-answer_sqlite_import_module/README.md": true,
+    "t3-edit_record_to_json/README.md": true,
+    "t4-bugfix_add_tag_mutable_default/README.md": true,
+    "t4-bugfix_add_tag_mutable_default/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_semver_compare",
+      "started_at": "2026-09-25T19:35:17.835231+00:00",
+      "ended_at": "2026-09-25T19:35:49.277668+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 31441.60079100402,
+      "final_message": "Both tests pass.\n\nDONE: Repaired `semver_compare` to validate strict `MAJOR.MINOR.PATCH` format (no leading zeros, non-string\u2192TypeError, malformed\u2192ValueError) and compare via tuple ordering; `test_public.py` passes 2/2.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 31,
+        "passed": 31,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 9800.055,
+      "provider_requests": 4,
+      "cost_usd": 0.22955699999999998,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_sqlite_import_module",
+      "started_at": "2026-09-25T19:35:49.278508+00:00",
+      "ended_at": "2026-09-25T19:36:10.542549+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 21263.82691701292,
+      "final_message": "Only `storage.py` contains an actual `import sqlite3` statement; `decoy_db_helpers.py` merely mentions \"sqlite\" in a docstring and a string literal.\n\nANSWER: storage",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 12688.929,
+      "provider_requests": 2,
+      "cost_usd": 0.5511575,
+      "model_counts": {
+        "claude-fable-5-1": 2
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T19:36:08.633592+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_record_to_json",
+      "started_at": "2026-09-25T19:36:10.542943+00:00",
+      "ended_at": "2026-09-25T19:36:25.314791+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 14771.69579200563,
+      "final_message": "DONE: Added `to_json()` to `Record` returning `json.dumps(self.to_dict(), sort_keys=True)`, leaving `to_dict()` and `__init__` unchanged (no `test_public.py` present in this directory).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 3,
+        "passed": 3,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 7883.524,
+      "provider_requests": 3,
+      "cost_usd": 0.09026775000000001,
+      "model_counts": {
+        "claude-sonnet-5": 3
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_add_tag_mutable_default",
+      "started_at": "2026-09-25T19:36:25.315279+00:00",
+      "ended_at": "2026-09-25T19:36:40.984831+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 15669.391000003088,
+      "final_message": "DONE: Fixed `add_tag`'s mutable-default-argument bug by using `tags=None` and creating a fresh list per call when omitted; `test_public.py` passes (1/1).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 5,
+        "passed": 5,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 9228.099,
+      "provider_requests": 4,
+      "cost_usd": 0.10832715,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    }
+  ],
+  "exec_time_ms": 39600.607,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 13,
+  "concurrency_at_launch": 1,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.040000000000000036,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      },
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.010000000000000009,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      },
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.51,
+        "tier": "strong",
+        "reason": "judge_strong"
+      },
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.0,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_7bfcd91f920f40d9864bbf341cb0e224",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 31863,
+        "output_tokens": 196,
+        "cache_read_tokens": 31861,
+        "cache_write_tokens": 36688
+      },
+      {
+        "provider_call_id": "provider_27babad0e33a4cd3900c6fcfd365cb83",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 68551,
+        "output_tokens": 324,
+        "cache_read_tokens": 68549,
+        "cache_write_tokens": 1751
+      },
+      {
+        "provider_call_id": "provider_b9e6f21fd03b4ab79b782b80021baf41",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 70302,
+        "output_tokens": 74,
+        "cache_read_tokens": 70300,
+        "cache_write_tokens": 475
+      },
+      {
+        "provider_call_id": "provider_35b6a45372154ad69e945b42a5c25eea",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 70777,
+        "output_tokens": 99,
+        "cache_read_tokens": 70775,
+        "cache_write_tokens": 204
+      },
+      {
+        "provider_call_id": "provider_033af8e191e84c5d9f4affd09271b3da",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 75180,
+        "output_tokens": 209,
+        "cache_read_tokens": 75178,
+        "cache_write_tokens": 261
+      },
+      {
+        "provider_call_id": "provider_8c984756bf46470abdf0283ebd694080",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 75441,
+        "output_tokens": 227,
+        "cache_read_tokens": 75439,
+        "cache_write_tokens": 1340
+      },
+      {
+        "provider_call_id": "provider_d171330ace1143f4b8f96231b5ff321b",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 76781,
+        "output_tokens": 81,
+        "cache_read_tokens": 76779,
+        "cache_write_tokens": 398
+      },
+      {
+        "provider_call_id": "provider_45877cc3eaf44f2fa3371e4c19b1eaac",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 77179,
+        "output_tokens": 65,
+        "cache_read_tokens": 77177,
+        "cache_write_tokens": 188
+      },
+      {
+        "provider_call_id": "provider_901797b62a5b4767b08dd78c4690f055",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 102,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 40124
+      },
+      {
+        "provider_call_id": "provider_1cc22eb33e93459fa0087db56cce7697",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 71983,
+        "output_tokens": 70,
+        "cache_read_tokens": 71981,
+        "cache_write_tokens": 1020
+      },
+      {
+        "provider_call_id": "provider_58a68fa19815468f8e6775caa2e09f55",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 70981,
+        "output_tokens": 185,
+        "cache_read_tokens": 70979,
+        "cache_write_tokens": 2831
+      },
+      {
+        "provider_call_id": "provider_bea49773aae742c2b61ad2ed3fe3bbfd",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 73812,
+        "output_tokens": 311,
+        "cache_read_tokens": 73810,
+        "cache_write_tokens": 896
+      },
+      {
+        "provider_call_id": "provider_91ed76c4523045cab447cb1bdef5288c",
+        "served_model": "claude-sonnet-5",
+        "requested_model": "claude-sonnet-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 74708,
+        "output_tokens": 81,
+        "cache_read_tokens": 74706,
+        "cache_write_tokens": 472
+      }
+    ],
+    "served_model_counts": {
+      "claude-sonnet-5": 11,
+      "provider-default": 2
+    },
+    "native_served_model_counts": {
+      "claude-sonnet-5": 11,
+      "claude-fable-5-1": 2,
+      "claude-haiku-4-5-20251001": 1
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.428152,
+      "claude-fable-5-1": 0.54892,
+      "claude-haiku-4-5-20251001": 0.002238
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "schema": "fast-decisions-evals/results/v1",
+  "suite": "s1",
+  "split": "dev",
+  "reps": 2,
+  "cells": [
+    {
+      "cell": "orch-default",
+      "anchor": "plain",
+      "reps": 2,
+      "split": "dev",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 0.5396680981364941,
+        "ci95_low": 0.429233964396511,
+        "ci95_high": 0.7124122515576189,
+        "sign_test_p": 0.00634765625
+      },
+      "cost_ratio": 0.5783958457229337,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen",
+      "vs_plain": {
+        "anchor": "plain-sonnet",
+        "exec_time_ratio": {
+          "geomean": 1.0515367447766009,
+          "ci95_low": 0.8964520962730788,
+          "ci95_high": 1.2764938593986186,
+          "sign_test_p": 0.7744140625
+        },
+        "cost_ratio": 1.3825446006783304,
+        "quality": {
+          "candidate_successes": 12,
+          "anchor_successes": 12,
+          "non_inferior": true
+        }
+      }
+    },
+    {
+      "cell": "orch-default-opus",
+      "anchor": "plain-opus",
+      "reps": 2,
+      "split": "dev",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 0.890229753094706,
+        "ci95_low": 0.8048939689382159,
+        "ci95_high": 0.9756442115176793,
+        "sign_test_p": 0.3876953125
+      },
+      "cost_ratio": 0.9741897068824525,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen",
+      "vs_plain": {
+        "anchor": "plain-sonnet",
+        "exec_time_ratio": {
+          "geomean": 0.863447570005979,
+          "ci95_low": 0.7224702401607542,
+          "ci95_high": 0.9975252735968518,
+          "sign_test_p": 0.14599609375
+        },
+        "cost_ratio": 0.942065025832199,
+        "quality": {
+          "candidate_successes": 12,
+          "anchor_successes": 12,
+          "non_inferior": true
+        }
+      }
+    },
+    {
+      "cell": "orch-planner-value-sub-opus",
+      "anchor": "plain-opus",
+      "reps": 2,
+      "split": "dev",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 0.9357201073567694,
+        "ci95_low": 0.860920349313729,
+        "ci95_high": 1.0138836653319496,
+        "sign_test_p": 0.3876953125
+      },
+      "cost_ratio": 0.9559023857802058,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen"
+    },
+    {
+      "cell": "orch-planner-value-sub-fable",
+      "anchor": "plain",
+      "reps": 2,
+      "split": "dev",
+      "gate_passed": true,
+      "paired_task_count": 12,
+      "exec_time_ratio": {
+        "geomean": 0.5217302719723423,
+        "ci95_low": 0.417642939850938,
+        "ci95_high": 0.670915991974824,
+        "sign_test_p": 0.00634765625
+      },
+      "cost_ratio": 0.5300708391110409,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 12,
+        "anchor_successes": 12,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen"
+    }
+  ],
+  "q3": null,
+  "evidence_limits": [
+    "bootstrap_ci: 2000 resamples, seed=20260919",
+    "confirmed requires >= 3 reps, >= 8 paired passing tasks, and split=holdout",
+    "external_harness_exec_time_may_still_include_its_own_startup",
+    "models_not_necessarily_matched_across_campaigns_or_harnesses",
+    "models_not_necessarily_matched_across_harnesses",
+    "n_tasks=12",
+    "non_contemporaneous_runs_across_campaigns",
+    "single_repetition_per_task_per_harness"
+  ]
+}

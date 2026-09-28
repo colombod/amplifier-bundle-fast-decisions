@@ -1,0 +1,103 @@
+{
+  "schema": "fast-decisions-evals/results/v1",
+  "suite": "s1m",
+  "split": "m-dev",
+  "reps": 1,
+  "cells": [
+    {
+      "cell": "orch-default-opus",
+      "anchor": "plain-opus",
+      "reps": 1,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 1.0734687813513355,
+        "ci95_low": 0.9539671185095641,
+        "ci95_high": 1.2299387163324687,
+        "sign_test_p": 1.0
+      },
+      "cost_ratio": 1.2173616498491235,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 3,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen",
+      "vs_plain": {
+        "anchor": "plain-sonnet",
+        "exec_time_ratio": {
+          "geomean": 0.9864320837454224,
+          "ci95_low": 0.8866855598119676,
+          "ci95_high": 1.07084859063834,
+          "sign_test_p": 1.0
+        },
+        "cost_ratio": 0.8873859060008429,
+        "quality": {
+          "candidate_successes": 3,
+          "anchor_successes": 3,
+          "non_inferior": true
+        }
+      }
+    },
+    {
+      "cell": "orch-planner-opus",
+      "anchor": "plain-opus",
+      "reps": 1,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 1.014386955237016,
+        "ci95_low": 0.9780739777665383,
+        "ci95_high": 1.0658688242186642,
+        "sign_test_p": 1.0
+      },
+      "cost_ratio": 1.406169746613307,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 3,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen"
+    },
+    {
+      "cell": "orch-planner-fable",
+      "anchor": "plain",
+      "reps": 1,
+      "split": "m-dev",
+      "gate_passed": true,
+      "paired_task_count": 3,
+      "exec_time_ratio": {
+        "geomean": 0.49863608628057654,
+        "ci95_low": 0.41824977128128876,
+        "ci95_high": 0.6504874079743894,
+        "sign_test_p": 0.25
+      },
+      "cost_ratio": 0.6117929304431816,
+      "unknown_cost_count": 0,
+      "quality": {
+        "candidate_successes": 3,
+        "anchor_successes": 3,
+        "non_inferior": true
+      },
+      "critical_failures": [],
+      "verdict": "screen"
+    }
+  ],
+  "q3": null,
+  "evidence_limits": [
+    "bootstrap_ci: 2000 resamples, seed=20260919",
+    "confirmed requires >= 3 reps, >= 8 paired passing tasks, and split=holdout",
+    "external_harness_exec_time_may_still_include_its_own_startup",
+    "models_not_necessarily_matched_across_campaigns_or_harnesses",
+    "models_not_necessarily_matched_across_harnesses",
+    "n_tasks=3",
+    "non_contemporaneous_runs_across_campaigns",
+    "single_repetition_per_task_per_harness"
+  ]
+}

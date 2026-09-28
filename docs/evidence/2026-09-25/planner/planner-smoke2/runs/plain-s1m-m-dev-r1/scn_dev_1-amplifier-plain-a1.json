@@ -1,0 +1,177 @@
+{
+  "name": "plain-s1m-m-dev-r1-scn_dev_1-amplifier-plain-a1",
+  "task": "scn_dev_1",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T16:48:23.541564+00:00",
+  "ended_at": "2026-09-25T16:51:12.435741+00:00",
+  "wall_time_ms": 168890.10420802515,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 1.5703920000000002,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1292206.0,
+    "output_tokens": 4384.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 1.5703920000000002
+  },
+  "num_turns": null,
+  "final_message": "The public test passes, and `paginate` now agrees with `page_bounds` for every page (including the partial last page and an out-of-range page returning `[]`). `total_pages` and `page_bounds` are untouched.\n\nDONE: Fixed off-by-one in t4-bugfix_paginate_off_by_one/paginate.py by changing `start = page * page_size` to `start = (page - 1) * page_size` for 1-indexed pages; `python3 -m unittest -v test_public.py` passes.",
+  "quality": {
+    "checks": 47,
+    "passed": 47,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_parse_duration/README.md": true,
+    "t1-repair_parse_duration/test_public.py": true,
+    "t2-answer_audit_log_key/README.md": true,
+    "t3-edit_cli_dry_run/README.md": true,
+    "t4-bugfix_paginate_off_by_one/README.md": true,
+    "t4-bugfix_paginate_off_by_one/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_parse_duration",
+      "started_at": "2026-09-25T16:48:23.541564+00:00",
+      "ended_at": "2026-09-25T16:49:37.450573+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 73907.72229101276,
+      "final_message": "Both public tests pass, and the extra contract checks (order enforcement, empty string, signs, spaces, unknown units, non-ASCII digits \u2192 `ValueError`; non-string \u2192 `TypeError`) all behave as documented.\n\n`solution.py` now uses a single anchored regex `(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?` with `fullmatch`, requires at least one component, and sums `h*3600 + m*60 + s`.\n\nDONE: Rewrote `parse_duration` in t1-repair_parse_duration/solution.py with a strict ordered h/m/s regex parser (ValueError on malformed input, TypeError on non-str); `python3 -m unittest -v test_public.py` passes 2/2.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 35792.754,
+      "provider_requests": 5,
+      "cost_usd": 1.05005675,
+      "model_counts": {
+        "claude-fable-5-1": 5
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_audit_log_key",
+      "started_at": "2026-09-25T16:49:37.451441+00:00",
+      "ended_at": "2026-09-25T16:50:12.961834+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 35510.147124994546,
+      "final_message": "Trace of `service.checkout(\"7781\")`:\n\n1. `service.checkout` calls `write_audit(\"order\", order_id)` (service.py:6).\n2. `write_audit` computes `key = _format_key(kind, ident)` (audit.py:11).\n3. `_format_key` returns `f\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"` with `AUDIT_PREFIX = \"AUD\"` from config.py:3 \u2192 `\"AUD-ORDER-7781\"`.\n4. `log[key] = True`.\n\n`decoy_metrics.py` (`MET-` prefix) and `decoy_cache.py` never touch the audit log. Executing the code confirms the dict key is `AUD-ORDER-7781`.\n\nANSWER: AUD-ORDER-7781",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 24855.954,
+      "provider_requests": 4,
+      "cost_usd": 0.18154474999999998,
+      "model_counts": {
+        "claude-fable-5-1": 4
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T16:50:10.932945+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_cli_dry_run",
+      "started_at": "2026-09-25T16:50:12.962514+00:00",
+      "ended_at": "2026-09-25T16:50:46.312436+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 33349.68354200828,
+      "final_message": "Verified: `--dry-run` prints `DRY RUN: would {action} {path}` and touches no files; without it, the original create/delete behavior and `DONE: ...` output are unchanged. The scratch file was removed by the final delete, leaving only `README.md` and `cli_tool.py`.\n\nDONE: Added `--dry-run` (store_true, default False) to t3-edit_cli_dry_run/cli_tool.py that prints `DRY RUN: would {action} {path}` and returns before any file create/delete; non-dry-run behavior unchanged.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 4,
+        "passed": 4,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 26858.659,
+      "provider_requests": 5,
+      "cost_usd": 0.18162675,
+      "model_counts": {
+        "claude-fable-5-1": 5
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_paginate_off_by_one",
+      "started_at": "2026-09-25T16:50:46.313006+00:00",
+      "ended_at": "2026-09-25T16:51:12.435741+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 26122.551250009565,
+      "final_message": "The public test passes, and `paginate` now agrees with `page_bounds` for every page (including the partial last page and an out-of-range page returning `[]`). `total_pages` and `page_bounds` are untouched.\n\nDONE: Fixed off-by-one in t4-bugfix_paginate_off_by_one/paginate.py by changing `start = page * page_size` to `start = (page - 1) * page_size` for 1-indexed pages; `python3 -m unittest -v test_public.py` passes.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 10,
+        "passed": 10,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 19588.156000000003,
+      "provider_requests": 4,
+      "cost_usd": 0.15716375,
+      "model_counts": {
+        "claude-fable-5-1": 4
+      },
+      "background_calls": []
+    }
+  ],
+  "exec_time_ms": 107095.523,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 18,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-fable-5-1": 18,
+      "claude-haiku-4-5-20251001": 1
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 1.565647,
+      "claude-haiku-4-5-20251001": 0.004745
+    }
+  }
+}

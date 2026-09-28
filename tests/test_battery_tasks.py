@@ -26,32 +26,35 @@ def _materialize(files: dict, extra: dict | None = None) -> Path:
 
 
 class TestRegistryShape(unittest.TestCase):
-    def test_exactly_thirtytwo_tasks_eight_per_family(self):
-        # 20 original (dev + holdout) + 12 fresh holdout2 tasks (3/family), plus
-        # 3 multi-turn m-dev scenarios (family="scenario", built from existing
-        # dev tasks -- see TestScenarios below).
-        self.assertEqual(len(bt.TASKS), 35)
+    def test_exactly_fortyfour_tasks_eleven_per_family(self):
+        # 20 original (dev + holdout) + 12 fresh holdout2 tasks (3/family) +
+        # 12 fresh holdout3 tasks (3/family), plus 3 multi-turn m-dev
+        # scenarios + 3 multi-turn m-holdout3 scenarios (family="scenario",
+        # built from existing dev/holdout3 tasks -- see TestScenarios below).
+        self.assertEqual(len(bt.TASKS), 50)
         counts = {}
         for t in bt.TASKS.values():
             counts[t.family] = counts.get(t.family, 0) + 1
-        self.assertEqual(counts, {"repair": 8, "edit": 8, "bugfix": 8, "answer": 8, "scenario": 3})
+        self.assertEqual(counts, {"repair": 11, "edit": 11, "bugfix": 11, "answer": 11, "scenario": 6})
 
-    def test_three_dev_two_holdout_three_holdout2_per_family(self):
-        # scenario tasks (family="scenario") live in the m-dev split, which
-        # has its own 3-scenario shape (checked in TestScenarios) rather than
-        # the 3/2/3 dev/holdout/holdout2 shape the other four families share.
+    def test_three_dev_two_holdout_three_holdout2_three_holdout3_per_family(self):
+        # scenario tasks (family="scenario") live in the m-dev/m-holdout3
+        # splits, which have their own 3-scenario shapes (checked in
+        # TestScenarios) rather than the 3/2/3/3 dev/holdout/holdout2/
+        # holdout3 shape the other four families share.
         by_family_split = {}
         for t in bt.TASKS.values():
             if t.family == "scenario":
-                self.assertEqual(t.split, "m-dev", t.name)
+                self.assertIn(t.split, ("m-dev", "m-holdout3"), t.name)
                 continue
-            by_family_split.setdefault(t.family, {"dev": 0, "holdout": 0, "holdout2": 0})
-            self.assertIn(t.split, ("dev", "holdout", "holdout2"), t.name)
+            by_family_split.setdefault(t.family, {"dev": 0, "holdout": 0, "holdout2": 0, "holdout3": 0})
+            self.assertIn(t.split, ("dev", "holdout", "holdout2", "holdout3"), t.name)
             by_family_split[t.family][t.split] += 1
         for family, counts in by_family_split.items():
             self.assertEqual(counts["dev"], 3, family)
             self.assertEqual(counts["holdout"], 2, family)
             self.assertEqual(counts["holdout2"], 3, family)
+            self.assertEqual(counts["holdout3"], 3, family)
 
     def test_unique_names(self):
         names = [t.name for t in bt.TASKS.values()]
@@ -85,14 +88,21 @@ class TestRegistryShape(unittest.TestCase):
         dev = bt.split("dev")
         holdout = bt.split("holdout")
         holdout2 = bt.split("holdout2")
+        holdout3 = bt.split("holdout3")
         m_dev = bt.split("m-dev")
+        m_holdout3 = bt.split("m-holdout3")
         allnames = bt.split("all")
         self.assertEqual(len(dev), 12)
         self.assertEqual(len(holdout), 8)
         self.assertEqual(len(holdout2), 12)
+        self.assertEqual(len(holdout3), 12)
         self.assertEqual(len(m_dev), 3)
-        self.assertEqual(set(dev) | set(holdout) | set(holdout2) | set(m_dev), set(allnames))
-        self.assertEqual(len(allnames), 35)
+        self.assertEqual(len(m_holdout3), 3)
+        self.assertEqual(
+            set(dev) | set(holdout) | set(holdout2) | set(holdout3) | set(m_dev) | set(m_holdout3),
+            set(allnames),
+        )
+        self.assertEqual(len(allnames), 50)
         with self.assertRaises(ValueError):
             bt.split("nonsense")
 
@@ -104,10 +114,12 @@ class TestCodeTasks(unittest.TestCase):
     fails for the unmodified starter (bugfix family)."""
 
     def test_all_code_tasks(self):
-        # holdout2 code tasks are covered by tests/test_battery_tasks_holdout2.py
-        # instead: their reference/wrong solutions live only in that test file,
-        # never in bt.REFERENCE_SOLUTIONS (so an agent workspace can't read them).
-        code_tasks = [t for t in bt.TASKS.values() if t.kind == "code" and t.split != "holdout2"]
+        # holdout2/holdout3 code tasks are covered by
+        # tests/test_battery_tasks_holdout2.py and
+        # tests/test_battery_tasks_holdout3.py instead: their reference/wrong
+        # solutions live only in those test files, never in
+        # bt.REFERENCE_SOLUTIONS (so an agent workspace can't read them).
+        code_tasks = [t for t in bt.TASKS.values() if t.kind == "code" and t.split not in ("holdout2", "holdout3")]
         self.assertEqual(len(code_tasks), 15)
         for task in code_tasks:
             with self.subTest(task=task.name):

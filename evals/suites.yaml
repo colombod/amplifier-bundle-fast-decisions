@@ -8,11 +8,19 @@ schema: fast-decisions-evals/suites/v1
 # added in scripts/battery_tasks.py to replace the original 8-task `holdout`
 # split after it was spent (used twice). Same confirmation-style reps
 # default as `holdout`. `holdout` itself is left untouched.
+#
+# holdout3 (2026-09-25): a second fresh 12-task S1 holdout split (3 per
+# family, all-new tasks/domains), plus its m-holdout3 multi-turn scenarios
+# (built only from the 12 holdout3 tasks), preregistered for the routing
+# planner confirmation study. Same confirmation-style reps default as
+# `holdout`/`holdout2`.
 reps_defaults:
   dev: 3
   holdout: 5
   holdout2: 5
+  holdout3: 5
   m-dev: 3
+  m-holdout3: 3
 
 suites:
   s1:
@@ -23,6 +31,7 @@ suites:
       dev:      { tasks_flag: dev,      expected_task_count: 12 }
       holdout:  { tasks_flag: holdout,  expected_task_count: 8 }
       holdout2: { tasks_flag: holdout2, expected_task_count: 12 }
+      holdout3: { tasks_flag: holdout3, expected_task_count: 12 }
     required_toolchains: [python3]
 
   # s1m (2026-09-25): multi-turn scenario battery. Each task is one Amplifier
@@ -35,7 +44,8 @@ suites:
     task_source: battery           # battery.py --task-source battery
     deadline_seconds: 600          # per-turn deadline (battery.py prepare's --deadline-seconds)
     splits:
-      m-dev: { tasks_flag: m-dev, expected_task_count: 3 }
+      m-dev:      { tasks_flag: m-dev,      expected_task_count: 3 }
+      m-holdout3: { tasks_flag: m-holdout3, expected_task_count: 3 }
     required_toolchains: [python3]
 
   s2:

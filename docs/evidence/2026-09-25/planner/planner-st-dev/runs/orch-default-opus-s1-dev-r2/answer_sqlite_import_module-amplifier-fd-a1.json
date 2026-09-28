@@ -1,0 +1,94 @@
+{
+  "name": "orch-default-opus-s1-dev-r2-answer_sqlite_import_module-amplifier-fd-a1",
+  "task": "answer_sqlite_import_module",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T18:10:16.885064+00:00",
+  "ended_at": "2026-09-25T18:11:08.100217+00:00",
+  "wall_time_ms": 51212.12120799464,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.3670622,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 68409.0,
+    "output_tokens": 257.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": 69642.0,
+    "cost_usd": 0.3670622
+  },
+  "num_turns": null,
+  "final_message": "I read README.md and all five Python modules. `storage.py` is the only one that imports `sqlite3`: it has `import sqlite3` and calls `sqlite3.connect(path)`.\n\n`decoy_db_helpers.py` looks like a candidate, but it only mentions \"sqlite\" in its docstring and in the string `\"sqlite-like\"`. It never imports the module. `cache.py`, `network.py` and `utils.py` don't import it either.\n\nANSWER: storage",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": null,
+  "exec_time_ms": 6632.5560000000005,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 2,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.52,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_7b51ca6410fc4d88acaf024717e945d4",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 4,
+        "output_tokens": 99,
+        "cache_write_tokens": 68401
+      },
+      {
+        "provider_call_id": "provider_ee576d94bf194260a3489f35cf02151a",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68405,
+        "output_tokens": 158,
+        "cache_read_tokens": 68401,
+        "cache_write_tokens": 1241
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 2
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.367062
+    }
+  }
+}

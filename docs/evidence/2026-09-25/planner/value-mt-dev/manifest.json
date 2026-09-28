@@ -1,0 +1,366 @@
+{
+  "schema": "fast-decisions-evals/manifest/v1",
+  "created_at_utc": "2026-09-25T20:07:44Z",
+  "invocation": {
+    "argv": [
+      "--suite",
+      "s1m",
+      "--split",
+      "m-dev",
+      "--cells",
+      "plain,plain-opus,plain-sonnet,orch-default,orch-default-opus,orch-planner-value-opus,orch-planner-value-fable",
+      "--reps",
+      "3",
+      "--candidate-sha",
+      "d0b6e95",
+      "--baseline-source",
+      "~/dev/afast-orch-primary-20260924/baseline-main",
+      "--installed-cache",
+      "~/dev/afast-orch-primary-20260924/baseline-main",
+      "--history-index",
+      "~/dev/afast-orch-primary-20260924/history-index.json",
+      "--host-python",
+      "~/.local/share/uv/tools/amplifier/bin/python",
+      "--events-dir",
+      "~/.amplifier/fast-decisions/events",
+      "--allow-external-state",
+      "--parallel",
+      "3",
+      "--base-seed",
+      "20261006",
+      "--out",
+      "~/dev/afast-orch-primary-20260924/value-mt-dev"
+    ],
+    "suite": "s1m",
+    "split": "m-dev",
+    "reps": 3,
+    "cell_order": {
+      "mode": "shuffle",
+      "per_rep": {
+        "1": [
+          "plain-opus",
+          "orch-planner-value-fable",
+          "plain-sonnet",
+          "orch-planner-value-opus",
+          "orch-default-opus",
+          "plain",
+          "orch-default"
+        ],
+        "2": [
+          "plain-opus",
+          "plain-sonnet",
+          "orch-planner-value-fable",
+          "orch-default",
+          "orch-planner-value-opus",
+          "orch-default-opus",
+          "plain"
+        ],
+        "3": [
+          "plain-sonnet",
+          "orch-default",
+          "orch-planner-value-opus",
+          "plain",
+          "plain-opus",
+          "orch-planner-value-fable",
+          "orch-default-opus"
+        ]
+      }
+    }
+  },
+  "suite": {
+    "label": "S1M multi-turn scenarios (3 scenarios, 4 turns each, built from S1 dev tasks)",
+    "task_source": "battery",
+    "deadline_seconds": 600,
+    "splits": {
+      "m-dev": {
+        "tasks_flag": "m-dev",
+        "expected_task_count": 3
+      },
+      "m-holdout3": {
+        "tasks_flag": "m-holdout3",
+        "expected_task_count": 3
+      }
+    },
+    "required_toolchains": [
+      "python3"
+    ]
+  },
+  "candidate": {
+    "source": "~/dev/fd-planner",
+    "requested_sha": "d0b6e95"
+  },
+  "baseline": {
+    "source": "~/dev/afast-orch-primary-20260924/baseline-main"
+  },
+  "cells": [
+    {
+      "id": "plain",
+      "experiments": [
+        "plain-s1m-m-dev-r1",
+        "plain-s1m-m-dev-r2",
+        "plain-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261007,
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": []
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "plain-sonnet",
+      "experiments": [
+        "plain-sonnet-s1m-m-dev-r1",
+        "plain-sonnet-s1m-m-dev-r2",
+        "plain-sonnet-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261007,
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": []
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-default",
+      "experiments": [
+        "orch-default-s1m-m-dev-r1",
+        "orch-default-s1m-m-dev-r2",
+        "orch-default-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261007,
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "plain-opus",
+      "experiments": [
+        "plain-opus-s1m-m-dev-r1",
+        "plain-opus-s1m-m-dev-r2",
+        "plain-opus-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261007,
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": []
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-default-opus",
+      "experiments": [
+        "orch-default-opus-s1m-m-dev-r1",
+        "orch-default-opus-s1m-m-dev-r2",
+        "orch-default-opus-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261007,
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-planner-value-opus",
+      "experiments": [
+        "orch-planner-value-opus-s1m-m-dev-r1",
+        "orch-planner-value-opus-s1m-m-dev-r2",
+        "orch-planner-value-opus-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261007,
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-planner-value-fable",
+      "experiments": [
+        "orch-planner-value-fable-s1m-m-dev-r1",
+        "orch-planner-value-fable-s1m-m-dev-r2",
+        "orch-planner-value-fable-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261007,
+        20261008,
+        20261009
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    }
+  ],
+  "budget": {
+    "per_launch_usd": 12.0,
+    "estimated_total_usd": 1800.0,
+    "max_benchmark_worker_launches": 2400,
+    "max_infrastructure_retries_per_run": 1,
+    "max_parallel_timed_runs": 3,
+    "wall_hours": 24
+  },
+  "verification": {
+    "prompt_hashes": "prompt-verification.json",
+    "preflight": "preflight.json"
+  },
+  "tool_shas": {
+    "battery.py": "36fc8a475f0cdf9177dc64794943bf83fe5208fef487dbd5ef0dda2182d1244d",
+    "battery_tasks.py": "8ed6f626aa3325241d4c0451ae57558ff865110b9ae9047438d550f0f8fc1cff",
+    "polyglot_tasks.py": "62ac12eae2747d97a33b0546981764e7797175b84749b17f103b9283e1a61271",
+    "battery_report.py": "0cdbbcb41703f9aa564db1db88a08837de7835077a8a814e919de8fe3aaf92e0",
+    "forge_workloads.py": "f5111afe10286634edde75a3539425ed0ea7206c5c11aebe33003c974fcf08a2"
+  },
+  "timing": {
+    "plain": {
+      "1": {
+        "started_at": "2026-09-25T19:32:00.837829Z",
+        "ended_at": "2026-09-25T19:35:15.144355Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:50:15.542456Z",
+        "ended_at": "2026-09-25T19:53:25.259853Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T19:59:23.178579Z",
+        "ended_at": "2026-09-25T20:02:15.131149Z"
+      }
+    },
+    "plain-sonnet": {
+      "1": {
+        "started_at": "2026-09-25T19:26:12.046938Z",
+        "ended_at": "2026-09-25T19:28:22.417568Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:38:42.075411Z",
+        "ended_at": "2026-09-25T19:40:40.110506Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T19:53:25.923649Z",
+        "ended_at": "2026-09-25T19:55:37.699838Z"
+      }
+    },
+    "orch-default": {
+      "1": {
+        "started_at": "2026-09-25T19:35:15.144419Z",
+        "ended_at": "2026-09-25T19:36:59.444726Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:42:26.371110Z",
+        "ended_at": "2026-09-25T19:44:38.590326Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T19:55:37.699890Z",
+        "ended_at": "2026-09-25T19:57:25.355869Z"
+      }
+    },
+    "plain-opus": {
+      "1": {
+        "started_at": "2026-09-25T19:22:52.273997Z",
+        "ended_at": "2026-09-25T19:24:32.136489Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:37:00.160057Z",
+        "ended_at": "2026-09-25T19:38:42.075345Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T20:02:15.131204Z",
+        "ended_at": "2026-09-25T20:03:56.695551Z"
+      }
+    },
+    "orch-default-opus": {
+      "1": {
+        "started_at": "2026-09-25T19:30:10.486152Z",
+        "ended_at": "2026-09-25T19:32:00.837765Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:46:29.041332Z",
+        "ended_at": "2026-09-25T19:50:15.542394Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T20:06:00.813473Z",
+        "ended_at": "2026-09-25T20:07:42.380757Z"
+      }
+    },
+    "orch-planner-value-opus": {
+      "1": {
+        "started_at": "2026-09-25T19:28:22.417639Z",
+        "ended_at": "2026-09-25T19:30:10.486090Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:44:38.590389Z",
+        "ended_at": "2026-09-25T19:46:29.041266Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T19:57:25.355937Z",
+        "ended_at": "2026-09-25T19:59:23.178521Z"
+      }
+    },
+    "orch-planner-value-fable": {
+      "1": {
+        "started_at": "2026-09-25T19:24:32.136558Z",
+        "ended_at": "2026-09-25T19:26:12.046878Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T19:40:40.110573Z",
+        "ended_at": "2026-09-25T19:42:26.371056Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T20:03:56.695623Z",
+        "ended_at": "2026-09-25T20:06:00.813405Z"
+      }
+    }
+  }
+}

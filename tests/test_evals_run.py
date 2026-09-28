@@ -859,6 +859,18 @@ class ClassifyVerdictTests(unittest.TestCase):
         kwargs = {**self.BASE, "split": "m-dev"}
         self.assertEqual(run.classify_verdict(**kwargs), "screen")
 
+    def test_confirmed_on_holdout3_split(self):
+        # holdout3 is a second fresh holdout split (evals/suites.yaml) -- it
+        # must be eligible for "confirmed" exactly like "holdout"/"holdout2".
+        kwargs = {**self.BASE, "split": "holdout3"}
+        self.assertEqual(run.classify_verdict(**kwargs), "confirmed")
+
+    def test_confirmed_on_m_holdout3_split(self):
+        # m-holdout3 is the multi-turn scenario split built from holdout3
+        # tasks -- it must be eligible for "confirmed" too, unlike "m-dev".
+        kwargs = {**self.BASE, "split": "m-holdout3"}
+        self.assertEqual(run.classify_verdict(**kwargs), "confirmed")
+
     def test_critical_failure_disqualifies_even_with_full_bar(self):
         kwargs = {**self.BASE, "critical_failure_count": 1}
         self.assertEqual(run.classify_verdict(**kwargs), "disqualified (critical failure)")

@@ -1,0 +1,58 @@
+{
+  "name": "plain-opus-s1-dev-r1-answer_sqlite_import_module-amplifier-plain-a1",
+  "task": "answer_sqlite_import_module",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T17:54:38.581739+00:00",
+  "ended_at": "2026-09-25T17:56:41.676607+00:00",
+  "wall_time_ms": 123088.7131250056,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2139826,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 100261.0,
+    "output_tokens": 257.0,
+    "cache_read_tokens": 100253.0,
+    "cache_write_tokens": 37752.0,
+    "cost_usd": 0.2139826
+  },
+  "num_turns": null,
+  "final_message": "The module is `storage`. It's the only file with `import sqlite3`, and it uses it in `connect()` (`sqlite3.connect(path)`).\n\nI read all the other `.py` files, and none of them import `sqlite3`. `decoy_db_helpers.py` mentions \"sqlite\" in its docstring and in the string `\"sqlite-like\"`, but it never imports the module. The other three files, `cache.py`, `network.py` and `utils.py`, have nothing to do with databases.\n\nANSWER: storage",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": null,
+  "exec_time_ms": 7873.8679999999995,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 2,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-opus-5-5": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.213983
+    }
+  }
+}

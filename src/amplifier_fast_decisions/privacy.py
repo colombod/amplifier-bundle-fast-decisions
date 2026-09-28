@@ -241,6 +241,28 @@ SAFE_FIELDS = {
     # `mode` (already listed above) are reused verbatim.
     "guidance_chars",
     "hidden_tools",
+    # Turn planner (opt-in): the objective used, the estimated prompt-token
+    # context size, the per-option {model, warm, cold, cost, time} table,
+    # and the chosen model id -- all small numeric/label scalars derived
+    # from token counts already recorded elsewhere (never raw messages,
+    # tool arguments or model output). `host_model`, `provider_call_id`,
+    # `mode` (already listed above) are reused verbatim.
+    "objective",
+    "ctx",
+    "options",
+    # Turn planner lookahead (opt-in): the resolved continuation
+    # probability used to price the risk of leaving the host cache
+    # stale, and the session-kind label it came from -- both small,
+    # already-derived scalars (see contracts.DEFAULT_PLANNER_CONTINUE_PROBABILITY),
+    # never raw session content.
+    "p_continue",
+    "session_kind",
+    # "value" objective (opt-in): the resolved USD/hour used to convert
+    # TOTAL time into money -- a config-level policy scalar, never
+    # session content. Each option's own "utility" rides along inside
+    # "options" (already allowlisted above), not as a separate top-level
+    # field.
+    "value_of_time_usd_per_hour",
 }
 
 

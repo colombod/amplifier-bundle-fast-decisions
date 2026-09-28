@@ -285,7 +285,7 @@ def cmd_prepare(args):
         battery_tasks = None
     else:
         battery_tasks = _load_battery_tasks()
-        if args.tasks in ('all', 'dev', 'holdout', 'holdout2', 'm-dev'):
+        if args.tasks in ('all', 'dev', 'holdout', 'holdout2', 'holdout3', 'm-dev', 'm-holdout3'):
             task_names = list(battery_tasks.split(args.tasks))
         elif args.tasks:
             task_names = [t.strip() for t in args.tasks.split(',') if t.strip()]
@@ -2441,10 +2441,11 @@ def main(argv=None):
     p.add_argument('--experiment', required=True)
     p.add_argument('--harnesses', required=True)
     p.add_argument('--tasks', required=False, default=None,
-                    help='all|dev|holdout|holdout2|m-dev|comma-list. Required for --task-source battery '
-                         '(the default); ignored for --task-source polyglot (use --split instead). '
-                         "'m-dev' is the multi-turn scenario split (scn_dev_1..3, each replaying 4 of the "
-                         "12 existing dev tasks as --resume'd turns in one session).")
+                    help='all|dev|holdout|holdout2|holdout3|m-dev|m-holdout3|comma-list. Required for '
+                         '--task-source battery (the default); ignored for --task-source polyglot (use '
+                         "--split instead). 'm-dev'/'m-holdout3' are multi-turn scenario splits "
+                         "(scn_dev_1..3/scn_holdout3_1..3, each replaying 4 of that split's 12 tasks as "
+                         "--resume'd turns in one session).")
     p.add_argument('--seed', type=int, required=True)
     p.add_argument('--fd-override', action='append')
     p.add_argument('--deadline-seconds', type=int)

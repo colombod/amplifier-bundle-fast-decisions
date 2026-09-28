@@ -1,0 +1,534 @@
+{
+  "per_harness": {
+    "amplifier-fd": {
+      "n": 12,
+      "success_rate": 1.0,
+      "deadline_failures": 0,
+      "mean_penalized_ms": 11647.953666666666,
+      "median_penalized_ms": 10965.083,
+      "mean_exec_ms": 11647.953666666666,
+      "median_exec_ms": 10965.083,
+      "mean_wall_ms": 100748.58668391971,
+      "median_wall_ms": 136203.97458400112,
+      "mean_cost_known_usd": 0.25367707916666665,
+      "unknown_cost_count": 0,
+      "cost_per_success_usd": 0.25367707916666665,
+      "tokens": {
+        "input_tokens": 2679284.0,
+        "output_tokens": 7833.0,
+        "cache_read_tokens": 2334562.0,
+        "cache_write_tokens": 527800.0,
+        "cost_usd": 3.04412495
+      }
+    }
+  },
+  "per_task": {
+    "answer_audit_log_key": {
+      "task": "answer_audit_log_key",
+      "amplifier-fd": {
+        "penalized_ms": 13343.149000000001,
+        "outcome_passed": true,
+        "cost_usd": 0.240315
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "answer_compute_fee": {
+      "task": "answer_compute_fee",
+      "amplifier-fd": {
+        "penalized_ms": 10943.393,
+        "outcome_passed": true,
+        "cost_usd": 0.23569059999999997
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "answer_sqlite_import_module": {
+      "task": "answer_sqlite_import_module",
+      "amplifier-fd": {
+        "penalized_ms": 10216.131000000001,
+        "outcome_passed": true,
+        "cost_usd": 0.38463400000000003
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "bugfix_add_tag_mutable_default": {
+      "task": "bugfix_add_tag_mutable_default",
+      "amplifier-fd": {
+        "penalized_ms": 10030.721,
+        "outcome_passed": true,
+        "cost_usd": 0.22396215
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "bugfix_paginate_off_by_one": {
+      "task": "bugfix_paginate_off_by_one",
+      "amplifier-fd": {
+        "penalized_ms": 9478.985,
+        "outcome_passed": true,
+        "cost_usd": 0.22492410000000002
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "bugfix_session_ttl_naive_tz": {
+      "task": "bugfix_session_ttl_naive_tz",
+      "amplifier-fd": {
+        "penalized_ms": 10965.083,
+        "outcome_passed": true,
+        "cost_usd": 0.23090534999999998
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "edit_cli_dry_run": {
+      "task": "edit_cli_dry_run",
+      "amplifier-fd": {
+        "penalized_ms": 8026.728,
+        "outcome_passed": true,
+        "cost_usd": 0.20219775
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "edit_dequeue_validation": {
+      "task": "edit_dequeue_validation",
+      "amplifier-fd": {
+        "penalized_ms": 9082.138,
+        "outcome_passed": true,
+        "cost_usd": 0.22016085000000002
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "edit_record_to_json": {
+      "task": "edit_record_to_json",
+      "amplifier-fd": {
+        "penalized_ms": 14102.242,
+        "outcome_passed": true,
+        "cost_usd": 0.33225840000000006
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "repair_merge_intervals": {
+      "task": "repair_merge_intervals",
+      "amplifier-fd": {
+        "penalized_ms": 17219.556999999997,
+        "outcome_passed": true,
+        "cost_usd": 0.2644287
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "repair_parse_duration": {
+      "task": "repair_parse_duration",
+      "amplifier-fd": {
+        "penalized_ms": 13731.939,
+        "outcome_passed": true,
+        "cost_usd": 0.2547603
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "repair_semver_compare": {
+      "task": "repair_semver_compare",
+      "amplifier-fd": {
+        "penalized_ms": 12635.377999999999,
+        "outcome_passed": true,
+        "cost_usd": 0.22988775
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    }
+  },
+  "per_family": {
+    "answer": {
+      "amplifier-fd": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          13343.149000000001,
+          10943.393,
+          10216.131000000001
+        ]
+      }
+    },
+    "bugfix": {
+      "amplifier-fd": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          10030.721,
+          9478.985,
+          10965.083
+        ]
+      }
+    },
+    "edit": {
+      "amplifier-fd": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          8026.728,
+          9082.138,
+          14102.242
+        ]
+      }
+    },
+    "repair": {
+      "amplifier-fd": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          17219.556999999997,
+          13731.939,
+          12635.377999999999
+        ]
+      }
+    }
+  },
+  "amplifier_fd_vs_plain": null,
+  "cross": {
+    "baseline_root": "~/dev/afast-ev/planner-st-dev",
+    "baseline_experiment": "plain-opus-s1-dev-r1",
+    "common_tasks": [
+      "answer_audit_log_key",
+      "answer_compute_fee",
+      "answer_sqlite_import_module",
+      "bugfix_add_tag_mutable_default",
+      "bugfix_paginate_off_by_one",
+      "bugfix_session_ttl_naive_tz",
+      "edit_cli_dry_run",
+      "edit_dequeue_validation",
+      "edit_record_to_json",
+      "repair_merge_intervals",
+      "repair_parse_duration",
+      "repair_semver_compare"
+    ],
+    "baselines": {
+      "amplifier-plain": {
+        "geomean_ratio": 0.8523321800565004,
+        "wins": 9,
+        "losses": 3,
+        "sign_test_p_value": 0.14599609375,
+        "n_common_pass_pairs": 12,
+        "candidate_successes": 12,
+        "baseline_successes": 12,
+        "n_common_tasks": 12,
+        "per_task": {
+          "answer_audit_log_key": {
+            "task": "answer_audit_log_key",
+            "family": "answer",
+            "candidate_exec_s": 13.343149,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 12.206577,
+            "amplifier-plain_passed": true
+          },
+          "answer_compute_fee": {
+            "task": "answer_compute_fee",
+            "family": "answer",
+            "candidate_exec_s": 10.943393,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 12.244851,
+            "amplifier-plain_passed": true
+          },
+          "answer_sqlite_import_module": {
+            "task": "answer_sqlite_import_module",
+            "family": "answer",
+            "candidate_exec_s": 10.216131,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 7.873868,
+            "amplifier-plain_passed": true
+          },
+          "bugfix_add_tag_mutable_default": {
+            "task": "bugfix_add_tag_mutable_default",
+            "family": "bugfix",
+            "candidate_exec_s": 10.030721,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 11.774516,
+            "amplifier-plain_passed": true
+          },
+          "bugfix_paginate_off_by_one": {
+            "task": "bugfix_paginate_off_by_one",
+            "family": "bugfix",
+            "candidate_exec_s": 9.478985,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 9.272147,
+            "amplifier-plain_passed": true
+          },
+          "bugfix_session_ttl_naive_tz": {
+            "task": "bugfix_session_ttl_naive_tz",
+            "family": "bugfix",
+            "candidate_exec_s": 10.965083,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 14.682196,
+            "amplifier-plain_passed": true
+          },
+          "edit_cli_dry_run": {
+            "task": "edit_cli_dry_run",
+            "family": "edit",
+            "candidate_exec_s": 8.026728,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 15.319438,
+            "amplifier-plain_passed": true
+          },
+          "edit_dequeue_validation": {
+            "task": "edit_dequeue_validation",
+            "family": "edit",
+            "candidate_exec_s": 9.082138,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 12.273359,
+            "amplifier-plain_passed": true
+          },
+          "edit_record_to_json": {
+            "task": "edit_record_to_json",
+            "family": "edit",
+            "candidate_exec_s": 14.102242,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 15.133851,
+            "amplifier-plain_passed": true
+          },
+          "repair_merge_intervals": {
+            "task": "repair_merge_intervals",
+            "family": "repair",
+            "candidate_exec_s": 17.219557,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 18.849944,
+            "amplifier-plain_passed": true
+          },
+          "repair_parse_duration": {
+            "task": "repair_parse_duration",
+            "family": "repair",
+            "candidate_exec_s": 13.731939,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 16.751913,
+            "amplifier-plain_passed": true
+          },
+          "repair_semver_compare": {
+            "task": "repair_semver_compare",
+            "family": "repair",
+            "candidate_exec_s": 12.635378,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 19.172239,
+            "amplifier-plain_passed": true
+          }
+        }
+      }
+    },
+    "rank": {
+      "answer_audit_log_key": {
+        "rank": 2,
+        "field_size": 2
+      },
+      "answer_compute_fee": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "answer_sqlite_import_module": {
+        "rank": 2,
+        "field_size": 2
+      },
+      "bugfix_add_tag_mutable_default": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "bugfix_paginate_off_by_one": {
+        "rank": 2,
+        "field_size": 2
+      },
+      "bugfix_session_ttl_naive_tz": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "edit_cli_dry_run": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "edit_dequeue_validation": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "edit_record_to_json": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "repair_merge_intervals": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "repair_parse_duration": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "repair_semver_compare": {
+        "rank": 1,
+        "field_size": 2
+      }
+    },
+    "evidence_limits": [
+      "single_repetition_per_task_per_harness",
+      "non_contemporaneous_runs_across_campaigns",
+      "external_harness_exec_time_may_still_include_its_own_startup",
+      "models_not_necessarily_matched_across_campaigns_or_harnesses"
+    ]
+  },
+  "dev": {
+    "answer_sqlite_import_module": {
+      "task": "answer_sqlite_import_module",
+      "amplifier-fd": {
+        "penalized_ms": 10216.131000000001,
+        "outcome_passed": true,
+        "cost_usd": 0.38463400000000003
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "bugfix_paginate_off_by_one": {
+      "task": "bugfix_paginate_off_by_one",
+      "amplifier-fd": {
+        "penalized_ms": 9478.985,
+        "outcome_passed": true,
+        "cost_usd": 0.22492410000000002
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "answer_audit_log_key": {
+      "task": "answer_audit_log_key",
+      "amplifier-fd": {
+        "penalized_ms": 13343.149000000001,
+        "outcome_passed": true,
+        "cost_usd": 0.240315
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "repair_parse_duration": {
+      "task": "repair_parse_duration",
+      "amplifier-fd": {
+        "penalized_ms": 13731.939,
+        "outcome_passed": true,
+        "cost_usd": 0.2547603
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "edit_record_to_json": {
+      "task": "edit_record_to_json",
+      "amplifier-fd": {
+        "penalized_ms": 14102.242,
+        "outcome_passed": true,
+        "cost_usd": 0.33225840000000006
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "edit_dequeue_validation": {
+      "task": "edit_dequeue_validation",
+      "amplifier-fd": {
+        "penalized_ms": 9082.138,
+        "outcome_passed": true,
+        "cost_usd": 0.22016085000000002
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "bugfix_add_tag_mutable_default": {
+      "task": "bugfix_add_tag_mutable_default",
+      "amplifier-fd": {
+        "penalized_ms": 10030.721,
+        "outcome_passed": true,
+        "cost_usd": 0.22396215
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "edit_cli_dry_run": {
+      "task": "edit_cli_dry_run",
+      "amplifier-fd": {
+        "penalized_ms": 8026.728,
+        "outcome_passed": true,
+        "cost_usd": 0.20219775
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "repair_semver_compare": {
+      "task": "repair_semver_compare",
+      "amplifier-fd": {
+        "penalized_ms": 12635.377999999999,
+        "outcome_passed": true,
+        "cost_usd": 0.22988775
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "repair_merge_intervals": {
+      "task": "repair_merge_intervals",
+      "amplifier-fd": {
+        "penalized_ms": 17219.556999999997,
+        "outcome_passed": true,
+        "cost_usd": 0.2644287
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "bugfix_session_ttl_naive_tz": {
+      "task": "bugfix_session_ttl_naive_tz",
+      "amplifier-fd": {
+        "penalized_ms": 10965.083,
+        "outcome_passed": true,
+        "cost_usd": 0.23090534999999998
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "answer_compute_fee": {
+      "task": "answer_compute_fee",
+      "amplifier-fd": {
+        "penalized_ms": 10943.393,
+        "outcome_passed": true,
+        "cost_usd": 0.23569059999999997
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    }
+  },
+  "holdout": {},
+  "mechanism": {
+    "runs_evaluated": 12,
+    "configured_backend": "jev",
+    "difficulty_judged": {
+      "judge_cheap": 9,
+      "judge_strong": 3
+    },
+    "model_routing_configured": true,
+    "model_routing_start_model": "claude-sonnet-5",
+    "scored_by_backend": {},
+    "fallback_count": 0,
+    "routed_by_route": {
+      "slow": 46
+    },
+    "effort_routed_by_phase_effort": {
+      "orient:medium": 9,
+      "explore:medium": 9,
+      "implement:medium": 19,
+      "orient:None": 3,
+      "implement:None": 6
+    },
+    "model_routed_requested_models": {
+      "claude-sonnet-5": 37,
+      "null": 9
+    },
+    "model_routed_escalations_by_reason": {},
+    "decision_latency_ms_by_backend": {
+      "jev": {
+        "n": 12,
+        "p50": 137.6366250042338,
+        "p95": 182.21758300205693
+      }
+    },
+    "decision_latency_ms_p50": 137.6366250042338,
+    "decision_latency_ms_p95": 182.21758300205693,
+    "decision_latency_budget_ms": 500,
+    "latency_within_budget": true,
+    "decision_latency_reason": null,
+    "mechanism_engaged": true,
+    "mechanism_reason": null,
+    "escalation_judged_by_backend": {},
+    "escalation_judged_by_decided": {},
+    "phase_judged_by_backend": {},
+    "phase_judged_agreement": {},
+    "judged_engaged": null,
+    "judged_reason": null,
+    "served_model_counts": {
+      "claude-sonnet-5": 37,
+      "provider-default": 9
+    }
+  },
+  "amplifier_fd_series_label": "amplifier-fd [judge=jev; effort orient->medium, explore->low, implement->high; model routing: on; bundle=foundation]",
+  "evidence_limits": [
+    "n_tasks=12",
+    "single_repetition_per_task_per_harness",
+    "models_not_necessarily_matched_across_harnesses"
+  ]
+}

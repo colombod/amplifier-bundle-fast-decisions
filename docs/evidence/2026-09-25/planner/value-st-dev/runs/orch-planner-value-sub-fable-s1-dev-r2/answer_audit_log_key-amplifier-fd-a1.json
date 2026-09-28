@@ -1,0 +1,121 @@
+{
+  "name": "orch-planner-value-sub-fable-s1-dev-r2-answer_audit_log_key-amplifier-fd-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T19:46:38.414183+00:00",
+  "ended_at": "2026-09-25T19:47:26.284099+00:00",
+  "wall_time_ms": 47868.88354099938,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.63927925,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 242399.0,
+    "output_tokens": 1297.0,
+    "cache_read_tokens": 242387.0,
+    "cache_write_tokens": 41097.0,
+    "cost_usd": 0.63927925
+  },
+  "num_turns": null,
+  "final_message": "Trace of `service.checkout(\"7781\")`:\n\n1. `service.py:6` calls `write_audit(\"order\", order_id)` with `order_id = \"7781\"`.\n2. `audit.py:11` sets `key = [REDACTED:SECRET]\n3. `audit.py:6` formats `f\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"`, with `AUDIT_PREFIX = \"AUD\"` from `config.py:3`, `kind.upper()` = `\"ORDER\"`, `ident` = `\"7781\"`.\n4. `audit.py:12` writes `log[\"AUD-ORDER-7781\"] = True`.\n\n`decoy_metrics.py` (prefix `MET`, writes to a metrics dict) and `decoy_cache.py` never touch the audit log. Executing the code confirmed the key.\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": null,
+  "exec_time_ms": 26171.486999999997,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 4,
+  "concurrency_at_launch": 1,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.55,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_ff677dcb9f284ab3a9c17b0918e77514",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 240,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36569
+      },
+      {
+        "provider_call_id": "provider_8b115295e2a04e11b1b5a6c3e33b1afc",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68430,
+        "output_tokens": 362,
+        "cache_read_tokens": 68426,
+        "cache_write_tokens": 1260
+      },
+      {
+        "provider_call_id": "provider_6fbd753f7fc74a3e9533201859773869",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69688,
+        "output_tokens": 393,
+        "cache_read_tokens": 69686,
+        "cache_write_tokens": 2732
+      },
+      {
+        "provider_call_id": "provider_16c260fd3bfb4c96ab6a124fb6c2335e",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 72420,
+        "output_tokens": 302,
+        "cache_read_tokens": 72418,
+        "cache_write_tokens": 536
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 4
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 4
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.639279
+    }
+  }
+}

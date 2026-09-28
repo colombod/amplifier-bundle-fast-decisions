@@ -3192,6 +3192,1021 @@ _add(_answer_task("answer_retry_max_attempts", "holdout2", _ANSWER_RETRY_ATTEMPT
 # LONG (holdout2, answer): 7 files including 3 decoys, ~2-3x the reading of the other holdout2 answer tasks.
 _add(_answer_task("answer_shipping_zone_count", "holdout2", _ANSWER_SHIPPING_ZONE_FILES_H2, r"\b(5|five)\b"))
 
+# ---------------------------------------------------------------------------
+# holdout3: a fresh 12-task S1 holdout split (3 per family), preregistered
+# for the routing-planner confirmation study. Reference solutions and
+# plausible-wrong solutions for these tasks live ONLY in
+# tests/test_battery_tasks_holdout3.py -- never in this module and never in
+# any Task.files dict -- so an agent run can never read them.
+# ---------------------------------------------------------------------------
+
+# repair (holdout3): independent oracles
+
+
+def _oracle_base36_encode(n):
+    if isinstance(n, bool) or not isinstance(n, int):
+        raise TypeError("n must be an int")
+    if n < 0:
+        raise ValueError("n must be nonnegative")
+    digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+    if n == 0:
+        return "0"
+    out = []
+    x = n
+    while x > 0:
+        x, r = divmod(x, 36)
+        out.append(digits[r])
+    return "".join(reversed(out))
+
+
+def _gen_base36_arg(rng: random.Random):
+    r = rng.random()
+    if r < 0.1:
+        return (-rng.randrange(1, 1000),)
+    if r < 0.2:
+        return (rng.uniform(0, 1000),)
+    if r < 0.25:
+        return (str(rng.randrange(0, 100)),)
+    return (rng.randrange(0, 10_000_000),)
+
+
+_BASE36_ENCODE_BOUNDARY = [
+    _mk("zero", (0,), expected="0", check_immutable=True),
+    _mk("one", (1,), expected="1", check_immutable=True),
+    _mk("thirty-five", (35,), expected="z", check_immutable=True),
+    _mk("thirty-six", (36,), expected="10", check_immutable=True),
+    _mk("large", (46656,), expected="1000", check_immutable=True),
+    _mk("negative", (-1,), invalid=True, expected_error="ValueError"),
+    _mk("bool-true", (True,), invalid=True, expected_error="TypeError"),
+    _mk("non-int-float", (1.5,), invalid=True, expected_error="TypeError"),
+    _mk("non-int-string", ("5",), invalid=True, expected_error="TypeError"),
+]
+
+_README_BASE36_ENCODE_H3 = """# Base-36 encoder repair
+Repair `solution.py` using only the Python standard library. Keep the
+public function `base36_encode(n)`. Run
+`python3 -m unittest -v test_public.py`.
+
+`n` must be a plain nonnegative `int` (never `bool`, which must be
+rejected even though it is a `bool` subclass of `int`). Return its
+base-36 representation as a lowercase string using digits `0-9` then
+`a-z`, with no leading zeros (except the value 0 itself, which is `"0"`).
+Reject a negative `n` with ValueError. Reject a non-int `n` with
+TypeError.
+"""
+
+_STARTER_BASE36_ENCODE_H3 = """def base36_encode(n):
+    if n < 0:
+        raise ValueError("n must be nonnegative")
+    digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+    if n == 0:
+        return "0"
+    out = ""
+    while n > 0:
+        n, r = divmod(n, 36)
+        out += digits[r]  # BUG: digits accumulate in reverse order, and no type validation
+    return out
+"""
+
+_TEST_BASE36_ENCODE_H3 = """import unittest
+from solution import base36_encode
+
+
+class Public(unittest.TestCase):
+    def test_basic(self):
+        self.assertEqual(base36_encode(36), "10")
+"""
+
+
+def _parse_ipv4_h3(s):
+    if not isinstance(s, str):
+        raise TypeError("ip must be a string")
+    parts = s.split(".")
+    if len(parts) != 4:
+        raise ValueError("invalid ipv4 address")
+    octets = []
+    for p in parts:
+        if not p or not p.isdigit():
+            raise ValueError("invalid ipv4 address")
+        if len(p) > 1 and p[0] == "0":
+            raise ValueError("invalid ipv4 address")
+        v = int(p)
+        if v > 255:
+            raise ValueError("invalid ipv4 address")
+        octets.append(v)
+    return (octets[0] << 24) | (octets[1] << 16) | (octets[2] << 8) | octets[3]
+
+
+def _oracle_cidr_contains(ip, cidr):
+    if not isinstance(ip, str) or not isinstance(cidr, str):
+        raise TypeError("ip and cidr must be strings")
+    if "/" not in cidr:
+        raise ValueError("cidr must contain a prefix length")
+    net_part, _, prefix_part = cidr.partition("/")
+    if not prefix_part or not prefix_part.isdigit():
+        raise ValueError("invalid prefix length")
+    if len(prefix_part) > 1 and prefix_part[0] == "0":
+        raise ValueError("invalid prefix length")
+    prefix = int(prefix_part)
+    if prefix > 32:
+        raise ValueError("invalid prefix length")
+    ip_int = _parse_ipv4_h3(ip)
+    net_int = _parse_ipv4_h3(net_part)
+    mask = 0 if prefix == 0 else (0xFFFFFFFF << (32 - prefix)) & 0xFFFFFFFF
+    return (ip_int & mask) == (net_int & mask)
+
+
+def _gen_cidr_arg(rng: random.Random):
+    def rand_ip():
+        return ".".join(str(rng.randrange(0, 256)) for _ in range(4))
+
+    ip = rand_ip()
+    net = rand_ip()
+    prefix = rng.randrange(0, 33)
+    cidr = f"{net}/{prefix}"
+    r = rng.random()
+    if r < 0.1:
+        ip = "999.1.1.1"
+    elif r < 0.2:
+        cidr = f"{net}/33"
+    elif r < 0.25:
+        cidr = net
+    elif r < 0.3:
+        return (5, cidr)
+    return (ip, cidr)
+
+
+_CIDR_CONTAINS_BOUNDARY = [
+    _mk("contains-basic", ("192.168.1.5", "192.168.1.0/24"), expected=True, check_immutable=True),
+    _mk("not-contains", ("192.168.2.5", "192.168.1.0/24"), expected=False, check_immutable=True),
+    _mk("prefix-zero-matches-all", ("8.8.8.8", "0.0.0.0/0"), expected=True, check_immutable=True),
+    _mk("prefix-32-exact", ("10.0.0.1", "10.0.0.1/32"), expected=True, check_immutable=True),
+    _mk("prefix-32-mismatch", ("10.0.0.2", "10.0.0.1/32"), expected=False, check_immutable=True),
+    _mk("leading-zero-octet", ("010.0.0.1", "10.0.0.0/24"), invalid=True, expected_error="ValueError"),
+    _mk("octet-too-large", ("256.0.0.1", "10.0.0.0/24"), invalid=True, expected_error="ValueError"),
+    _mk("missing-prefix", ("10.0.0.1", "10.0.0.0"), invalid=True, expected_error="ValueError"),
+    _mk("prefix-too-large", ("10.0.0.1", "10.0.0.0/33"), invalid=True, expected_error="ValueError"),
+    _mk("not-a-string", (5, "10.0.0.0/24"), invalid=True, expected_error="TypeError"),
+]
+
+_README_CIDR_CONTAINS_H3 = """# IPv4 CIDR membership repair
+Repair `solution.py` using only the Python standard library. Keep the
+public function `cidr_contains(ip, cidr)`. Run
+`python3 -m unittest -v test_public.py`.
+
+`ip` is a dotted-quad IPv4 address string (`"a.b.c.d"`), each octet a
+decimal integer 0-255 written without a leading zero (except `"0"`
+itself). `cidr` is a string `"a.b.c.d/n"` where the address part follows
+the same octet rules and `n` is a decimal integer 0-32, also written
+without a leading zero (except `"0"` itself).
+
+Return whether `ip` falls inside the network described by `cidr` -- i.e.
+whether `ip`'s first `n` bits match the CIDR address's first `n` bits.
+Reject a non-string `ip` or `cidr` with TypeError. Reject a malformed
+address, a missing prefix length, or an out-of-range prefix length (> 32)
+with ValueError.
+"""
+
+_STARTER_CIDR_CONTAINS_H3 = """def cidr_contains(ip, cidr):
+    net, prefix = cidr.split("/")
+    prefix = int(prefix)
+    ip_parts = ip.split(".")
+    net_parts = net.split(".")
+    bits_to_compare = prefix // 8
+    # BUG: whole-octet-only comparison, ignores partial-octet prefixes and does no validation
+    return ip_parts[:bits_to_compare] == net_parts[:bits_to_compare]
+"""
+
+_TEST_CIDR_CONTAINS_H3 = """import unittest
+from solution import cidr_contains
+
+
+class Public(unittest.TestCase):
+    def test_basic(self):
+        self.assertTrue(cidr_contains("192.168.1.5", "192.168.1.0/24"))
+"""
+
+
+def _is_rect_grid_h3(grid):
+    if not grid:
+        return False
+    width = len(grid[0])
+    return all(len(row) == width for row in grid)
+
+
+def _oracle_count_paths(grid):
+    if not isinstance(grid, list):
+        raise TypeError("grid must be a list of lists")
+    if not grid:
+        raise ValueError("grid must have at least one row")
+    if not all(isinstance(row, list) for row in grid):
+        raise TypeError("each row must be a list")
+    if not _is_rect_grid_h3(grid):
+        raise ValueError("grid must be rectangular")
+    rows = len(grid)
+    cols = len(grid[0])
+    if cols == 0:
+        raise ValueError("grid must have at least one column")
+    if rows > 12 or cols > 12:
+        raise ValueError("grid exceeds maximum dimensions (12x12)")
+    for row in grid:
+        for cell in row:
+            if isinstance(cell, bool) or not isinstance(cell, int) or cell not in (0, 1):
+                raise TypeError("cells must be plain int 0 or 1")
+    if grid[0][0] == 1 or grid[rows - 1][cols - 1] == 1:
+        return 0
+    dp = [[0] * cols for _ in range(rows)]
+    dp[0][0] = 1
+    for i in range(rows):
+        for j in range(cols):
+            if i == 0 and j == 0:
+                continue
+            if grid[i][j] == 1:
+                continue
+            total = 0
+            if i > 0:
+                total += dp[i - 1][j]
+            if j > 0:
+                total += dp[i][j - 1]
+            dp[i][j] = total
+    return dp[rows - 1][cols - 1]
+
+
+def _gen_grid_arg(rng: random.Random):
+    rows = rng.randrange(1, 6)
+    cols = rng.randrange(1, 6)
+    grid = [[1 if rng.random() < 0.25 else 0 for _ in range(cols)] for _ in range(rows)]
+    r = rng.random()
+    if r < 0.1:
+        return ("not-a-grid",)
+    if r < 0.15:
+        grid[0] = grid[0] + [0]
+    elif r < 0.2:
+        grid[0][0] = 2
+    elif r < 0.25:
+        grid = [[True]]
+    elif r < 0.3:
+        grid = [[0] * 13]
+    return (grid,)
+
+
+_GRID_PATH_COUNT_BOUNDARY = [
+    _mk("basic-2x2-open", ([[0, 0], [0, 0]],), expected=2, check_immutable=True),
+    _mk("basic-3x3-open", ([[0, 0, 0], [0, 0, 0], [0, 0, 0]],), expected=6, check_immutable=True),
+    _mk("single-cell-open", ([[0]],), expected=1, check_immutable=True),
+    _mk("single-cell-blocked", ([[1]],), expected=0, check_immutable=True),
+    _mk("start-blocked", ([[1, 0], [0, 0]],), expected=0, check_immutable=True),
+    _mk("end-blocked", ([[0, 0], [0, 1]],), expected=0, check_immutable=True),
+    _mk("middle-blocked", ([[0, 0, 0], [0, 1, 0], [0, 0, 0]],), expected=2, check_immutable=True),
+    _mk("ragged-rejected", ([[0, 0], [0]],), invalid=True, expected_error="ValueError"),
+    _mk("non-list-row-rejected", ([[0, 0], "bad"],), invalid=True, expected_error="TypeError"),
+    _mk("bad-cell-value", ([[0, 2], [0, 0]],), invalid=True, expected_error="TypeError"),
+    _mk("bool-cell-rejected", ([[True, 0], [0, 0]],), invalid=True, expected_error="TypeError"),
+    _mk("empty-grid", ([],), invalid=True, expected_error="ValueError"),
+    _mk("empty-row", ([[]],), invalid=True, expected_error="ValueError"),
+    _mk("too-many-rows", ([[0, 0, 0] for _ in range(13)],), invalid=True, expected_error="ValueError"),
+    _mk("not-a-list", ("grid",), invalid=True, expected_error="TypeError"),
+]
+
+_README_GRID_PATH_COUNT_H3 = """# Grid path counter repair (multi-file)
+Repair `solution.py` using only the Python standard library plus the two
+helper modules already in this directory (`grid_util.py` and
+`grid_config.py`, both correct -- do not change them). Keep the public
+function `count_paths(grid)`. Run `python3 -m unittest -v test_public.py`.
+Never mutate the input.
+
+`grid` is a list of rows, each row a list of cells. Each cell is a plain
+`int` (never `bool`) equal to 0 (open) or 1 (blocked). All rows must have
+the same length (use `grid_util.is_rectangular_grid`); the grid must have
+at least one row and one column, and at most `grid_config.MAX_ROWS` rows
+and `grid_config.MAX_COLS` columns.
+
+Count the number of distinct monotonic paths from the top-left cell to
+the bottom-right cell, moving only right or down one cell at a time, and
+never stepping onto a blocked (1) cell. If the start or end cell itself is
+blocked, return 0 (this is not an error, not a ValueError).
+
+Reject a non-list `grid`, or a grid containing a non-list row or a
+non-int/bool cell value, with TypeError. Reject an empty grid, a grid
+with an empty row, a non-rectangular grid, or a grid exceeding the
+maximum dimensions, with ValueError.
+"""
+
+_STARTER_GRID_PATH_COUNT_H3 = """import math
+from grid_util import is_rectangular_grid
+
+
+def count_paths(grid):
+    rows = len(grid)
+    cols = len(grid[0])
+    # BUG: ignores obstacles, blocked start/end, and all validation entirely
+    return math.comb(rows - 1 + cols - 1, rows - 1)
+"""
+
+_TEST_GRID_PATH_COUNT_H3 = """import unittest
+from solution import count_paths
+
+
+class Public(unittest.TestCase):
+    def test_basic_no_obstacles(self):
+        self.assertEqual(count_paths([[0, 0], [0, 0]]), 2)
+
+    def test_blocked_cell_reduces_count(self):
+        self.assertEqual(count_paths([[0, 0, 0], [0, 1, 0], [0, 0, 0]]), 2)
+"""
+
+_GRID_UTIL_H3 = '''"""Grid validation helpers used by pathfinding calculations. Provided as-is; correct."""
+
+
+def is_rectangular_grid(grid):
+    if not grid:
+        return False
+    width = len(grid[0])
+    return all(len(row) == width for row in grid)
+'''
+
+_GRID_CONFIG_H3 = '''"""Business limits for grid-based calculations."""
+
+MAX_ROWS = 12
+MAX_COLS = 12
+'''
+
+
+# ---------------------------------------------------------------------------
+# edit (holdout3): behavior-based checks
+# ---------------------------------------------------------------------------
+
+_README_STACK_PEEK_DEFAULT_H3 = """# Add peek(default=None) to Stack
+Add a method `peek(default=None)` to the `Stack` class in `stack_util.py`.
+It must return the top item (the item `pop()` would return) WITHOUT
+removing it from the stack. If the stack is empty, return `default`
+instead of raising. Do not change `push`, `pop`, `is_empty`, `size`, or
+add any other new methods.
+"""
+
+_STARTER_STACK_PEEK_DEFAULT_H3 = """class Stack:
+    def __init__(self):
+        self._items = []
+
+    def push(self, item):
+        self._items.append(item)
+
+    def pop(self):
+        if not self._items:
+            raise IndexError("pop from empty stack")
+        return self._items.pop()
+
+    def is_empty(self):
+        return len(self._items) == 0
+
+    def size(self):
+        return len(self._items)
+"""
+
+
+def _evaluate_stack_peek_default(workspace: Path) -> dict:
+    snippet = """
+import json as _json
+from stack_util import Stack
+out = {"checks": 0, "passed": 0, "failed": 0, "failure_labels": []}
+def check(label, cond):
+    out["checks"] += 1
+    if cond:
+        out["passed"] += 1
+    else:
+        out["failed"] += 1
+        out["failure_labels"].append(label)
+s = Stack()
+check("peek-empty-default-none", s.peek() is None)
+check("peek-empty-custom-default", s.peek("empty") == "empty")
+s.push(1)
+s.push(2)
+check("peek-returns-top", s.peek() == 2)
+check("peek-does-not-remove", s.size() == 2)
+check("peek-idempotent", s.peek() == 2 and s.peek() == 2)
+val = s.pop()
+check("pop-still-works", val == 2)
+check("size-after-pop", s.size() == 1)
+s2 = Stack()
+try:
+    s2.pop()
+    check("pop-empty-still-raises", False)
+except IndexError:
+    check("pop-empty-still-raises", True)
+print(_json.dumps(out))
+"""
+    data, err = _run_snippet(workspace, snippet)
+    if err:
+        return {"checks": 1, "passed": 0, "failed": 1, "failure_labels": [err]}
+    return data
+
+
+_README_EMAIL_MASK_DOMAIN_H3 = """# Mask email local part, keeping first and last visible
+Change `mask_email` in `mask_util.py` so it keeps the local part's first
+and last character visible, masking every character in between with a
+single `*` per masked character (e.g. `"jordan@example.com"` becomes
+`"j****n@example.com"`). If the local part has 1 or 2 characters, mask it
+entirely (e.g. `"a"` -> `"*"`, `"ab"` -> `"**"`). The domain part must
+remain unchanged. Do not change the function signature.
+"""
+
+_STARTER_EMAIL_MASK_DOMAIN_H3 = """def mask_email(email):
+    local, _, domain = email.partition("@")
+    return "*" * len(local) + "@" + domain
+"""
+
+
+def _evaluate_email_mask_domain(workspace: Path) -> dict:
+    snippet = """
+import json as _json
+from mask_util import mask_email
+out = {"checks": 0, "passed": 0, "failed": 0, "failure_labels": []}
+def check(label, cond):
+    out["checks"] += 1
+    if cond:
+        out["passed"] += 1
+    else:
+        out["failed"] += 1
+        out["failure_labels"].append(label)
+check("mid-length-masks-middle", mask_email("jordan@example.com") == "j****n@example.com")
+check("two-char-local-fully-masked", mask_email("ab@example.com") == "**@example.com")
+check("one-char-local-fully-masked", mask_email("a@example.com") == "*@example.com")
+check("three-char-local", mask_email("bob@example.com") == "b*b@example.com")
+check("domain-unchanged", mask_email("jordan@sub.example.org") == "j****n@sub.example.org")
+print(_json.dumps(out))
+"""
+    data, err = _run_snippet(workspace, snippet)
+    if err:
+        return {"checks": 1, "passed": 0, "failed": 1, "failure_labels": [err]}
+    return data
+
+
+# LONG TASK (holdout3, edit): multi-file (README + pricing_tiers.py + inventory.py).
+
+_README_INVENTORY_DISCOUNT_TIER_H3 = """# Apply tiered quantity discounts to order cost (multi-file)
+Add a method `order_cost_with_discount(sku, quantity)` to the
+`Inventory` class in `inventory.py`. Look up the applicable discount
+rate via `pricing_tiers.discount_rate_for_quantity(quantity)` (correct --
+do not change `pricing_tiers.py`).
+
+- Raise `KeyError(sku)` if `sku` is unknown (same as `order_cost`).
+- Raise `ValueError` if `quantity` is not positive (same as `order_cost`).
+- Compute `order_cost(sku, quantity) * (1 - discount_rate_for_quantity(quantity))`,
+  rounded to 2 decimal places.
+- `order_cost(sku, quantity)` itself (without discount) must remain
+  unchanged from today's behavior.
+"""
+
+_STARTER_INVENTORY_DISCOUNT_TIER_H3 = """class Inventory:
+    def __init__(self):
+        self._stock = {}
+
+    def add_stock(self, sku, unit_price, quantity):
+        if unit_price < 0 or quantity < 0:
+            raise ValueError("invalid stock")
+        self._stock[sku] = {"unit_price": unit_price, "quantity": quantity}
+
+    def unit_price(self, sku):
+        if sku not in self._stock:
+            raise KeyError(sku)
+        return self._stock[sku]["unit_price"]
+
+    def order_cost(self, sku, quantity):
+        if sku not in self._stock:
+            raise KeyError(sku)
+        if quantity <= 0:
+            raise ValueError("quantity must be positive")
+        return round(self.unit_price(sku) * quantity, 2)
+"""
+
+_PRICING_TIERS_H3 = '''"""Tiered discount schedule based on quantity ordered. Provided as-is; correct."""
+
+TIERS = [
+    (100, 0.15),
+    (50, 0.10),
+    (10, 0.05),
+]
+
+
+def discount_rate_for_quantity(quantity):
+    for threshold, rate in TIERS:
+        if quantity >= threshold:
+            return rate
+    return 0.0
+'''
+
+
+def _evaluate_inventory_discount_tier(workspace: Path) -> dict:
+    snippet = """
+import json as _json
+from inventory import Inventory
+out = {"checks": 0, "passed": 0, "failed": 0, "failure_labels": []}
+def check(label, cond):
+    out["checks"] += 1
+    if cond:
+        out["passed"] += 1
+    else:
+        out["failed"] += 1
+        out["failure_labels"].append(label)
+inv = Inventory()
+inv.add_stock("widget", 10.0, 500)
+check("order-cost-unaffected", inv.order_cost("widget", 5) == 50.0)
+check("no-discount-below-tier", inv.order_cost_with_discount("widget", 5) == 50.0)
+check("tier-10-discount", inv.order_cost_with_discount("widget", 10) == 95.0)
+check("tier-50-discount", inv.order_cost_with_discount("widget", 50) == 450.0)
+check("tier-100-discount", inv.order_cost_with_discount("widget", 100) == 850.0)
+try:
+    inv.order_cost_with_discount("nope", 10)
+    check("unknown-sku-raises", False)
+except KeyError:
+    check("unknown-sku-raises", True)
+try:
+    inv.order_cost_with_discount("widget", 0)
+    check("nonpositive-quantity-raises", False)
+except ValueError:
+    check("nonpositive-quantity-raises", True)
+print(_json.dumps(out))
+"""
+    data, err = _run_snippet(workspace, snippet)
+    if err:
+        return {"checks": 1, "passed": 0, "failed": 1, "failure_labels": [err]}
+    return data
+
+
+# ---------------------------------------------------------------------------
+# bugfix (holdout3): independent property/boundary tests
+# ---------------------------------------------------------------------------
+
+_README_BINARY_SEARCH_BUG_H3 = """# Binary search off-by-one bug
+`search_util.py`'s `binary_search(items, target)` performs binary search
+on `items`, a list of strictly increasing `int` values, and should return
+the index of `target` if present, or -1 if not. It misses the case where
+the search narrows down to exactly one remaining candidate index, so it
+returns -1 for some values that are actually present. Find and fix the
+single-line bug; do not change the validation logic, the function
+signature, or `test_public.py`. Reject a non-list `items` or non-int
+`target` with TypeError, and a non-strictly-increasing `items` with
+ValueError (this validation already works correctly). Run
+`python3 -m unittest -v test_public.py`.
+"""
+
+_STARTER_BINARY_SEARCH_BUG_H3 = """def binary_search(items, target):
+    if not isinstance(items, list):
+        raise TypeError("items must be a list")
+    if isinstance(target, bool) or not isinstance(target, int):
+        raise TypeError("target must be an int")
+    for i in range(1, len(items)):
+        if items[i] <= items[i - 1]:
+            raise ValueError("items must be strictly increasing")
+    lo, hi = 0, len(items) - 1
+    while lo < hi:  # BUG: should be lo <= hi, misses the single-candidate case
+        mid = (lo + hi) // 2
+        if items[mid] == target:
+            return mid
+        elif items[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+"""
+
+_TEST_BINARY_SEARCH_BUG_H3 = """import unittest
+from search_util import binary_search
+
+
+class Public(unittest.TestCase):
+    def test_single_element_found(self):
+        self.assertEqual(binary_search([5], 5), 0)
+"""
+
+_BINARY_SEARCH_CASES_H3 = [
+    _mk("public-single", ([5], 5), expected=0),
+    _mk("found-middle", ([1, 3, 5, 7, 9], 5), expected=2),
+    _mk("found-first", ([1, 3, 5, 7, 9], 1), expected=0),
+    _mk("found-last", ([1, 3, 5, 7, 9], 9), expected=4),
+    _mk("not-found", ([1, 3, 5, 7, 9], 4), expected=-1),
+    _mk("empty-list", ([], 5), expected=-1),
+    _mk("two-elements-found-first", ([2, 4], 2), expected=0),
+    _mk("two-elements-found-second", ([2, 4], 4), expected=1),
+    _mk("not-strictly-increasing", ([1, 1, 2], 1), invalid=True, expected_error="ValueError"),
+    _mk("bad-target-type", ([1, 2, 3], "x"), invalid=True, expected_error="TypeError"),
+    _mk("not-a-list", ("x", 5), invalid=True, expected_error="TypeError"),
+]
+
+
+def _evaluate_binary_search_bug(workspace: Path) -> dict:
+    cases = [{"id": s["id"], "args": s["args"]} for s in _BINARY_SEARCH_CASES_H3]
+    expected = {s["id"]: s for s in _BINARY_SEARCH_CASES_H3}
+    actual, err = _run_cases(workspace, "binary_search", "search_util", cases)
+    return _score_cases(actual, err, expected)
+
+
+_README_PALINDROME_IGNORE_SPACES_BUG_H3 = """# Palindrome check ignoring spaces bug
+`text_check.py`'s `is_palindrome(s)` should return whether `s` reads the
+same forwards and backwards, ignoring letter case and spaces (but
+treating every other character, including punctuation, literally). It
+currently only ignores case, not spaces. Find and fix the bug; do not
+change the function signature or `test_public.py`. Reject a non-string
+`s` with TypeError. Run `python3 -m unittest -v test_public.py`.
+"""
+
+_STARTER_PALINDROME_IGNORE_SPACES_BUG_H3 = """def is_palindrome(s):
+    if not isinstance(s, str):
+        raise TypeError("s must be a string")
+    normalized = s.lower()  # BUG: does not remove spaces before comparing
+    return normalized == normalized[::-1]
+"""
+
+_TEST_PALINDROME_IGNORE_SPACES_BUG_H3 = """import unittest
+from text_check import is_palindrome
+
+
+class Public(unittest.TestCase):
+    def test_ignores_spaces(self):
+        self.assertTrue(is_palindrome("nurses run"))
+"""
+
+_PALINDROME_CASES_H3 = [
+    _mk("public-ignores-spaces", ("nurses run",), expected=True),
+    _mk("simple-true", ("level",), expected=True),
+    _mk("simple-false", ("hello",), expected=False),
+    _mk("mixed-case", ("Level",), expected=True),
+    _mk("empty-string", ("",), expected=True),
+    _mk("single-char", ("a",), expected=True),
+    _mk("punctuation-literal-breaks-match", ("a man a plan a canal panama.",), expected=False),
+    _mk("not-a-string", (5,), invalid=True, expected_error="TypeError"),
+]
+
+
+def _evaluate_palindrome_ignore_spaces_bug(workspace: Path) -> dict:
+    cases = [{"id": s["id"], "args": s["args"]} for s in _PALINDROME_CASES_H3]
+    expected = {s["id"]: s for s in _PALINDROME_CASES_H3}
+    actual, err = _run_cases(workspace, "is_palindrome", "text_check", cases)
+    return _score_cases(actual, err, expected)
+
+
+# LONG TASK (holdout3, bugfix): multi-file (README + rate_table.py + currency.py).
+
+_README_CURRENCY_CONVERT_ROUNDING_BUG_H3 = """# Currency conversion rounding bug (multi-file)
+`currency.py`'s `convert_from_usd(amount_usd, currency)` converts a
+nonnegative USD amount to `currency` using `rate_table.rate_for`
+(correct -- do not change `rate_table.py`), and should round the result
+to exactly 2 decimal places. It currently rounds to the nearest whole
+unit, losing all cents. Find and fix this single bug; do not change the
+validation logic or `test_public.py`. An unknown `currency` must still
+raise `KeyError` (via `rate_for`) unchanged. Run
+`python3 -m unittest -v test_public.py`.
+"""
+
+_STARTER_CURRENCY_CONVERT_ROUNDING_BUG_H3 = """from rate_table import rate_for
+
+
+def convert_from_usd(amount_usd, currency):
+    if amount_usd < 0:
+        raise ValueError("amount_usd must be nonnegative")
+    rate = rate_for(currency)
+    return round(amount_usd * rate)  # BUG: should round to 2 decimal places, not to a whole unit
+"""
+
+_TEST_CURRENCY_CONVERT_ROUNDING_BUG_H3 = """import unittest
+from currency import convert_from_usd
+
+
+class Public(unittest.TestCase):
+    def test_eur_conversion_keeps_cents(self):
+        self.assertEqual(convert_from_usd(10.0, "EUR"), 9.2)
+"""
+
+_RATE_TABLE_H3 = '''"""Exchange rates FROM USD to other currencies, expressed as a multiplier
+(1 USD == RATE units of the target currency). Provided as-is; correct."""
+
+RATES_FROM_USD = {
+    "EUR": 0.92,
+    "GBP": 0.79,
+    "JPY": 149.50,
+}
+
+
+def rate_for(currency):
+    if currency not in RATES_FROM_USD:
+        raise KeyError(currency)
+    return RATES_FROM_USD[currency]
+'''
+
+_CURRENCY_CONVERT_CASES_H3 = [
+    _mk("public-eur", (10.0, "EUR"), expected=9.2),
+    _mk("gbp-cents-preserved", (133.0, "GBP"), expected=105.07),
+    _mk("jpy-fractional", (2.5, "JPY"), expected=373.75),
+    _mk("zero-amount", (0.0, "EUR"), expected=0.0),
+    _mk("fractional-rounding", (3.33, "EUR"), expected=3.06),
+    _mk("unknown-currency", (10.0, "ZZZ"), invalid=True, expected_error="Exception:KeyError"),
+    _mk("negative-amount", (-1.0, "EUR"), invalid=True, expected_error="ValueError"),
+]
+
+
+def _evaluate_currency_convert_rounding_bug(workspace: Path) -> dict:
+    cases = [{"id": s["id"], "args": s["args"]} for s in _CURRENCY_CONVERT_CASES_H3]
+    expected = {s["id"]: s for s in _CURRENCY_CONVERT_CASES_H3}
+    actual, err = _run_cases(workspace, "convert_from_usd", "currency", cases)
+    return _score_cases(actual, err, expected)
+
+
+# ---------------------------------------------------------------------------
+# answer (holdout3): synthetic codebases
+# ---------------------------------------------------------------------------
+
+_ANSWER_SCHEMA_VERSION_FILES_H3 = {
+    "README.md": """# Find the current schema version
+
+Read every file in this directory.
+
+Question: what is the value of `schema.SCHEMA_VERSION`, the current
+schema version used by `main.run()`?
+
+Answer with the exact value as a single token on your final `ANSWER:`
+line.
+""",
+    "schema.py": '''"""Canonical schema definitions. Source of truth for the CURRENT version."""
+
+SCHEMA_VERSION = "3"
+
+
+def validate(record):
+    record = dict(record)
+    record["schema_version"] = SCHEMA_VERSION
+    return record
+''',
+    "decoy_legacy_schema.py": '''"""Deprecated schema module kept for historical reference only. schema.py
+is the file that matters for the CURRENT schema version, not this one."""
+
+SCHEMA_VERSION = "2"
+''',
+    "main.py": '''"""Entry point wiring validation together."""
+from schema import validate
+
+
+def run(record):
+    return validate(record)
+''',
+}
+
+_ANSWER_MAX_CONNECTIONS_FILES_H3 = {
+    "README.md": """# Find the connection pool limit
+
+Read every file in this directory.
+
+Question: what is the maximum number of simultaneous connections
+`pool.open_connections()` will ever return, per
+`pool_config.MAX_CONNECTIONS`?
+
+Answer with the exact integer as a single token on your final `ANSWER:`
+line.
+""",
+    "pool_config.py": '''"""Connection pool limits. Source of truth for current pool sizing."""
+
+MAX_CONNECTIONS = 6
+''',
+    "pool.py": '''"""Database connection pool."""
+from pool_config import MAX_CONNECTIONS
+
+
+def open_connections(requested):
+    return min(requested, MAX_CONNECTIONS)
+''',
+    "decoy_legacy_pool.py": '''"""Deprecated pool sizing from a retired subsystem; never imported by
+pool.py."""
+
+MAX_CONNECTIONS = 10
+''',
+}
+
+# LONG TASK (holdout3, answer): 7 files including 3 decoys, ~2-3x the
+# reading of the other holdout3 answer tasks.
+_ANSWER_PRIMARY_BACKUP_REGION_FILES_H3 = {
+    "README.md": """# Find the primary deployment region
+
+Read every file in this directory.
+
+Question: what region code does `deploy.primary_deploy_target()` return
+-- i.e. the value of `regions.REGIONS['primary']`? `regions.py` is the
+authoritative source of truth for current deployment regions; other files
+reference regions for unrelated or deprecated purposes.
+
+Answer with the exact region code as a single token on your final
+`ANSWER:` line.
+""",
+    "regions.py": '''"""Canonical region assignments. This is the source of truth for the
+CURRENT primary deployment region."""
+
+REGIONS = {
+    "primary": "eu-west-3",
+    "secondary": "eu-west-1",
+    "cold-standby": "eu-north-1",
+}
+
+
+def region_for(role):
+    if role not in REGIONS:
+        raise KeyError(role)
+    return REGIONS[role]
+''',
+    "deploy.py": '''"""Deployment orchestrator. The only module that decides where
+production traffic is routed."""
+from regions import region_for
+
+
+def primary_deploy_target():
+    return region_for("primary")
+''',
+    "decoy_legacy_regions.py": '''"""Deprecated region table from a prior migration. regions.py is the
+source of truth for the CURRENT primary region, not this one."""
+
+LEGACY_PRIMARY_REGION = "us-east-1"
+''',
+    "decoy_partner_regions.py": '''"""A partner integration's region list -- unrelated to where WE deploy."""
+
+PARTNER_REGIONS = ["eu-west-1", "eu-west-2", "us-east-2"]
+''',
+    "decoy_dr_plan.py": '''"""Disaster-recovery runbook notes, human-readable only, not consulted
+by deploy.py."""
+
+NOTES = "In a disaster, fail over to eu-west-1 within 15 minutes."
+''',
+    "notify.py": '''"""Unrelated notification templates, no region data."""
+
+TEMPLATES = {
+    "deployed": "Deployment complete.",
+    "rolled_back": "Deployment rolled back.",
+}
+''',
+}
+
+
+_add(Task(
+    name="repair_base36_encode",
+    family="repair",
+    split="holdout3",
+    kind="code",
+    prompt=(
+        "Read README.md in this directory, then repair `solution.py` so it "
+        "satisfies the documented contract. Verify with "
+        "`python3 -m unittest -v test_public.py`." + PROMPT_SUFFIX
+    ),
+    files={"README.md": _README_BASE36_ENCODE_H3, "solution.py": _STARTER_BASE36_ENCODE_H3, "test_public.py": _TEST_BASE36_ENCODE_H3},
+    protected=("README.md", "test_public.py"),
+    expected_answer=None,
+    evaluate=_make_repair_evaluate("base36_encode", _oracle_base36_encode, _gen_base36_arg, _BASE36_ENCODE_BOUNDARY),
+))
+
+_add(Task(
+    name="repair_ipv4_cidr_contains",
+    family="repair",
+    split="holdout3",
+    kind="code",
+    prompt=(
+        "Read README.md in this directory, then repair `solution.py` so it "
+        "satisfies the documented contract. Verify with "
+        "`python3 -m unittest -v test_public.py`." + PROMPT_SUFFIX
+    ),
+    files={"README.md": _README_CIDR_CONTAINS_H3, "solution.py": _STARTER_CIDR_CONTAINS_H3, "test_public.py": _TEST_CIDR_CONTAINS_H3},
+    protected=("README.md", "test_public.py"),
+    expected_answer=None,
+    evaluate=_make_repair_evaluate("cidr_contains", _oracle_cidr_contains, _gen_cidr_arg, _CIDR_CONTAINS_BOUNDARY),
+))
+
+# LONG (holdout3, repair): multi-file (README + grid_util.py + grid_config.py + solution.py + test_public.py).
+_add(Task(
+    name="repair_grid_path_count",
+    family="repair",
+    split="holdout3",
+    kind="code",
+    prompt=(
+        "Read README.md in this directory, then repair `solution.py` so it "
+        "satisfies the documented contract. Verify with "
+        "`python3 -m unittest -v test_public.py`." + PROMPT_SUFFIX
+    ),
+    files={
+        "README.md": _README_GRID_PATH_COUNT_H3,
+        "grid_util.py": _GRID_UTIL_H3,
+        "grid_config.py": _GRID_CONFIG_H3,
+        "solution.py": _STARTER_GRID_PATH_COUNT_H3,
+        "test_public.py": _TEST_GRID_PATH_COUNT_H3,
+    },
+    protected=("README.md", "test_public.py"),
+    expected_answer=None,
+    evaluate=_make_repair_evaluate("count_paths", _oracle_count_paths, _gen_grid_arg, _GRID_PATH_COUNT_BOUNDARY),
+))
+
+_add(Task(
+    name="edit_stack_peek_default",
+    family="edit",
+    split="holdout3",
+    kind="code",
+    prompt=(
+        "Read README.md in this directory, then make the exact change it "
+        "describes to `stack_util.py`." + PROMPT_SUFFIX
+    ),
+    files={"README.md": _README_STACK_PEEK_DEFAULT_H3, "stack_util.py": _STARTER_STACK_PEEK_DEFAULT_H3},
+    protected=("README.md",),
+    expected_answer=None,
+    evaluate=_evaluate_stack_peek_default,
+))
+
+_add(Task(
+    name="edit_email_mask_domain",
+    family="edit",
+    split="holdout3",
+    kind="code",
+    prompt=(
+        "Read README.md in this directory, then make the exact change it "
+        "describes to `mask_util.py`." + PROMPT_SUFFIX
+    ),
+    files={"README.md": _README_EMAIL_MASK_DOMAIN_H3, "mask_util.py": _STARTER_EMAIL_MASK_DOMAIN_H3},
+    protected=("README.md",),
+    expected_answer=None,
+    evaluate=_evaluate_email_mask_domain,
+))
+
+# LONG (holdout3, edit): multi-file (README + pricing_tiers.py + inventory.py).
+_add(Task(
+    name="edit_inventory_apply_discount_tier",
+    family="edit",
+    split="holdout3",
+    kind="code",
+    prompt=(
+        "Read README.md in this directory, then make the exact change it "
+        "describes to `inventory.py`." + PROMPT_SUFFIX
+    ),
+    files={
+        "README.md": _README_INVENTORY_DISCOUNT_TIER_H3,
+        "pricing_tiers.py": _PRICING_TIERS_H3,
+        "inventory.py": _STARTER_INVENTORY_DISCOUNT_TIER_H3,
+    },
+    protected=("README.md",),
+    expected_answer=None,
+    evaluate=_evaluate_inventory_discount_tier,
+))
+
+_add(Task(
+    name="bugfix_binary_search_bug",
+    family="bugfix",
+    split="holdout3",
+    kind="code",
+    prompt=(
+        "Read README.md in this directory, find the bug in `search_util.py`, "
+        "and fix it so `python3 -m unittest -v test_public.py` passes. Do "
+        "not modify `test_public.py`." + PROMPT_SUFFIX
+    ),
+    files={"README.md": _README_BINARY_SEARCH_BUG_H3, "search_util.py": _STARTER_BINARY_SEARCH_BUG_H3, "test_public.py": _TEST_BINARY_SEARCH_BUG_H3},
+    protected=("README.md", "test_public.py"),
+    expected_answer=None,
+    evaluate=_evaluate_binary_search_bug,
+))
+
+_add(Task(
+    name="bugfix_palindrome_ignore_spaces_bug",
+    family="bugfix",
+    split="holdout3",
+    kind="code",
+    prompt=(
+        "Read README.md in this directory, find the bug in `text_check.py`, "
+        "and fix it so `python3 -m unittest -v test_public.py` passes. Do "
+        "not modify `test_public.py`." + PROMPT_SUFFIX
+    ),
+    files={"README.md": _README_PALINDROME_IGNORE_SPACES_BUG_H3, "text_check.py": _STARTER_PALINDROME_IGNORE_SPACES_BUG_H3, "test_public.py": _TEST_PALINDROME_IGNORE_SPACES_BUG_H3},
+    protected=("README.md", "test_public.py"),
+    expected_answer=None,
+    evaluate=_evaluate_palindrome_ignore_spaces_bug,
+))
+
+# LONG (holdout3, bugfix): multi-file (README + rate_table.py + currency.py).
+_add(Task(
+    name="bugfix_currency_convert_rounding",
+    family="bugfix",
+    split="holdout3",
+    kind="code",
+    prompt=(
+        "Read README.md in this directory, find the bug in `currency.py`, "
+        "and fix it so `python3 -m unittest -v test_public.py` passes. Do "
+        "not modify `rate_table.py` or `test_public.py`." + PROMPT_SUFFIX
+    ),
+    files={
+        "README.md": _README_CURRENCY_CONVERT_ROUNDING_BUG_H3,
+        "rate_table.py": _RATE_TABLE_H3,
+        "currency.py": _STARTER_CURRENCY_CONVERT_ROUNDING_BUG_H3,
+        "test_public.py": _TEST_CURRENCY_CONVERT_ROUNDING_BUG_H3,
+    },
+    protected=("README.md", "test_public.py"),
+    expected_answer=None,
+    evaluate=_evaluate_currency_convert_rounding_bug,
+))
+
+_add(_answer_task("answer_schema_version", "holdout3", _ANSWER_SCHEMA_VERSION_FILES_H3, r"\b3\b"))
+_add(_answer_task("answer_max_connections", "holdout3", _ANSWER_MAX_CONNECTIONS_FILES_H3, r"\b(6|six)\b"))
+# LONG (holdout3, answer): 7 files including 3 decoys, ~2-3x the reading of the other holdout3 answer tasks.
+_add(_answer_task("answer_primary_backup_region", "holdout3", _ANSWER_PRIMARY_BACKUP_REGION_FILES_H3, r"\beu-west-3\b"))
+
+
 
 REFERENCE_SOLUTIONS: dict[str, dict[str, str]] = {
     "repair_parse_duration": {"solution.py": _FIX_PARSE_DURATION},
@@ -3327,6 +4342,22 @@ for _i in range(3):
 del _i
 
 
+# m-holdout3: 3 scenarios, 4 turns each (repair -> answer -> edit -> bugfix),
+# built ONLY from the 12 new holdout3 tasks (3 holdout3 tasks per family x 4
+# families) -- preregistered for the routing-planner confirmation study.
+_SCENARIO_HOLDOUT3_REPAIR = ("repair_base36_encode", "repair_ipv4_cidr_contains", "repair_grid_path_count")
+_SCENARIO_HOLDOUT3_ANSWER = ("answer_schema_version", "answer_max_connections", "answer_primary_backup_region")
+_SCENARIO_HOLDOUT3_EDIT = ("edit_stack_peek_default", "edit_email_mask_domain", "edit_inventory_apply_discount_tier")
+_SCENARIO_HOLDOUT3_BUGFIX = ("bugfix_binary_search_bug", "bugfix_palindrome_ignore_spaces_bug", "bugfix_currency_convert_rounding")
+
+for _i in range(3):
+    _add(make_scenario(
+        f"scn_holdout3_{_i + 1}", "m-holdout3",
+        (_SCENARIO_HOLDOUT3_REPAIR[_i], _SCENARIO_HOLDOUT3_ANSWER[_i], _SCENARIO_HOLDOUT3_EDIT[_i], _SCENARIO_HOLDOUT3_BUGFIX[_i]),
+    ))
+del _i
+
+
 def families() -> list[str]:
     seen: list[str] = []
     for t in TASKS.values():
@@ -3338,6 +4369,6 @@ def families() -> list[str]:
 def split(name: str) -> list[str]:
     if name == "all":
         return list(TASKS.keys())
-    if name not in ("dev", "holdout", "holdout2", "m-dev"):
+    if name not in ("dev", "holdout", "holdout2", "holdout3", "m-dev", "m-holdout3"):
         raise ValueError(f"unknown split: {name}")
     return [n for n, t in TASKS.items() if t.split == name]

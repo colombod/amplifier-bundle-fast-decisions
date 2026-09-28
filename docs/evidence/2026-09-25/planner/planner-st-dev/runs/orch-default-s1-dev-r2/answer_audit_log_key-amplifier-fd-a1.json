@@ -1,0 +1,108 @@
+{
+  "name": "orch-default-s1-dev-r2-answer_audit_log_key-amplifier-fd-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T18:22:32.221013+00:00",
+  "ended_at": "2026-09-25T18:23:24.042851+00:00",
+  "wall_time_ms": 51820.97441700171,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.5944695,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 171538.0,
+    "output_tokens": 1043.0,
+    "cache_read_tokens": 171528.0,
+    "cache_write_tokens": 39947.0,
+    "cost_usd": 0.5944695
+  },
+  "num_turns": null,
+  "final_message": "Trace confirmed by reading every file and executing the actual code path:\n\n- `service.checkout(\"7781\")` calls `write_audit(\"order\", \"7781\")` (service.py:6)\n- `write_audit` builds the key via `_format_key(kind, ident)` \u2192 `f\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"` (audit.py:6)\n- `AUDIT_PREFIX = \"AUD\"` (config.py:3); `\"order\".upper()` \u2192 `\"ORDER\"`\n- `decoy_metrics.py` (`MET-` prefix) and `decoy_cache.py` never touch the audit log and are not called by `checkout`.\n\nRunning `write_audit(\"order\", \"7781\")` produces the single key `AUD-ORDER-7781`.\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": null,
+  "exec_time_ms": 23504.482,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.51,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_138d27202a784f9ebc365ee7984252e3",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 361,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36559
+      },
+      {
+        "provider_call_id": "provider_645cf9d1c162467fa5f7d7c0f538d933",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68420,
+        "output_tokens": 407,
+        "cache_read_tokens": 68416,
+        "cache_write_tokens": 2839
+      },
+      {
+        "provider_call_id": "provider_1f6e8aac5363409db5fe97b2061a3415",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 71257,
+        "output_tokens": 275,
+        "cache_read_tokens": 71255,
+        "cache_write_tokens": 549
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.594469
+    }
+  }
+}

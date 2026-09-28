@@ -1,0 +1,121 @@
+{
+  "name": "orch-default-s1-dev-r2-answer_compute_fee-amplifier-fd-a1",
+  "task": "answer_compute_fee",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T18:21:14.739745+00:00",
+  "ended_at": "2026-09-25T18:21:53.514454+00:00",
+  "wall_time_ms": 38773.889790987596,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.61648475,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 241921.0,
+    "output_tokens": 963.0,
+    "cache_read_tokens": 241909.0,
+    "cache_write_tokens": 40619.0,
+    "cost_usd": 0.61648475
+  },
+  "num_turns": null,
+  "final_message": "The execution confirms the hand trace.\n\nANSWER: 480",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": null,
+  "exec_time_ms": 19646.287,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 4,
+  "concurrency_at_launch": 2,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.56,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_580f49416bc54e41a950f80267aad3a1",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 218,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36542
+      },
+      {
+        "provider_call_id": "provider_b9da7bc750dd4009b2ad9f3f61e158c5",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68403,
+        "output_tokens": 366,
+        "cache_read_tokens": 68399,
+        "cache_write_tokens": 1181
+      },
+      {
+        "provider_call_id": "provider_299877a6e48f4e94b2fc82ecf899e29f",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69582,
+        "output_tokens": 356,
+        "cache_read_tokens": 69580,
+        "cache_write_tokens": 2493
+      },
+      {
+        "provider_call_id": "provider_fb7482deb00847268fa4482f767e35fd",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 72075,
+        "output_tokens": 23,
+        "cache_read_tokens": 72073,
+        "cache_write_tokens": 403
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 4
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 4
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.616485
+    }
+  }
+}
