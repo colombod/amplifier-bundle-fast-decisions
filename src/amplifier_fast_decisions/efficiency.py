@@ -105,20 +105,39 @@ def _side(model: str | None, calls: int, cost_usd: float | None, seconds: float 
 
 
 def receipt(*, lever: str, mechanism: str, decision: str, baseline: dict, actual: dict, method: str,
-            project: str | None, traffic: str) -> dict:
+            project: str | None, traffic: str, harness: str | None = None, detail: dict | None = None) -> dict:
     """Build receipt data with the deltas fixed (baseline minus actual)."""
     if lever not in LEVERS:
         raise ValueError(f"unknown efficiency lever: {lever}")
     b_cost, a_cost = _num(baseline.get("cost_usd")), _num(actual.get("cost_usd"))
     b_s, a_s = _num(baseline.get("seconds")), _num(actual.get("seconds"))
-    return {
+    data = {
         "lever": lever, "mechanism": mechanism[:80], "decision": decision[:80],
-        "baseline": baseline, "actual": actual, "method": method[:120],
+        "baseline": baseline, "actual": actual, "method": method[:200],
         "calls_saved": int(baseline.get("calls", 0)) - int(actual.get("calls", 0)),
         "usd_saved": None if b_cost is None or a_cost is None else round(b_cost - a_cost, 8),
         "seconds_saved": None if b_s is None or a_s is None else round(b_s - a_s, 4),
         "project": (project or "(unknown)")[:120], "traffic": traffic,
     }
+    if harness:
+        data["harness"] = str(harness)[:40]
+    if detail:
+        data["detail"] = {k: v for k, v in detail.items() if isinstance(v, (int, float, str, bool)) or v is None}
+    return data
+
+
+def side(model: str | None, calls: int, cost_usd: float | None, seconds: float | None, **extra: Any) -> dict:
+    """One side (baseline or actual) of a receipt."""
+    return _side(model, calls, cost_usd, seconds, **extra)
+
+
+def guard_receipt(*, lever: str, mechanism: str, decision: str, baseline: dict, actual: dict, method: str,
+                  project: str | None, traffic: str, harness: str | None = None, detail: dict | None = None) -> dict:
+    """Receipt for a waste guard firing (guards.py). Same shape as every
+    other receipt, plus ``harness`` and a small numeric ``detail`` block with
+    the inputs of the estimate so it can be recomputed."""
+    return receipt(lever=lever, mechanism=mechanism, decision=decision, baseline=baseline, actual=actual,
+                   method=method, project=project, traffic=traffic, harness=harness, detail=detail)
 
 
 def _tokens(fields: dict) -> dict:
@@ -399,7 +418,7 @@ def iter_receipts(events_dir: str | Path) -> Iterable[dict]:
 def aggregate(events: Iterable[dict], *, include_test: bool = False, since: str | None = None) -> dict:
     """Sum receipts by lever and by project x lever. Exact: plain sums of the
     stored ``calls_saved`` / ``usd_saved`` / ``seconds_saved`` fields."""
-    totals, by_lever, by_project = _empty(), {lever: _empty() for lever in LEVERS}, {}
+    totals, by_lever, by_project, by_harness = _empty(), {lever: _empty() for lever in LEVERS}, {}, {}
     excluded = 0
     for event in events:
         data = event.get("data") or {}
@@ -415,10 +434,12 @@ def aggregate(events: Iterable[dict], *, include_test: bool = False, since: str 
         _add(totals, data)
         _add(by_lever[lever], data)
         _add(by_project.setdefault(project, {lv: _empty() for lv in LEVERS}).setdefault(lever, _empty()), data)
+        _add(by_harness.setdefault(str(data.get("harness") or "Amplifier"), _empty()), data)
     return {
         "totals": _round(totals),
         "by_lever": {lv: dict(_round(v), label=LEVER_LABELS[lv]) for lv, v in by_lever.items()},
         "by_project": {p: {lv: _round(v) for lv, v in levers.items()} for p, levers in sorted(by_project.items())},
+        "by_harness": {h: _round(v) for h, v in sorted(by_harness.items())},
         "excluded_test_receipts": excluded,
         "include_test": include_test,
         "method": "Sums of per-decision receipts (fast_decisions:efficiency). Each receipt fixes its baseline "

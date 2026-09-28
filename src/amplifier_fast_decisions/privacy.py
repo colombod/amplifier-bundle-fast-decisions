@@ -94,6 +94,9 @@ SAFE_FIELDS = {
     "served_model_source",
     "tier",
     "profile",
+    # Waste-guard receipts: the numeric inputs of the estimate (token and
+    # poll counts, step cost) -- never commands, paths or outputs.
+    "detail",
     "tool",
     "tool_call_id",
     "status",

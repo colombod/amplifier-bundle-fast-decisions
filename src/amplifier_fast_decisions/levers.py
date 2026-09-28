@@ -202,7 +202,12 @@ class Levers:
                  shared_warm: int | None = None):
         ka, ls = getattr(policy, "cache_keepalive", None), getattr(policy, "loop_stop", None)
         self.keepalive_cfg = {**KEEPALIVE_DEFAULTS, **ka} if _enabled(ka) else None
-        self.loop = LoopWatch(ls) if _enabled(ls) else None
+        # The waste guards (guards.py) act on the same loops and report on the
+        # same loop_stop lever; with both on, one loop would be nudged and
+        # stopped and receipted twice. The guards win: the nudges stand down.
+        wg = getattr(policy, "waste_guards", None)
+        guards_on = bool(wg) and not (isinstance(wg, dict) and wg.get("enabled") is False)
+        self.loop = LoopWatch(ls) if _enabled(ls) and not guards_on else None
         self.service = service
         self.context = context
         self.usage_fn = usage_fn

@@ -80,6 +80,9 @@ EVENT_NAMES = tuple(
         # Per-step decision point (step_actions.py): the step's class, the
         # action taken (prepared / cheaper model / full) and who decided.
         "step_decided",
+        # Waste guards (guards.py): which guard acted on a tool call (block,
+        # pointer, poll_wait) -- tool name and reason code only.
+        "waste_guard",
     )
 )
 
@@ -966,6 +969,12 @@ class Policy:
     # model for this step only (when price- and cache-aware math says so), or
     # the full model. None = off (the loop behaves exactly as before).
     step_actions: dict[str, Any] | None = None
+    # Waste guards (guards.py): identical-result pointers, repeated-failure
+    # stops and sleep-polls run in place. None/False: off (the code default,
+    # so tests and old profiles are unchanged); True or a dict of
+    # guards.GuardConfig fields: on. behaviors/fast-decisions.yaml turns
+    # them on. Independent of mode, routing and the scope gate.
+    waste_guards: Any = None
     version: str = "policy-v1"
 
     def __post_init__(self) -> None:
@@ -998,6 +1007,8 @@ class Policy:
             raise ValueError("read_shortcut must be a bool")
         validate_cache_keepalive(self.cache_keepalive)
         validate_loop_stop(self.loop_stop)
+        if self.waste_guards is not None and not isinstance(self.waste_guards, (bool, dict)):
+            raise ValueError("waste_guards must be a bool or a mapping")
 
         from .step_actions import validate as validate_step_actions
         validate_step_actions(self.step_actions)

@@ -1,0 +1,431 @@
+{
+  "runs": [
+    {
+      "task": "flaky",
+      "arm": "off",
+      "rep": 1,
+      "exit_code": 0,
+      "wall_s": 18.6,
+      "quality_pass": true,
+      "model_calls": 3,
+      "cost_usd": 0.23199,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "flaky",
+      "arm": "off",
+      "rep": 2,
+      "exit_code": 0,
+      "wall_s": 16.9,
+      "quality_pass": true,
+      "model_calls": 3,
+      "cost_usd": 0.233016,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "flaky",
+      "arm": "off",
+      "rep": 3,
+      "exit_code": 0,
+      "wall_s": 20.6,
+      "quality_pass": true,
+      "model_calls": 3,
+      "cost_usd": 0.231803,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "flaky",
+      "arm": "on",
+      "rep": 1,
+      "exit_code": 0,
+      "wall_s": 18.5,
+      "quality_pass": true,
+      "model_calls": 3,
+      "cost_usd": 0.231173,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "flaky",
+      "arm": "on",
+      "rep": 2,
+      "exit_code": 0,
+      "wall_s": 21.1,
+      "quality_pass": true,
+      "model_calls": 3,
+      "cost_usd": 0.234295,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "flaky",
+      "arm": "on",
+      "rep": 3,
+      "exit_code": 0,
+      "wall_s": 18.7,
+      "quality_pass": true,
+      "model_calls": 3,
+      "cost_usd": 0.233148,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "monitor",
+      "arm": "off",
+      "rep": 1,
+      "exit_code": 0,
+      "wall_s": 211.3,
+      "quality_pass": true,
+      "model_calls": 9,
+      "cost_usd": 0.312694,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "monitor",
+      "arm": "off",
+      "rep": 2,
+      "exit_code": 0,
+      "wall_s": 211.6,
+      "quality_pass": true,
+      "model_calls": 9,
+      "cost_usd": 0.312447,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "monitor",
+      "arm": "off",
+      "rep": 3,
+      "exit_code": 0,
+      "wall_s": 219.2,
+      "quality_pass": true,
+      "model_calls": 10,
+      "cost_usd": 0.329131,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "monitor",
+      "arm": "on",
+      "rep": 1,
+      "exit_code": 0,
+      "wall_s": 210.5,
+      "quality_pass": true,
+      "model_calls": 4,
+      "cost_usd": 0.234995,
+      "guard_actions": [
+        "poll_wait:poll_wait"
+      ],
+      "receipt_sums": {
+        "calls_saved": 5,
+        "usd_saved": 0.077172
+      },
+      "receipts": [
+        {
+          "lever": "loop_stop",
+          "mechanism": "guard:poll_wait",
+          "decision": "poll_run_in_place",
+          "calls_saved": 5,
+          "usd_saved": 0.077172,
+          "detail": {
+            "changed": true,
+            "polls": 6,
+            "step_seconds": 1.6687948339967988,
+            "step_usd": 0.0154344,
+            "waited_s": 168.1
+          }
+        }
+      ]
+    },
+    {
+      "task": "monitor",
+      "arm": "on",
+      "rep": 2,
+      "exit_code": 0,
+      "wall_s": 208.6,
+      "quality_pass": true,
+      "model_calls": 9,
+      "cost_usd": 0.317024,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "monitor",
+      "arm": "on",
+      "rep": 3,
+      "exit_code": 0,
+      "wall_s": 215.3,
+      "quality_pass": true,
+      "model_calls": 4,
+      "cost_usd": 0.234775,
+      "guard_actions": [
+        "poll_wait:poll_wait"
+      ],
+      "receipt_sums": {
+        "calls_saved": 5,
+        "usd_saved": 0.077172
+      },
+      "receipts": [
+        {
+          "lever": "loop_stop",
+          "mechanism": "guard:poll_wait",
+          "decision": "poll_run_in_place",
+          "calls_saved": 5,
+          "usd_saved": 0.077172,
+          "detail": {
+            "changed": true,
+            "polls": 6,
+            "step_seconds": 1.9427912919782102,
+            "step_usd": 0.0154344,
+            "waited_s": 168.2
+          }
+        }
+      ]
+    },
+    {
+      "task": "stable",
+      "arm": "off",
+      "rep": 1,
+      "exit_code": 0,
+      "wall_s": 15.7,
+      "quality_pass": true,
+      "model_calls": 4,
+      "cost_usd": 0.265829,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "stable",
+      "arm": "off",
+      "rep": 2,
+      "exit_code": 0,
+      "wall_s": 16.7,
+      "quality_pass": true,
+      "model_calls": 4,
+      "cost_usd": 0.26582,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "stable",
+      "arm": "off",
+      "rep": 3,
+      "exit_code": 0,
+      "wall_s": 16.0,
+      "quality_pass": true,
+      "model_calls": 4,
+      "cost_usd": 0.266142,
+      "guard_actions": [],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0
+      },
+      "receipts": []
+    },
+    {
+      "task": "stable",
+      "arm": "on",
+      "rep": 1,
+      "exit_code": 0,
+      "wall_s": 20.5,
+      "quality_pass": true,
+      "model_calls": 4,
+      "cost_usd": 0.261303,
+      "guard_actions": [
+        "pointer:identical_result"
+      ],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0.003687
+      },
+      "receipts": [
+        {
+          "lever": "context_rightsize",
+          "mechanism": "guard:identical_result",
+          "decision": "duplicate_output_elided",
+          "calls_saved": 0,
+          "usd_saved": 0.0036868,
+          "detail": {
+            "later_calls": 2,
+            "tokens": 709.0,
+            "tool": "bash"
+          }
+        }
+      ]
+    },
+    {
+      "task": "stable",
+      "arm": "on",
+      "rep": 2,
+      "exit_code": 0,
+      "wall_s": 18.7,
+      "quality_pass": true,
+      "model_calls": 4,
+      "cost_usd": 0.262185,
+      "guard_actions": [
+        "pointer:identical_result"
+      ],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0.003687
+      },
+      "receipts": [
+        {
+          "lever": "context_rightsize",
+          "mechanism": "guard:identical_result",
+          "decision": "duplicate_output_elided",
+          "calls_saved": 0,
+          "usd_saved": 0.0036868,
+          "detail": {
+            "later_calls": 2,
+            "tokens": 709.0,
+            "tool": "bash"
+          }
+        }
+      ]
+    },
+    {
+      "task": "stable",
+      "arm": "on",
+      "rep": 3,
+      "exit_code": 0,
+      "wall_s": 19.5,
+      "quality_pass": true,
+      "model_calls": 4,
+      "cost_usd": 0.26269,
+      "guard_actions": [
+        "pointer:identical_result"
+      ],
+      "receipt_sums": {
+        "calls_saved": 0,
+        "usd_saved": 0.003687
+      },
+      "receipts": [
+        {
+          "lever": "context_rightsize",
+          "mechanism": "guard:identical_result",
+          "decision": "duplicate_output_elided",
+          "calls_saved": 0,
+          "usd_saved": 0.0036868,
+          "detail": {
+            "later_calls": 2,
+            "tokens": 709.0,
+            "tool": "bash"
+          }
+        }
+      ]
+    }
+  ],
+  "comparison": {
+    "flaky": {
+      "n_off": 3,
+      "n_on": 3,
+      "cost_off_mean": 0.2323,
+      "cost_off_sd": 0.0007,
+      "cost_on_mean": 0.2329,
+      "cost_on_sd": 0.0016,
+      "calls_off_mean": 3.0,
+      "calls_on_mean": 3.0,
+      "measured_cost_diff_usd(off-on)": -0.0006,
+      "measured_call_diff(off-on)": 0.0,
+      "receipts_usd_saved_mean(on)": 0.0,
+      "receipts_calls_saved_mean(on)": 0.0,
+      "wall_off_mean_s": 18.7,
+      "wall_on_mean_s": 19.4,
+      "quality_off": "3/3",
+      "quality_on": "3/3"
+    },
+    "monitor": {
+      "n_off": 3,
+      "n_on": 3,
+      "cost_off_mean": 0.3181,
+      "cost_off_sd": 0.0096,
+      "cost_on_mean": 0.2623,
+      "cost_on_sd": 0.0474,
+      "calls_off_mean": 9.33,
+      "calls_on_mean": 5.67,
+      "measured_cost_diff_usd(off-on)": 0.0558,
+      "measured_call_diff(off-on)": 3.67,
+      "receipts_usd_saved_mean(on)": 0.0514,
+      "receipts_calls_saved_mean(on)": 3.33,
+      "wall_off_mean_s": 214.0,
+      "wall_on_mean_s": 211.5,
+      "quality_off": "3/3",
+      "quality_on": "3/3"
+    },
+    "stable": {
+      "n_off": 3,
+      "n_on": 3,
+      "cost_off_mean": 0.2659,
+      "cost_off_sd": 0.0002,
+      "cost_on_mean": 0.2621,
+      "cost_on_sd": 0.0007,
+      "calls_off_mean": 4.0,
+      "calls_on_mean": 4.0,
+      "measured_cost_diff_usd(off-on)": 0.0039,
+      "measured_call_diff(off-on)": 0.0,
+      "receipts_usd_saved_mean(on)": 0.0037,
+      "receipts_calls_saved_mean(on)": 0.0,
+      "wall_off_mean_s": 16.1,
+      "wall_on_mean_s": 19.6,
+      "quality_off": "3/3",
+      "quality_on": "3/3"
+    }
+  },
+  "totals_per_run_set": {
+    "measured": 0.0591,
+    "receipts": 0.0551
+  }
+}
