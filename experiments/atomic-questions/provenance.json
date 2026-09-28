@@ -1,0 +1,8 @@
+{
+  "created_utc": "2026-09-22T04:16:32.042189+00:00",
+  "base_commit": "a22b236f3c648a3d245849b652a8500722ce60f4",
+  "inherited_patch_sha256": "127d1d5c8cf9b224c158f429de7e799b8cb9e6afae158cbd598f5b64bd0cd2bc",
+  "source_worktree": "/Users/michaeljabbour/dev/amplifier-bundle-fast-decisions",
+  "native_study": "/Users/michaeljabbour/dev/afast-native-study-20260922",
+  "installed_packages_changed": false
+}

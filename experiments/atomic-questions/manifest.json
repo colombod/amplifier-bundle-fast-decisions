@@ -1,0 +1,17 @@
+{
+  "budget_ceiling_usd": 1,
+  "frozen_utc": "2026-09-22T04:19:55.787808+00:00",
+  "guards": {
+    "experiments/atomic-questions/PROTOCOL.md": "a0e486712e0e462f4a72ba34f5b9ac13199bbf92aecf1e212cba487e02cd10e3",
+    "experiments/atomic-questions/cases.json": "e2e532d4a5dd777a63766b155b2bab0b7b698845d0fe453fb80e400b8abaf0be",
+    "experiments/atomic-questions/experiment.py": "4ead26bd2c811ad010fe331f212db24f677b2d07973db5bcc37b01bb3bc4ac30",
+    "experiments/atomic-questions/schedule.json": "9bd60a7b2634f65c447ca5b7400a9d8a957262ebaf1c4f878f9bea51be10cbb3",
+    "experiments/atomic-questions/test_experiment.py": "05a59e889a7c1168f8fd70ead46f221f83192d560bb722b3158f68a96e36d7dd",
+    "src/amplifier_fast_decisions/backends.py": "4dac02ade0c4bc1badfbb1bcf6f507677f67b2dbb1729b6c61e8e3741cbe34aa",
+    "src/amplifier_fast_decisions/contracts.py": "e89aa4cf7f2bf843f6eea562af221afa5cc6554a824192e760127c53bbcd8162"
+  },
+  "maximum_requests": 128,
+  "model": "jev-1.13.0",
+  "seed": 20260922,
+  "shared_budget_source": "one dollar of the native study existing fifty-dollar Jev planning reserve; not additional authorization"
+}

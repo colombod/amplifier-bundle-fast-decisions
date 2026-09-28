@@ -505,13 +505,7 @@ def _worker_scenario(root, name, manifest, item, workspace, source_root, run):
     """
     import battery_tasks
     task = battery_tasks.TASKS[item['task']]
-    warm = urllib.request.Request(
-        'http://127.0.0.1:11434/api/generate',
-        data=json.dumps({'model': 'qwen3:0.6b', 'stream': False, 'keep_alive': '20m',
-                          'options': {'num_ctx': 4096}}).encode(),
-        headers={'Content-Type': 'application/json'})
-    with urllib.request.urlopen(warm, timeout=60) as response:
-        json.load(response)
+    _warm_local_scorer(manifest['sides'][item['side']])
     slug = str(workspace.resolve()).replace('/', '-').replace('\\', '-').replace(':', '')
     sessions = Path.home()/'.amplifier/projects'/slug/'sessions'
     env = dict(os.environ, AFAST_OBSERVATORY='off')
@@ -1054,6 +1048,26 @@ def _ensure_task_source_registered(manifest):
                                          **{k: v for k, v in task_source.items() if k != 'kind'})
 
 
+def _warm_local_scorer(side):
+    """Warm only an active Ollama judge, never an unused local model."""
+    if side.get('mode') != 'active':
+        return
+    overrides = side.get('decision_overrides', {})
+    if side.get('composition') == 'composed':
+        decision = composed_effective_config(side['source_root'], overrides) or {}
+    else:
+        decision = {**DEFAULT_DECISION, **overrides}
+    if decision.get('backend') != 'ollama':
+        return
+    origin = decision.get('ollama_url', 'http://127.0.0.1:11434').rstrip('/')
+    warm = urllib.request.Request(origin + '/api/generate', data=json.dumps({
+        'model': decision.get('model', 'qwen3:0.6b'), 'stream': False,
+        'keep_alive': '20m', 'options': {'num_ctx': 4096},
+    }).encode(), headers={'Content-Type': 'application/json'})
+    with urllib.request.urlopen(warm, timeout=60) as response:
+        json.load(response)
+
+
 def worker(root,name):
     manifest=json.loads((root/'manifest.json').read_text());_ensure_task_source_registered(manifest);run=root/_slug(name);workspace=run/'workspace';item=manifest['runs'][name]
     if hash_files(workspace)!=item['workspace_hash']:raise RuntimeError('Starting workspace changed')
@@ -1086,8 +1100,7 @@ def worker(root,name):
         # of this function) is never reached for a scenario task.
         return _worker_scenario(root, name, manifest, item, workspace, source_root, run)
     deadline_seconds = item.get('deadline_seconds') or manifest['limits']['timeout_seconds']
-    warm=urllib.request.Request('http://127.0.0.1:11434/api/generate',data=json.dumps({'model':'qwen3:0.6b','stream':False,'keep_alive':'20m','options':{'num_ctx':4096}}).encode(),headers={'Content-Type':'application/json'})
-    with urllib.request.urlopen(warm,timeout=60) as response:json.load(response)
+    _warm_local_scorer(side)
     slug=str(workspace.resolve()).replace('/','-').replace('\\','-').replace(':','')
     sessions=Path.home()/'.amplifier/projects'/slug/'sessions'
     before=set(sessions.iterdir()) if sessions.exists() else set()
