@@ -22,10 +22,12 @@ Scrubbing masks common key, bearer, secret-assignment and private-key patterns. 
 
 ## Actions and authority
 
-**Optional Jevgrep retrieval:** `behaviors/jevgrep.yaml` is separately opt-in
-and starts with `tool-jevgrep.allow_external_state: false`. Enabling it permits
-eligible source under its configured root to go to the provider saved by
-`jg auth`. The router's external-state setting does not enable source retrieval.
+**Default Jevgrep retrieval:** the main behavior includes `behaviors/jevgrep.yaml`
+with `tool-jevgrep.allow_external_state: true`. Searches send eligible source
+under the configured workspace root to the provider saved by `jg auth`, or to
+TypeSafe using `TYPESAFE_API_KEY` if no saved provider exists. Set the tool setting
+to false to disable source sharing. Environment credentials use an owner-only
+temporary CLI configuration deleted after execution; saved credentials are unchanged. The router's external-state setting does not enable source retrieval.
 The wrapper disables retrieval caching, retains default source exclusions,
 bounds output and stops child processes on timeout/cancellation. Retrieved source
 is a normal host tool result and may appear in host transcripts. Returned-source

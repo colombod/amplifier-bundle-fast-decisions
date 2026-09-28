@@ -1,0 +1,8 @@
+{
+  "status": "complete",
+  "content": "Jevgrep: 1 relevant files.\nSymbols use name@start-end. Roles are estimates; locations-only files remain reading leads.\nAGENTS.md lookup (root and returned-file ancestors): none found.\n- \"storage.py\" \u2014 helper; locations only\nEnd file list. Declaration locations follow source.\n\nDeclaration locations:\n- \"storage.py\"\n\nEnd context.\n",
+  "truncated": false,
+  "exit_code": 0,
+  "duration_ms": 2304.28,
+  "usage": "provider calls and cost unknown; not included in router savings"
+}

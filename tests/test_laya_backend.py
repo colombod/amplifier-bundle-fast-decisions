@@ -27,7 +27,7 @@ from unittest import mock
 
 from amplifier_fast_decisions import laya_server
 from amplifier_fast_decisions.backends import BackendUnavailable
-from amplifier_fast_decisions.contracts import Candidate, DecisionRequest, NEXT_ACTION, SLOW
+from amplifier_fast_decisions.contracts import Candidate, DecisionRequest, Question, NEXT_ACTION, SLOW
 from amplifier_fast_decisions.local_backend import (
     LAYA_DEFAULT_TOKEN_ENV,
     LAYA_DEFAULT_URL,
@@ -181,6 +181,26 @@ def _running_server(handler_cls):
 
 
 class LayaAskTests(unittest.TestCase):
+    def test_typed_questions_are_batched_and_missing_answers_fail_closed(self):
+        import asyncio
+        questions = (Question("difficulty", "choice", "How difficult?", {"easy": "easy", "hard": "hard"}),
+                     Question("relevant", "noul", "Is this relevant?"))
+        request = DecisionRequest(state={"task": "Read README.md"}, candidates=(), questions=questions)
+        payload = {"model": "laya", "answers": {
+            "difficulty": {"type": "choice", "choice": "easy", "probabilities": {"easy": .9, "hard": .1}},
+            "relevant": {"type": "noul", "noul": .8}}}
+        handler = _make_handler(decide_payload=payload)
+        with _running_server(handler) as url:
+            backend = LayaBackend(url=url, timeout_ms=2000)
+            result = asyncio.run(backend.ask_many(request))
+            self.assertEqual(len(handler.request_bodies), 1)
+            self.assertEqual(set(handler.request_bodies[0]["questions"]), {"difficulty", "relevant"})
+            self.assertEqual(result.answers["relevant"].noul, .8)
+            self.assertIsNone(result.output_tokens)
+            del payload["answers"]["relevant"]
+            with self.assertRaises(BackendUnavailable):
+                asyncio.run(backend.ask(request))
+
     def test_scores_via_decide_endpoint(self):
         handler = _make_handler(decide_payload=_decide_payload())
         with _running_server(handler) as base_url:
@@ -296,6 +316,40 @@ class _FakeAgent:
 
 
 class LayaServerHandlerTests(unittest.TestCase):
+    def test_concurrent_clients_serialize_model_inference(self):
+        from concurrent.futures import ThreadPoolExecutor
+        import urllib.request
+
+        class NonReentrantAgent(_FakeAgent):
+            active = 0
+            maximum = 0
+
+            def predict(self, state, questions):
+                self.active += 1
+                self.maximum = max(self.maximum, self.active)
+                time.sleep(0.03)
+                self.active -= 1
+                return super().predict(state, questions)
+
+        server, thread, agent = self._build(agent=NonReentrantAgent())
+        barrier = threading.Barrier(4)
+        def call(_):
+            barrier.wait(timeout=5)
+            request = urllib.request.Request(
+                f"http://127.0.0.1:{server.server_port}/v1/decide",
+                data=json.dumps({"state": "test", "questions": {
+                    NEXT_ACTION: {"type": "choice", "criteria": {"read": "read", SLOW: "reason"}}
+                }}).encode(), headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(request, timeout=5) as response:
+                return response.status
+        try:
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                self.assertEqual(list(pool.map(call, range(4))), [200] * 4)
+            self.assertEqual(len(agent.calls), 4)
+            self.assertEqual(agent.maximum, 1)
+        finally:
+            self._stop(server, thread)
+
     def _build(self, agent=None, token_env=None):
         fake_agent = agent if agent is not None else _FakeAgent()
         with mock.patch.object(laya_server, "_load_agent", return_value=fake_agent), \

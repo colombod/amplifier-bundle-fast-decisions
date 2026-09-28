@@ -49,6 +49,14 @@ class ToolTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(result["status"], "unavailable")
             self.assertEqual(run.await_count, 1)
 
+    async def test_absolute_workspace_directory_does_not_require_retry(self):
+        with patch("shutil.which", return_value="/trusted/jg"), \
+             patch("amplifier_fast_decisions.jevgrep._run_bounded", new_callable=AsyncMock,
+                   side_effect=[(0, "0.4.0", False), (0, "End context.", False)]) as run:
+            result = await self.tool.search({"query": "Find code", "path": str(self.root / "src")})
+        self.assertEqual(result["status"], "complete")
+        self.assertEqual(run.await_args_list[1].args[0][-1], str(self.root / "src"))
+
     async def test_incomplete_truncation_and_failure_are_not_complete(self):
         for code, text, truncated, status in [
             (2, "Some source\nEnd context.", False, "incomplete"),
@@ -70,7 +78,8 @@ class ToolTests(unittest.IsolatedAsyncioTestCase):
         (self.root / "link").symlink_to(self.root / "src", target_is_directory=True)
         (self.root / "file.py").touch()
         bad = [{"query": "x", "path": "../"}, {"query": "x", "path": "/tmp"},
-               {"query": "x", "path": "link"}, {"query": "x", "path": ".git"},
+               {"query": "x", "path": "link"}, {"query": "x", "path": str(self.root / "link")},
+               {"query": "x", "path": str(self.root / "../")}, {"query": "x", "path": ".git"},
                {"query": "x", "path": "file.py"}, {"query": "x", "include_sensitive": True},
                {"query": " "}, {"query": "x" * 2001}, {"query": "x\x00y"}, []]
         with patch("amplifier_fast_decisions.jevgrep._run_bounded", new_callable=AsyncMock) as run:
@@ -147,6 +156,27 @@ class ToolTests(unittest.IsolatedAsyncioTestCase):
 
 
 class ConfigTests(unittest.TestCase):
+    def test_environment_credential_is_private_ephemeral_and_saved_choice_wins(self):
+        import json
+        import stat
+        from amplifier_fast_decisions.jevgrep import _credentials_env
+        with tempfile.TemporaryDirectory() as root, patch.dict(os.environ, {
+                "XDG_CONFIG_HOME": root, "TYPESAFE_API_KEY": "fixture-not-a-secret"}):
+            with self.assertRaises(RuntimeError):
+                with _credentials_env() as env:
+                    temporary = Path(env["XDG_CONFIG_HOME"])
+                    credential = temporary / "jevgrep/credentials.json"
+                    self.assertEqual(stat.S_IMODE(credential.stat().st_mode), 0o600)
+                    self.assertEqual(json.loads(credential.read_text())["provider"], "typesafe")
+                    raise RuntimeError("cancelled search")
+            self.assertFalse(temporary.exists())
+            saved = Path(root) / "jevgrep/credentials.json"
+            saved.parent.mkdir()
+            saved.write_text("saved provider remains untouched")
+            with _credentials_env() as env:
+                self.assertEqual(env, {})
+            self.assertEqual(saved.read_text(), "saved provider remains untouched")
+
     def test_unbounded_settings_are_refused(self):
         for args in [{"max_source_bytes": 0}, {"concurrency": 100}, {"timeout_ms": False},
                      {"allow_external_state": "true"}, {"max_output_bytes": 0}]:

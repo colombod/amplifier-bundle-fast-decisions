@@ -120,9 +120,10 @@ was cheaper on a set of all-easy tasks because it kept fewer requests on the usu
 
 ## Also included
 
-- **Code discovery with Jevgrep:** optional `behaviors/jevgrep.yaml` adds a native
-  tool for finding source by what it does. Source sharing is separately opt-in;
+- **Code discovery with Jevgrep:** the default behavior includes a native
+  tool for finding source by what it does. It sends eligible workspace source to Jev, reusing `TYPESAFE_API_KEY` when no CLI provider is saved. Disable with `tool-jevgrep.allow_external_state: false`;
   ordinary search remains available ([setup and limits](docs/JEVGREP.md)).
+  See the [matched Jev, Laya and retrieval measurements](docs/evidence/2026-09-28-decisions/REPORT.md) for task-level benefits and regressions.
 - **Experimental local AnyJev judge:** optional fixed-question L0 evaluation and fitted L1/L2
   routing, with exact model/question checks. Added as an alternative to evaluate; it has not
   displaced the measured default ([assessment and setup](docs/ANYJEV.md)).

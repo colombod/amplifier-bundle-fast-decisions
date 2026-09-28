@@ -29,6 +29,7 @@ import json
 import os
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from threading import Lock
 from typing import Any
 
 DEFAULT_HOST = "127.0.0.1"
@@ -157,6 +158,7 @@ class _LayaHTTPServer(ThreadingHTTPServer):
     model_name: str
     expected_token: str | None
     agent: Any
+    inference_lock: Any
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -231,7 +233,10 @@ class _Handler(BaseHTTPRequestHandler):
             self._write_json(503, {"error": "model not loaded"})
             return
         try:
-            result = agent.predict(state, questions)
+            # One loaded GPU model is shared by all HTTP clients. The SDK's
+            # mutable inference state and MPS command buffers are not reentrant.
+            with self.server.inference_lock:
+                result = agent.predict(state, questions)
         except Exception as exc:  # noqa: BLE001 -- a bad prediction must never crash the server
             self._write_json(500, {"error": f"predict failed: {exc}"})
             return
@@ -257,6 +262,7 @@ def build_server(
     clear message) if the Laya package cannot be loaded -- never falls back
     to serving without a model."""
     server = _LayaHTTPServer((host, port), _Handler)
+    server.inference_lock = Lock()
     server.model_name = model
     server.expected_token = os.getenv(token_env) if token_env else None
     try:

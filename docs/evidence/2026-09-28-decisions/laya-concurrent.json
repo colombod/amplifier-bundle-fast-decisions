@@ -1,0 +1,131 @@
+{
+  "concurrent_clients": 4,
+  "requests": [
+    {
+      "request": 0,
+      "elapsed_ms": 54.996958999254275,
+      "answers": {
+        "operation": {
+          "type": "choice",
+          "choice": "read",
+          "probabilities": {
+            "read": 0.9557,
+            "reason": 0.0443
+          },
+          "confidence": 0.7385
+        }
+      }
+    },
+    {
+      "request": 1,
+      "elapsed_ms": 93.78254100010963,
+      "answers": {
+        "operation": {
+          "type": "choice",
+          "choice": "read",
+          "probabilities": {
+            "read": 0.9557,
+            "reason": 0.0443
+          },
+          "confidence": 0.7385
+        }
+      }
+    },
+    {
+      "request": 2,
+      "elapsed_ms": 68.41066699962539,
+      "answers": {
+        "operation": {
+          "type": "choice",
+          "choice": "read",
+          "probabilities": {
+            "read": 0.9557,
+            "reason": 0.0443
+          },
+          "confidence": 0.7385
+        }
+      }
+    },
+    {
+      "request": 3,
+      "elapsed_ms": 81.54862499941373,
+      "answers": {
+        "operation": {
+          "type": "choice",
+          "choice": "read",
+          "probabilities": {
+            "read": 0.9557,
+            "reason": 0.0443
+          },
+          "confidence": 0.7385
+        }
+      }
+    },
+    {
+      "request": 4,
+      "elapsed_ms": 51.65629200018884,
+      "answers": {
+        "operation": {
+          "type": "choice",
+          "choice": "read",
+          "probabilities": {
+            "read": 0.9557,
+            "reason": 0.0443
+          },
+          "confidence": 0.7385
+        }
+      }
+    },
+    {
+      "request": 5,
+      "elapsed_ms": 50.6134999995993,
+      "answers": {
+        "operation": {
+          "type": "choice",
+          "choice": "read",
+          "probabilities": {
+            "read": 0.9557,
+            "reason": 0.0443
+          },
+          "confidence": 0.7385
+        }
+      }
+    },
+    {
+      "request": 6,
+      "elapsed_ms": 50.15737499888928,
+      "answers": {
+        "operation": {
+          "type": "choice",
+          "choice": "read",
+          "probabilities": {
+            "read": 0.9557,
+            "reason": 0.0443
+          },
+          "confidence": 0.7385
+        }
+      }
+    },
+    {
+      "request": 7,
+      "elapsed_ms": 50.39933300031407,
+      "answers": {
+        "operation": {
+          "type": "choice",
+          "choice": "read",
+          "probabilities": {
+            "read": 0.9557,
+            "reason": 0.0443
+          },
+          "confidence": 0.7385
+        }
+      }
+    }
+  ],
+  "health_after": {
+    "status": "ok",
+    "model": "/Users/michaeljabbour/models/laya/checkpoint",
+    "loaded": true
+  },
+  "scope": "Real local Laya inference concurrency smoke; no general performance claim"
+}

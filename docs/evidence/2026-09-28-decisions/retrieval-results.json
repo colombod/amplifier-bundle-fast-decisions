@@ -1,0 +1,171 @@
+{
+  "schema": "decision-alternatives-v1",
+  "model": "claude-sonnet-5",
+  "source_hash": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2",
+  "rows": [
+    {
+      "name": "answer_audit_log_key-plain-1",
+      "task": "answer_audit_log_key",
+      "arm": "plain",
+      "passed": true,
+      "checks": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 28.83032487499986,
+      "provider_calls": 7,
+      "tool_calls": 7,
+      "tool_names": {
+        "read_file": 4,
+        "fast_workspace": 1,
+        "bash": 1,
+        "load_skill": 1
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 0,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.05718135,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": 0.05718135,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "0ab0feba-0558-4dbd-8516-6aa35047d217",
+      "source_hash": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2",
+      "fallbacks": {},
+      "prompt_sha256": "87cdedfaa33eda2638b5aa35caa21725c7cb42411ef003308b0890256123a707",
+      "workspace_hash": "0c46e89c20c3a1f30c3c2185c3daa65d7597e9a238c732bf9c413018b1e8e0ba",
+      "profile_sha256": "9a65089895f5f4e4c04cc86854d6efc473709eb6f7270fca27bff76b2e674fed"
+    },
+    {
+      "name": "answer_audit_log_key-retrieval-1",
+      "task": "answer_audit_log_key",
+      "arm": "retrieval",
+      "passed": true,
+      "checks": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 30.163373875000616,
+      "provider_calls": 7,
+      "tool_calls": 9,
+      "tool_names": {
+        "read_file": 7,
+        "jevgrep": 2
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 0,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.06785865,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": null,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "5b8b63f2-669d-49e8-af8a-09663954a079",
+      "source_hash": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2",
+      "fallbacks": {},
+      "prompt_sha256": "87cdedfaa33eda2638b5aa35caa21725c7cb42411ef003308b0890256123a707",
+      "workspace_hash": "0c46e89c20c3a1f30c3c2185c3daa65d7597e9a238c732bf9c413018b1e8e0ba",
+      "profile_sha256": "e99e482c8896e5b92ecaf2e79ebf79d13bc6c8422cf64441635173eaf6db549e"
+    },
+    {
+      "name": "answer_audit_log_key-retrieval-2",
+      "task": "answer_audit_log_key",
+      "arm": "retrieval",
+      "passed": true,
+      "checks": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 34.34074191699983,
+      "provider_calls": 7,
+      "tool_calls": 8,
+      "tool_names": {
+        "read_file": 6,
+        "jevgrep": 2
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 0,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.0780573,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": null,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "e9ff1a37-db1e-40e6-94f3-fa7a1c2b527f",
+      "source_hash": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2",
+      "fallbacks": {},
+      "prompt_sha256": "87cdedfaa33eda2638b5aa35caa21725c7cb42411ef003308b0890256123a707",
+      "workspace_hash": "0c46e89c20c3a1f30c3c2185c3daa65d7597e9a238c732bf9c413018b1e8e0ba",
+      "profile_sha256": "2197636b748e89e0c19e4fa59676d6b25ce2f6be1bd7541054bf2859de376411"
+    },
+    {
+      "name": "answer_audit_log_key-plain-2",
+      "task": "answer_audit_log_key",
+      "arm": "plain",
+      "passed": true,
+      "checks": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 75.39991395800098,
+      "provider_calls": 10,
+      "tool_calls": 9,
+      "tool_names": {
+        "read_file": 5,
+        "bash": 3,
+        "load_skill": 1
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 0,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.13341750000000002,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": 0.13341750000000002,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "d0e21bd8-b784-45d5-a91f-c233ffd2de4b",
+      "source_hash": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2",
+      "fallbacks": {},
+      "prompt_sha256": "87cdedfaa33eda2638b5aa35caa21725c7cb42411ef003308b0890256123a707",
+      "workspace_hash": "0c46e89c20c3a1f30c3c2185c3daa65d7597e9a238c732bf9c413018b1e8e0ba",
+      "profile_sha256": "6173a9ec95b557d2c7467e7ace9abb390cb10c0489da384090710b4445e6ffed"
+    }
+  ],
+  "summary": [
+    {
+      "task": "answer_audit_log_key",
+      "arm": "plain",
+      "passed": 2,
+      "runs": 2,
+      "mean_seconds": 52.11511941650042,
+      "mean_provider_calls": 8.5,
+      "mean_provider_cost_usd": 0.09529942500000001,
+      "mean_total_estimated_cost_usd": 0.09529942500000001,
+      "calls_bypassed": 0
+    },
+    {
+      "task": "answer_audit_log_key",
+      "arm": "retrieval",
+      "passed": 2,
+      "runs": 2,
+      "mean_seconds": 32.252057896000224,
+      "mean_provider_calls": 7,
+      "mean_provider_cost_usd": 0.07295797500000001,
+      "mean_total_estimated_cost_usd": null,
+      "calls_bypassed": 0
+    }
+  ],
+  "limits": [
+    "2 repetitions per task/arm; illustrative public fixtures, not a general benchmark.",
+    "Jevgrep charges unavailable; retrieval total cost remains null.",
+    "Local model startup excluded; provider costs are estimates, not invoices."
+  ]
+}

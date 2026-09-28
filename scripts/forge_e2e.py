@@ -298,6 +298,25 @@ def _extract_final_message(session_dir, workspace):
                     last_text = '\n'.join(texts)
             if last_text is not None:
                 return last_text
+        # Hosts may omit raw provider payloads from events while preserving the
+        # canonical conversation. Grade that final assistant message as well.
+        transcript = Path(session_dir)/'transcript.jsonl'
+        if transcript.exists():
+            for line in reversed(transcript.read_text().splitlines()):
+                try:
+                    message = json.loads(line)
+                except ValueError:
+                    continue
+                if message.get('role') != 'assistant' or (message.get('metadata') or {}).get('purpose') in _BACKGROUND_CALL_PURPOSES:
+                    continue
+                content = message.get('content')
+                if isinstance(content, str) and content.strip():
+                    return content
+                if isinstance(content, list):
+                    texts = [b['text'] for b in content if isinstance(b, dict)
+                             and b.get('type') == 'text' and b.get('text')]
+                    if texts:
+                        return '\n'.join(texts)
     marker = Path(workspace)/'.amplifier-final-answer.txt'
     if marker.exists():
         lines = marker.read_text().splitlines()
@@ -684,6 +703,15 @@ def _side_profile(name, side, task, workspace, config):
                'session': {'orchestrator': loop},
                'tools': tools,
                'hooks': hooks}
+    if amplifier_bundle == 'lean':
+        profile['session']['context'] = {
+            'module': 'context-simple',
+            'source': 'git+https://github.com/microsoft/amplifier-module-context-simple@main'}
+        profile['hooks'].append({
+            'module': 'hooks-logging',
+            'source': 'git+https://github.com/microsoft/amplifier-module-hooks-logging@main',
+            'config': {'mode': 'session-only',
+                       'session_log_template': '~/.amplifier/projects/{project}/sessions/{session_id}/events.jsonl'}})
     if providers:
         profile['providers'] = providers
     return profile
@@ -1381,6 +1409,8 @@ def batch(root):
             except SystemExit:pass
         outcome=json.loads((run/'result.json').read_text())
         print('COLLECT '+name+' '+str(outcome['outcome_passed']),flush=True)
+        if outcome.get('infrastructure_failure'):
+            raise RuntimeError('Infrastructure failure; fix setup before launching more paid sessions')
 
 
 if __name__=='__main__':
