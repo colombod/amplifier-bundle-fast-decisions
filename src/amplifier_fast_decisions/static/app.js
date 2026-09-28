@@ -38,7 +38,7 @@
   // turn follows it, so rows for later calls can show why they ran where.
   const turnJudgments = new Map();
   const noteTurn = e => { if (e && kind(e) === 'difficulty_judged' && e.turn_id) turnJudgments.set(e.turn_id, e); };
-  const JUDGE_REASON = { scope_strong: 'Large project · kept on your usual model', user_model_strong: 'Your model pick', judge_cheap: 'Judged easy', judge_strong: 'Judged hard', rules_cheap: 'Short request (built-in rule)', rules_strong: 'Long request (built-in rule)' };
+  const JUDGE_REASON = { scope_strong: 'Large project · kept on your usual model', user_model_strong: 'Your model pick', judge_cheap: 'Judged easy', judge_strong: 'Judged hard', rules_cheap: 'Short request (built-in rule)', rules_strong: 'Long request (built-in rule)', scope_judge_cheap: 'Large project · judged safe for a faster model', scope_judge_strong: 'Large project · judged to need your usual model', scope_fallback_strong: 'Large project · no judge answer, kept on your usual model' };
   function judgmentView(j, backendLabel) {
     if (!j) return null;
     const d = j.data, pc = d.probabilities && typeof d.probabilities.complex === 'number' ? d.probabilities.complex : null;

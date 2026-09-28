@@ -60,6 +60,20 @@ session:
           strong: null
         max_explore_requests: 6
         escalate_after_provider_errors: 1
+      # Research levers (default off; see src/amplifier_fast_decisions/routing_levers.py):
+      # one knob, profile: frugal | balanced | careful (balanced = this file),
+      # or the individual model_routing keys tiers / large_repo / strong_effort.
+      # profile: balanced
+      # Per-step action set (default off; src/amplifier_fast_decisions/step_actions.py):
+      # before every model call inside a turn, classify the step from the last
+      # tool calls/results and pick a prepared read-only action (file window,
+      # whole file, git status summary -- judged by Jev next_action, asked only
+      # when the expected saving beats its ~0.15 s), a cheaper model for this
+      # step only when price- and cache-aware math says it is cheaper, or the
+      # full model. Every decision leaves a fast_decisions:efficiency receipt.
+      # step_actions:
+      #   prepared: true
+      #   cheaper_model: true      # rarely fires with an Opus 5.5 host (cheap cache reads)
       model_routing:
         start_model: claude-sonnet-5
         # Only ever send the Anthropic start model to Anthropic providers.

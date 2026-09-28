@@ -76,6 +76,10 @@ EVENT_NAMES = tuple(
         # planned turn (never on abstain). See planner.py, orchestrator.py
         # and docs/EVENTS.md.
         "turn_planned",
+
+        # Per-step decision point (step_actions.py): the step's class, the
+        # action taken (prepared / cheaper model / full) and who decided.
+        "step_decided",
     )
 )
 
@@ -211,6 +215,21 @@ MODEL_ROUTING_KEYS = frozenset(
         # never reach this decision point at all). See planner.py,
         # orchestrator.py and docs/proposals/TURN-PLANNER.md.
         "planner",
+
+        # Routing levers (research/routing-levers, all opt-in; absent = the
+        # shipped two-tier behavior byte-for-byte). See routing_levers.py.
+        # tiers: [{max_p_complex, model, effort?, label?}] ascending -- a
+        # judged turn takes the first tier whose threshold its p(complex) is
+        # below, else the host model. Replaces complex_min_probability.
+        "tiers",
+        # large_repo: when the scope gate fires, still allow a cheap tier if
+        # the judge is confident ({max_p_complex}) and/or the turn does not
+        # change code ({non_editing_max_p_edit}); require: both | either.
+        "large_repo",
+        # strong_effort: {max_p_complex, effort} -- a turn judged complex
+        # with p(complex) below max_p_complex stays on the host model at this
+        # effort (medium-confidence complex turns).
+        "strong_effort",
     }
 )
 
@@ -515,6 +534,8 @@ def validate_model_routing(model_routing: Any) -> None:
         raise ValueError(
             "model_routing.escalate_min_probability must be a number between 0 and 1"
         )
+    from .routing_levers import validate_levers
+    validate_levers(model_routing)
     escalation_weights = model_routing.get("escalation_weights")
     if escalation_weights is not None:
         if not isinstance(escalation_weights, dict):
@@ -935,6 +956,16 @@ class Policy:
     # sleep-as-timer polling get a short note in the next request (levers.py).
     # None (the default) is fully off.
     loop_stop: dict[str, Any] | None = None
+
+    # fast_decisions.profile (frugal | balanced | careful): the one user-facing
+    # routing knob, expanded into model_routing/effort_routing by
+    # routing_levers.apply_profile() in from_config. Recorded for receipts.
+    profile: str | None = None
+    # Per-step action set (step_actions.py, all opt-in): before each model call
+    # inside a turn, classify the step and pick a prepared action, a cheaper
+    # model for this step only (when price- and cache-aware math says so), or
+    # the full model. None = off (the loop behaves exactly as before).
+    step_actions: dict[str, Any] | None = None
     version: str = "policy-v1"
 
     def __post_init__(self) -> None:
@@ -968,8 +999,17 @@ class Policy:
         validate_cache_keepalive(self.cache_keepalive)
         validate_loop_stop(self.loop_stop)
 
+        from .step_actions import validate as validate_step_actions
+        validate_step_actions(self.step_actions)
+        if self.profile is not None:
+            from .routing_levers import PROFILES
+            if self.profile not in PROFILES:
+                raise ValueError(f"profile must be one of {sorted(PROFILES)}")
+
     @classmethod
     def from_config(cls, config: dict[str, Any]) -> Policy:
+        from .routing_levers import apply_profile
+        config = apply_profile(config)
         names = cls.__dataclass_fields__
         values = {k: v for k, v in config.items() if k in names}
         if "allowed_tools" in values:
@@ -1098,6 +1138,12 @@ class TurnState:
     # mid-turn -- it just re-checks ``abstained``).
     planner_decided: bool = False
     planner_plan: dict[str, Any] | None = None
+
+    # Routing levers: the chosen tier's label, model and effort for this turn
+    # (None = the shipped start_model/start_effort/by_tier behavior).
+    tier_label: str | None = None
+    tier_model: str | None = None
+    tier_effort: str | None = None
 
 
 def candidate_read_identity(

@@ -32,7 +32,13 @@ from .contracts import (
 )
 from . import effort
 from . import planner as turn_planner
+
+
+from . import routing_levers
+from . import step_actions
+from .savings import DEFAULT_RATES
 from .backends import ask_many as backend_ask_many
+from .state import automatic_tools, tool_names
 from .runtime import Runtime, get_runtime
 from .savings import DEFAULT_RATES
 from . import provenance
@@ -364,6 +370,20 @@ def _tool_result_text(result: Any) -> str:
         return ""
 
 
+def _result_chars(result: Any) -> int:
+    """Serialized size of a tool result (what enters the next prompt). Never raises."""
+    try:
+        output = field_value(result, "output", None)
+        if output is None:
+            output = field_value(result, "error", None)
+        if isinstance(output, str):
+            return len(output)
+        import json as _json
+        return len(_json.dumps(output, default=str))
+    except Exception:  # noqa: BLE001
+        return 0
+
+
 def _test_failure_observed(text: str) -> bool:
     return any(pattern.search(text) for pattern in _TEST_FAILURE_PATTERNS)
 
@@ -438,7 +458,8 @@ def _turn_user_text(request: Any) -> str:
             )
         if not isinstance(content, str):
             continue
-        stripped = re.sub(r"<system-reminder\b.*?</system-reminder>", "", content, flags=re.S).strip()
+        stripped = re.sub(r"<system-reminders\b.*?</system-reminders>|<system-reminder\b.*?</system-reminder>",
+                          "", content, flags=re.S).strip()
         if stripped:
             return stripped
     return ""
@@ -530,39 +551,102 @@ async def decide_start_tier(service: Any, request: Any, model_routing: dict[str,
     if policy == "cheap":
         return "cheap"
     task = _turn_user_text(request)
+    turn = getattr(service, "turn", None)
     scope_limit = model_routing.get("cheap_max_workspace_files")
+    scope_files = None
     if scope_limit is not None:
         files = await asyncio.to_thread(workspace_file_count, session_working_dir(service), scope_limit)
         if files > scope_limit:
-            await service.emit("difficulty_judged", {
-                "backend": service.backend.name, "choice": "strong", "probabilities": None,
-                "duration_ms": 0.0, "reason_code": "scope_strong", "state_chars": len(task),
-                "candidate_count": files, "mode": service.policy.mode,
-            }, decision_id)
-            _note_start(service, "rule:scope_gate", 0.0)
-            return "strong"
+            if not (model_routing.get("large_repo") and policy == "judge" and task):
+                await service.emit("difficulty_judged", {
+                    "backend": service.backend.name, "choice": "strong", "probabilities": None,
+                    "duration_ms": 0.0, "reason_code": "scope_strong", "state_chars": len(task),
+                    "candidate_count": files, "mode": service.policy.mode,
+                    **_profile_field(service),
+                }, decision_id)
+                _note_start(service, "rule:scope_gate", 0.0)
+                return "strong"
+            scope_files = files  # large_repo lever: ask the judge anyway
     min_chars = model_routing.get("complex_min_prompt_chars", 2000)
     tier = "strong" if len(task) >= min_chars else "cheap"
-    decided_by, p_complex, duration_ms = "rules", None, 0.0
+    decided_by, p_complex, p_edit, duration_ms = "rules", None, None, 0.0
     if policy == "judge" and task:
-        choice, probability, duration_ms = await _ask_judge_choice(
-            service, question_name="task_difficulty", instructions=DIFFICULTY_INSTRUCTIONS,
-            criteria=DIFFICULTY_CRITERIA, state={"task": task[:_DIFFICULTY_STATE_CHARS]},
-        )
+        state = {"task": task[:_DIFFICULTY_STATE_CHARS]}
+        if scope_files is not None and routing_levers.large_repo_wants_edit_question(model_routing):
+            # One batched call: difficulty + "does this change code?"
+            questions = [Question(name="task_difficulty", type="choice", instructions=DIFFICULTY_INSTRUCTIONS,
+                                  criteria=DIFFICULTY_CRITERIA), routing_levers.edit_question()]
+            batch_start = time.perf_counter()
+            answers = await _ask_judges_many(service, questions=questions, state=state) or {}
+            duration_ms = (time.perf_counter() - batch_start) * 1000
+            choice, probability = answers.get("task_difficulty", (None, None))
+            edit_choice, edit_probability = answers.get(routing_levers.EDIT_QUESTION_NAME, (None, None))
+            if edit_choice is not None and edit_probability is not None:
+                p_edit = edit_probability if edit_choice == "edits" else 1.0 - edit_probability
+        else:
+            choice, probability, duration_ms = await _ask_judge_choice(
+                service, question_name="task_difficulty", instructions=DIFFICULTY_INSTRUCTIONS,
+                criteria=DIFFICULTY_CRITERIA, state=state,
+            )
         if choice is not None and probability is not None:
             p_complex = probability if choice == "complex" else 1.0 - probability
-            gate = model_routing.get("complex_min_probability", 0.5)
-            tier = "strong" if p_complex >= gate else "cheap"
             decided_by = "judge"
-    await service.emit("difficulty_judged", {
-        "backend": service.backend.name, "choice": tier,
-        "probabilities": {"complex": p_complex} if p_complex is not None else None,
-        "duration_ms": duration_ms, "reason_code": f"{decided_by}_{tier}",
-        "state_chars": len(task), "mode": service.policy.mode,
-    }, decision_id)
-    _note_start(service, (f"{service.backend.name}:task_difficulty" if decided_by == "judge" else "rule:prompt_length"),
-                duration_ms / 1000 if policy == "judge" and task else 0.0)
+    label, tier_model, tier_effort = None, None, None
+    if scope_files is not None:
+        # Scope-gated turn: the host model unless the large_repo lever allows
+        # a cheap tier; any judge failure keeps the host model.
+        allowed = p_complex is not None and routing_levers.large_repo_allows_cheap(
+            model_routing, p_complex, p_edit)
+        picked = None
+        if allowed:
+            # The tier its difficulty earns; a read-only turn the tiers call
+            # complex (allowed via require: either) gets start_model.
+            picked = routing_levers.choose_tier(model_routing, p_complex) or ("cheap", None, None)
+        tier = "cheap" if picked else "strong"
+        if picked and picked[1]:  # a configured tier (not the shipped start_model)
+            label, tier_model, tier_effort = picked
+        reason = f"scope_judge_{tier}" if p_complex is not None else "scope_fallback_strong"
+    elif decided_by == "judge":
+        picked = routing_levers.choose_tier(model_routing, p_complex)
+        tier = "cheap" if picked else "strong"
+        if picked and picked[1]:  # a configured tier (not the shipped start_model)
+            label, tier_model, tier_effort = picked
+        reason = f"judge_{tier}"
+    else:
+        reason = f"rules_{tier}"
+    if tier == "strong":
+        tier_effort = routing_levers.strong_effort(model_routing, p_complex)
+        label = "strong_effort" if tier_effort else None
+    if turn is not None and hasattr(turn, "tier_label"):
+        turn.tier_label, turn.tier_model, turn.tier_effort = label, tier_model, tier_effort
+    probabilities = None
+    if p_complex is not None or p_edit is not None:
+        probabilities = {k: v for k, v in (("complex", p_complex), ("edits_code", p_edit)) if v is not None}
+    data = {
+        "backend": service.backend.name, "choice": tier, "probabilities": probabilities,
+        "duration_ms": duration_ms, "reason_code": reason,
+        "state_chars": len(task), "mode": service.policy.mode, **_profile_field(service),
+    }
+    if scope_files is not None:
+        data["candidate_count"] = scope_files
+    if label is not None:
+        data["tier"] = label
+        data["requested_model"] = tier_model
+        data["requested_effort"] = tier_effort
+    await service.emit("difficulty_judged", data, decision_id)
+    if scope_files is not None and p_complex is None:
+        start_mech = "rule:scope_gate"
+    elif decided_by == "judge":
+        start_mech = f"{service.backend.name}:" + ("edits_code" if p_edit is not None else "task_difficulty")
+    else:
+        start_mech = "rule:prompt_length"
+    _note_start(service, start_mech, duration_ms / 1000 if policy == "judge" and task else 0.0)
     return tier
+
+
+def _profile_field(service: Any) -> dict:
+    profile = getattr(service.policy, "profile", None)
+    return {"profile": profile} if profile else {}
 
 
 def _judge_state(
@@ -880,6 +964,16 @@ def project_and_traffic(service: Any) -> tuple[str, str]:
     return ctx.get("repo") or Path(wd).name or "(unknown)", efficiency.classify_traffic(wd)
 
 
+def _push(values: list, value: float, cap: int = 64) -> None:
+    values.append(float(value))
+    if len(values) > cap:
+        del values[0]
+
+
+def _mean(values: list, default: float) -> float:
+    return sum(values) / len(values) if values else float(default)
+
+
 class RoutedProvider:
     """Preserve the Provider protocol while intercepting complete() boundaries.
 
@@ -908,6 +1002,9 @@ docs/UPSTREAM_CONTRACT.md.
                                      "prev_tier": None, "cur_mech": None, "prev_mech": None,
                                      "judge_charged": False, "host_calls_this_turn": 0, "host_last": None,
                                      "host_sum_usd": 0.0, "host_sum_s": 0.0, "host_n": 0}
+        # Per-step decision point: prepared actions awaiting their receipt
+        # (priced when the next model call shows what was skipped).
+        self._pending_prepared: list[dict[str, Any]] = []
 
     def _user_selected_model(self, service: Any) -> str | None:
         """The model the user explicitly chose for this session, or None.
@@ -960,7 +1057,21 @@ docs/UPSTREAM_CONTRACT.md.
     async def complete(self, request, **kwargs):
         service = self._runtime.service
         step_started = time.perf_counter()
-        candidate = await service.choose(request, self._tools)
+        # Per-step decision point (step_actions.py, opt-in): classify this
+        # step from deterministic features of the request; at a predictable
+        # read/status step, offer the judge prepared read-only candidates.
+        step = self._step_classify(service, request) if service.policy.step_actions else None
+        if step is not None and step.get("poll") is not None:
+            response = await self._submit_poll_repeat(service, step, step_started)
+            if response is not None:
+                return response
+        if step is not None and step["offer"]:
+            candidate = await service.choose(request, self._tools, extra_candidates=step["candidates"],
+                                             force=True, workspace_paths=False,
+                                             state_instruction=step_actions.STEP_INSTRUCTION)
+            await self._step_after_choose(service, step, candidate)
+        else:
+            candidate = await service.choose(request, self._tools)
         turn = service.turn
         assert turn is not None
         if candidate:
@@ -997,7 +1108,18 @@ docs/UPSTREAM_CONTRACT.md.
                     "arguments_hash": digest(candidate.arguments), "claimed": False,
                 }
                 self._synthetic_responses[id(response)] = response
-                await self._receipt_prepared_action(service, turn, candidate.tool, time.perf_counter() - step_started)
+                if step is not None:
+                    # Priced once the next model call shows what was skipped.
+                    mechanism = f"{service.backend.name}:next_action"
+                    self._pending_prepared.append({
+                        "tool": candidate.tool, "arguments": dict(candidate.arguments),
+                        "tool_call_id": tool_call_id, "mechanism": mechanism,
+                        "decision_s": time.perf_counter() - step_started})
+                    await self._emit_step(service, step, "prepared", mechanism,
+                                          {"candidate_origin": candidate.origin})
+                else:
+                    await self._receipt_prepared_action(service, turn, candidate.tool,
+                                                        time.perf_counter() - step_started)
                 return response
         turn.fast_streak = 0
         service.slow_total += 1
@@ -1109,7 +1231,11 @@ docs/UPSTREAM_CONTRACT.md.
             if phase == effort.PHASE_EXPLORE:
                 turn.explore_requests = explore_requests
             by_tier = effort_routing.get("by_tier")
-            if (by_tier is not None and turn.start_tier in by_tier and by_tier[turn.start_tier] != "phase"
+            if turn.tier_effort is not None and not host_pinned and not turn.escalated:
+                # Routing levers: the chosen tier's own effort, for the whole turn.
+                applied_effort = turn.tier_effort
+                reason_code = f"tier_{turn.tier_label}"
+            elif (by_tier is not None and turn.start_tier in by_tier and by_tier[turn.start_tier] != "phase"
                     and not host_pinned):
                 applied_effort = by_tier[turn.start_tier]
                 reason_code = f"tier_{turn.start_tier}"
@@ -1257,9 +1383,17 @@ docs/UPSTREAM_CONTRACT.md.
                 reason_code = f"escalated_{turn.escalation_reason}"
             elif strong_turn:
                 reason_code = "start_strong"
+                if (turn.tier_effort is not None and not effort_applied_this_request
+                        and field_value(request, "reasoning_effort", None) is None):
+                    # strong_effort lever with no effort_routing configured.
+                    requested_effort = turn.tier_effort
+                    if isinstance(request, dict):
+                        request["reasoning_effort"] = requested_effort
+                    else:
+                        setattr(request, "reasoning_effort", requested_effort)
             elif provider_match and not self._provider_matches(provider_match):
                 reason_code = "provider_not_matched"
-            elif not self._start_model_is_cheaper(start_model):
+            elif not self._start_model_is_cheaper(turn.tier_model or start_model):
                 # e.g. a Haiku-hosted helper session: "routing down" to Sonnet
                 # would cost more and run slower, so keep the host.
                 reason_code = "host_already_cheaper"
@@ -1268,6 +1402,9 @@ docs/UPSTREAM_CONTRACT.md.
                 if explicit_model and not override_explicit:
                     reason_code = "host_pinned"
                 else:
+                    start_model = turn.tier_model or start_model
+                    if turn.tier_effort is not None:
+                        start_effort = turn.tier_effort
                     # Turn planner (model_routing.planner, opt-in): decides
                     # ONCE per turn, at this exact decision point -- easy,
                     # unescalated, provider-matched, unpinned -- the same
@@ -1383,6 +1520,46 @@ docs/UPSTREAM_CONTRACT.md.
                         "hidden_tools": hidden_tools,
                         "provider_call_id": provider_call_id, "mode": service.policy.mode,
                     }, decision_id)
+        # Per-step action (b): a routine read-only continuation on a cheaper
+        # model for THIS step only, when the price/cache math says so.
+        cheap = None
+        if step is not None:
+            cheap = await self._step_cheaper_model(service, turn, step, call_request, kwargs, efficiency_routed_model)
+            if cheap is not None and cheap.get("model"):
+                model = cheap["model"]
+            await self._emit_step(service, step, "cheaper_model" if cheap and cheap.get("model") else "full",
+                                  (cheap or {}).get("mechanism") or f"rule:{step['kind']}", cheap)
+        step_model = cheap.get("model") if cheap else None
+        if step_model:
+            try:
+                response, seconds = await self._call_provider(service, turn, call_request, kwargs, model,
+                                                              provider_call_id, decision_id, model_routing)
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                response, discard = None, "error"
+            else:
+                discard = self._cheap_step_discard_reason(step, response)
+            if discard is not None:
+                if response is not None:
+                    await self._receipt_discarded_cheap(service, response, seconds, step_model,
+                                                        cheap["mechanism"], discard, decision_id)
+                self._restore_host_model(call_request, kwargs, cheap)
+                step_model, model = None, cheap.get("original_label") or "provider-default"
+                provider_call_id = "provider_" + uuid4().hex
+        if not step_model:
+            response, seconds = await self._call_provider(service, turn, call_request, kwargs, model,
+                                                          provider_call_id, decision_id, model_routing)
+        await self._receipt_model_call(service, turn, response, efficiency_routed_model or step_model,
+                                       seconds, decision_id,
+                                       mechanism=cheap.get("mechanism") if step_model else None,
+                                       judge_seconds=cheap.get("judge_seconds", 0.0) if step_model else None,
+                                       step=step)
+        return response
+
+    async def _call_provider(self, service: Any, turn: Any, request: Any, kwargs: dict, model: Any,
+                             provider_call_id: str, decision_id: Any, model_routing: Any) -> tuple[Any, float]:
+        """One provider call with its slow_start/slow_end receipts."""
         await service.emit("slow_start", {"provider": self._provider_key, "model": model,
             "provider_call_id": provider_call_id,
             "route": "slow", "destination": self._provider_key, "status": "running",
@@ -1395,7 +1572,7 @@ docs/UPSTREAM_CONTRACT.md.
         mono_start = time.monotonic()
         try:
             # Preserve the actual request, model override, kwargs, and response identity.
-            response = await self._provider.complete(call_request, **kwargs)
+            response = await self._provider.complete(request, **kwargs)
         except asyncio.CancelledError:
             await service.emit("slow_end", {"provider": self._provider_key, "model": model, **self._host_model_field(),
                 "provider_call_id": provider_call_id,
@@ -1452,20 +1629,39 @@ docs/UPSTREAM_CONTRACT.md.
                 entry["cached_tokens"] = total_prompt
                 self._runtime.planner_last_ctx = total_prompt
                 self._runtime.persist_planner_state()
+        seconds = time.perf_counter() - start
         await service.emit("slow_end", {"provider": self._provider_key, "model": model, **self._host_model_field(),
             "provider_call_id": provider_call_id,
-            "status": "ok", "duration_ms": (time.perf_counter() - start) * 1000,
-            **usage, **step_fields(response), "latency_kind": "provider_complete_wall_time",
+            "status": "ok", "duration_ms": seconds * 1000,
+            **self._served_fields(response, request, kwargs), **step_fields(response),
+            "latency_kind": "provider_complete_wall_time",
             "transport_measured": "provider-complete"}, decision_id)
-        await self._receipt_model_call(service, turn, response, efficiency_routed_model,
-                                       time.perf_counter() - start, decision_id)
         if self._levers is not None:
-            await self._levers.after_call(self._provider, request, kwargs, usage_fields(response), mono_start,
-                                          time.perf_counter() - start, provider_key=self._provider_key)
-        return response
+            await self._levers.after_call(self._provider, request, kwargs, usage, mono_start,
+                                          seconds, provider_key=self._provider_key)
+        return response, seconds
+
+    def _session(self, service: Any) -> dict:
+        """Session-scoped state. A facade is built per turn, but cache state,
+        judge statistics and the previous turn's tier outlive the turn, so
+        they live on the (per-session) DecisionService."""
+        store = getattr(service, "_fd_session_state", None)
+        if not isinstance(store, dict):
+            store = {}
+            try:
+                service._fd_session_state = store
+            except Exception:  # noqa: BLE001
+                store = self.__dict__.setdefault("_local_session_state", {})
+        return store
+
+    def _step_state(self, service: Any) -> dict:
+        return self._session(service).setdefault("step:" + str(self._provider_key), {
+            "cache": {}, "asked": 0, "accepted": 0, "judge_s": [], "host_s": [], "tool_step_out": [],
+            "last_prompt": None, "host_last": None, "cheap_since_host": 0, "host_last_before_cheap": None})
 
     def _eff_context(self, service: Any) -> dict:
-        st = self._eff
+        st = self._session(service).setdefault("eff:" + str(self._provider_key), self._eff)
+        self._eff = st
         if st["project"] is None:
             st["project"], st["traffic"] = project_and_traffic(service)
         return st
@@ -1479,25 +1675,42 @@ docs/UPSTREAM_CONTRACT.md.
             st["cur_tier"], st["cur_mech"] = turn.start_tier, turn.start_mechanism
 
     async def _receipt_model_call(self, service: Any, turn: Any, response: Any, routed_model: Any,
-                                  seconds: float, decision_id: Any) -> None:
-        """Efficiency receipts for one completed model call. Never raises."""
+                                  seconds: float, decision_id: Any, *, mechanism: str | None = None,
+                                  judge_seconds: float | None = None, step: dict | None = None) -> None:
+        """Efficiency receipts for one completed model call. Never raises.
+
+        ``mechanism``/``judge_seconds`` override the turn-start router's
+        attribution for a per-step cheaper-model call."""
         try:
             st = self._eff_context(service)
             self._eff_turn(st, turn)
             usage = usage_fields(response)
             host = getattr(self._provider, "default_model", None)
             host = host if isinstance(host, str) else None
-            mech = (turn.start_mechanism if turn is not None else None) or "router"
-            judge_s = float(getattr(turn, "judge_seconds", 0.0) or 0.0)
+            per_step = mechanism is not None
+            mech = mechanism or (turn.start_mechanism if turn is not None else None) or "router"
+            judge_s = float((judge_seconds or 0.0) if per_step else (getattr(turn, "judge_seconds", 0.0) or 0.0))
             common = {"project": st["project"], "traffic": st["traffic"]}
+            sst = self._step_state(service)
+            now = time.monotonic()
             receipts = []
             if isinstance(routed_model, str):
-                warm = st["host_last"] is not None and time.monotonic() - st["host_last"] < 300
-                receipts.append(efficiency.cheaper_model_step(
-                    usage=usage, seconds=seconds, served_model=routed_model, host_model=host,
-                    host_cache_warm=warm, mechanism=mech,
-                    judge_seconds=0.0 if st["judge_charged"] else judge_s, **common))
-                st["judge_charged"] = True
+                if per_step:
+                    last = sst["host_last"]
+                    warm = last is not None and now - last < 300
+                    receipts.append(efficiency.cheaper_model_step(
+                        usage=usage, seconds=seconds, served_model=routed_model, host_model=host,
+                        host_cache_warm=warm, mechanism=mech, judge_seconds=judge_s, **common))
+                    if sst["cheap_since_host"] == 0:
+                        sst["host_last_before_cheap"] = last
+                    sst["cheap_since_host"] += 1
+                else:
+                    warm = st["host_last"] is not None and now - st["host_last"] < 300
+                    receipts.append(efficiency.cheaper_model_step(
+                        usage=usage, seconds=seconds, served_model=routed_model, host_model=host,
+                        host_cache_warm=warm, mechanism=mech,
+                        judge_seconds=0.0 if st["judge_charged"] else judge_s, **common))
+                    st["judge_charged"] = True
             else:
                 if judge_s and not st["judge_charged"] and turn is not None and turn.start_tier == "strong":
                     receipts.append(efficiency.judge_overhead(mechanism=mech, judge_seconds=judge_s,
@@ -1508,16 +1721,298 @@ docs/UPSTREAM_CONTRACT.md.
                     receipts.append(efficiency.host_rebuild_after_cheap(
                         usage=usage, seconds=seconds, host_model=host,
                         mechanism=st["prev_mech"] or mech, **common))
+                elif (sst["cheap_since_host"] and sst["host_last_before_cheap"] is not None
+                        and now - sst["host_last_before_cheap"] >= step_actions.settings(
+                            service.policy.step_actions)["cache_ttl_s"]
+                        and (usage.get("cache_write_tokens") or 0) > 0):
+                    # Per-step cheap calls let the host's cache expire: the
+                    # rewrite is a loss the switch caused.
+                    receipts.append(efficiency.host_rebuild_after_cheap(
+                        usage=usage, seconds=seconds, host_model=host, mechanism="rule:routine_readonly",
+                        **common))
+                sst["cheap_since_host"] = 0
+                sst["host_last"] = now
                 st["host_calls_this_turn"] += 1
-                st["host_last"] = time.monotonic()
+                st["host_last"] = now
                 cost = usage.get("cost_usd")
                 if isinstance(cost, (int, float)) and not isinstance(cost, bool):
                     st["host_sum_usd"] += float(cost)
                     st["host_sum_s"] += seconds
                     st["host_n"] += 1
+                _push(sst["host_s"], seconds)
+                if step_fields(response).get("tool_calls") and isinstance(usage.get("output_tokens"), int):
+                    _push(sst["tool_step_out"], usage["output_tokens"])
+            # Per-model prompt-cache state for the per-step price math.
+            served = routed_model if isinstance(routed_model, str) else host
+            prompt = (usage.get("input_tokens") or 0) + (usage.get("cache_write_tokens") or 0)
+            if served and prompt:
+                sst["cache"][served] = {"prefix": prompt, "t": now}
+                sst["last_prompt"] = prompt + (usage.get("output_tokens") or 0)
+            if self._pending_prepared:
+                receipts.extend(self._prepared_receipts(service, turn, response, usage, seconds, host, common))
             for data in receipts:
                 await service.emit("efficiency", data, decision_id)
         except Exception:  # noqa: BLE001 -- receipts must never break the loop
+            return
+
+    def _prepared_receipts(self, service: Any, turn: Any, response: Any, usage: dict, seconds: float,
+                           host: str | None, common: dict) -> list[dict]:
+        """Receipts for the prepared actions submitted since the last model
+        call, now that this call shows what the skipped call would have cost."""
+        pending, self._pending_prepared = self._pending_prepared, []
+        cfg = step_actions.settings(service.policy.step_actions)
+        sst = self._step_state(service)
+        outs = sorted(sst["tool_step_out"])
+        o_skip = outs[len(outs) // 2] if len(outs) >= 3 else cfg["skipped_output_tokens"]
+        prompt = (usage.get("input_tokens") or 0) + (usage.get("cache_write_tokens") or 0)
+        out_now = usage.get("output_tokens") or 0
+        tps = efficiency.throughput(host) or 88.0
+        skipped_s = max(0.5, seconds - max(0, out_now - o_skip) / tps)
+        calls = step_actions.calls_of(response)
+        workspace = self._tools.get("fast_workspace")
+        decisions = getattr(turn, "tool_decisions", {}) or {}
+        sizes = [int(decisions.get(p["tool_call_id"], {}).get("result_chars") or 0) // 4 for p in pending]
+        receipts = []
+        for i, p in enumerate(pending):
+            after = sum(sizes[i:])
+            repeated = step_actions.repeats_prepared(p["arguments"], calls, workspace)
+            receipts.append(efficiency.prepared_step(
+                tool=p["tool"], decision_seconds=p["decision_s"], host_model=host,
+                skipped_prompt_tokens=max(0, prompt - after), skipped_output_tokens=o_skip,
+                skipped_seconds=round(skipped_s, 4), mechanism=p["mechanism"], repeated=repeated,
+                prepared_tokens=sizes[i], **common))
+        return receipts
+
+    # --- per-step decision point (step_actions.py) ---------------------------
+    def _step_classify(self, service: Any, request: Any) -> dict | None:
+        """Classify the upcoming step and, at a predictable read/status step,
+        build the prepared candidates and decide whether asking the judge is
+        worth its latency. Deterministic and cheap; never raises."""
+        try:
+            cfg = step_actions.settings(service.policy.step_actions)
+            view = step_actions.analyze(request)
+            kind, reason = step_actions.classify(view, cfg)
+            step = {"cfg": cfg, "view": view, "kind": kind, "reason": reason, "candidates": [],
+                    "offer": False, "expected_s": None, "judge_asked": False, "poll": None}
+            poll = step_actions.poll_repeat(view, cfg)
+            if poll is not None and service.policy.mode == "active" and poll[0] in self._tools \
+                    and poll[0] in tool_names(request) and automatic_tools(request):
+                step["poll"] = poll
+                return step
+            if (cfg["prepared"] and service.policy.mode == "active"
+                    and kind in (step_actions.TURN_START, step_actions.ROUTINE)):
+                workspace = self._tools.get("fast_workspace")
+                candidates = step_actions.candidates_for(view, kind, workspace)
+                sst = self._step_state(service)
+                if candidates:
+                    host = getattr(self._provider, "default_model", None)
+                    outs = sorted(sst["tool_step_out"])
+                    limit = step_actions.max_prepared_tokens(
+                        host if isinstance(host, str) else None,
+                        prompt_tokens=int((sst["last_prompt"] or cfg["prompt_tokens_prior"]) + view.result_chars / 3.5),
+                        output_tokens=outs[len(outs) // 2] if len(outs) >= 3 else cfg["skipped_output_tokens"],
+                        rates=DEFAULT_RATES)
+                    candidates = step_actions.affordable(candidates, workspace, limit)
+                if candidates:
+                    expected = step_actions.expected_prepared_saving_s(
+                        asked=sst["asked"], accepted=sst["accepted"], prior_accept=cfg["prior_accept"],
+                        host_call_s=_mean(sst["host_s"], cfg["host_call_seconds_prior"]),
+                        judge_s=_mean(sst["judge_s"], cfg["judge_seconds_prior"]))
+                    step.update(candidates=candidates, expected_s=round(expected, 4), offer=expected > 0)
+            return step
+        except Exception:  # noqa: BLE001 -- the step layer is optional
+            return None
+
+    async def _submit_poll_repeat(self, service: Any, step: dict, step_started: float) -> Any:
+        """Deterministic wait: re-issue the sleep-polling call without a model
+        call (rule, no judge). It still goes through the loop's normal tool
+        execution, so approvals and hooks apply. None when the fast-path
+        budget is spent or the envelope cannot be built."""
+        turn = service.turn
+        if turn is None or turn.fast_streak >= service.policy.max_fast_streak \
+                or turn.fast_total >= service.policy.max_fast_per_turn:
+            return None
+        name, args = step["poll"]
+        tool_call_id = "fd_" + uuid4().hex[:24]
+        try:
+            candidate = Candidate("poll_repeat", "Repeat the polling command", name, args,
+                                  rationale="Nothing changed since the last identical poll", origin="step_poll_repeat")
+            response = self._response_factory(candidate, tool_call_id)
+        except Exception:  # noqa: BLE001 -- the model runs the step
+            return None
+        turn.fast_streak += 1
+        turn.fast_total += 1
+        await service.emit("routed", {"mode": service.policy.mode, "backend": service.backend.name,
+            "policy_version": service.policy.version, "route": "fast", "destination": name,
+            "tool_call_id": tool_call_id, "selected_candidate": candidate.id,
+            "reason_code": "poll_repeat_rule", "status": "submitted_to_upstream",
+            "transport_measured": "provider-complete"})
+        turn.tool_decisions[tool_call_id] = {"decision_id": service.last_decision_id, "tool": name,
+                                             "arguments_hash": digest(args), "claimed": False}
+        self._synthetic_responses[id(response)] = response
+        self._pending_prepared.append({"tool": name, "arguments": dict(args), "tool_call_id": tool_call_id,
+                                       "mechanism": "rule:poll_repeat",
+                                       "decision_s": time.perf_counter() - step_started})
+        await self._emit_step(service, step, "prepared", "rule:poll_repeat", {"candidate_origin": candidate.origin})
+        return response
+
+    async def _step_after_choose(self, service: Any, step: dict, candidate: Any) -> None:
+        """Judge statistics for the expected-saving gate, and a receipt for a
+        judge call that did not produce a prepared action (pure overhead)."""
+        ms = getattr(service, "last_backend_ms", None)
+        if ms is None:
+            return
+        step["judge_asked"] = True
+        sst = self._step_state(service)
+        sst["asked"] += 1
+        _push(sst["judge_s"], ms / 1000)
+        if candidate:
+            sst["accepted"] += 1
+            return
+        try:
+            st = self._eff_context(service)
+            host = getattr(self._provider, "default_model", None)
+            await service.emit("efficiency", efficiency.judge_only(
+                lever="prepared_action", mechanism=f"{service.backend.name}:next_action",
+                decision="judge_declined_prepared", judge_seconds=ms / 1000,
+                host_model=host if isinstance(host, str) else None,
+                project=st["project"], traffic=st["traffic"]), service.last_decision_id)
+        except Exception:  # noqa: BLE001
+            return
+
+    async def _emit_step(self, service: Any, step: dict, action: str, mechanism: str,
+                         extra: dict | None = None) -> None:
+        extra = extra or {}
+        view = step["view"]
+        data = {
+            "step_class": step["kind"], "step_reason": step["reason"], "step_action": action,
+            "mechanism": mechanism, "step_index": view.step_index,
+            "tools": [n for n, _ in view.calls][:16], "candidate_count": len(step["candidates"]),
+            "expected_saving_s": step["expected_s"], "judge_asked": step["judge_asked"],
+            "mode": service.policy.mode,
+        }
+        for key in ("candidate_origin", "prompt_tokens_est", "cheap_model", "host_saving_usd", "cheap_cost_usd"):
+            if extra.get(key) is not None:
+                data[key] = extra[key]
+        if extra.get("reason"):
+            data["reason_code"] = extra["reason"]
+        await service.emit("step_decided", data, service.last_decision_id)
+
+    async def _step_cheaper_model(self, service: Any, turn: Any, step: dict, request: Any, kwargs: dict,
+                                  routed_model: Any) -> dict | None:
+        """Action (b): route THIS step to a cheaper model when the price- and
+        cache-aware math says it is cheaper. Applies the model to the request
+        and returns the decision (``model`` None keeps the host). Never
+        routes a step the turn router already moved, a pinned or user-picked
+        model, or anything but a read-only continuation."""
+        cfg = step["cfg"]
+        if not cfg["cheaper_model"] or step["kind"] not in (step_actions.ROUTINE, step_actions.AMBIGUOUS):
+            return None
+        decision: dict[str, Any] = {"model": None}
+        try:
+            host = getattr(self._provider, "default_model", None)
+            if isinstance(routed_model, str) or turn.start_tier == "cheap":
+                decision["reason"] = "turn_already_routed"
+                return decision
+            if field_value(request, "model", None) or kwargs.get("model"):
+                decision["reason"] = "model_pinned"
+                return decision
+            if self._user_selected_model(service):
+                decision["reason"] = "user_model"
+                return decision
+            if not isinstance(host, str):
+                decision["reason"] = "host_unknown"
+                return decision
+            sst = self._step_state(service)
+            now = time.monotonic()
+            base = sst["last_prompt"]
+            if not base:
+                decision["reason"] = "prompt_size_unknown"
+                return decision
+            prompt = int(base + step["view"].result_chars / 3.5)
+            outs = sorted(sst["tool_step_out"])
+            out = outs[len(outs) // 2] if len(outs) >= 3 else cfg["skipped_output_tokens"]
+            prefixes = {m: c["prefix"] for m, c in sst["cache"].items() if now - c["t"] < cfg["cache_ttl_s"]}
+            choice = step_actions.cheaper_step(
+                host=host, cheap_models=list(cfg["cheap_models"]), prompt_tokens=prompt, cache_prefix=prefixes,
+                output_tokens=out, windows=dict(cfg["context_windows"]), rates=DEFAULT_RATES,
+                amortize_steps=cfg["amortize_steps"])
+            decision.update(reason=choice["reason"], prompt_tokens_est=prompt,
+                            host_saving_usd=choice["host_saving_usd"], cheap_cost_usd=choice["cheap_cost_usd"],
+                            mechanism="rule:routine_readonly", judge_seconds=0.0)
+            if not choice["model"]:
+                return decision
+            if step["kind"] == step_actions.AMBIGUOUS:
+                if not cfg["judge_ambiguous"] or (choice["saving_usd"] or 0) < cfg["min_judge_saving_usd"]:
+                    decision["reason"] = "ambiguous_not_judged"
+                    return decision
+                view = step["view"]
+                state = {"task": view.prompt[:600], "last_tools": [n for n, _ in view.calls][:8],
+                         "last_result_excerpt": "\n".join(view.results)[-1500:]}
+                answer, probability, ms = await _ask_judge_choice(
+                    service, question_name=step_actions.NEXT_STEP_QUESTION,
+                    instructions=step_actions.NEXT_STEP_INSTRUCTIONS,
+                    criteria=dict(step_actions.NEXT_STEP_CRITERIA), state=state)
+                decision["judge_seconds"] = ms / 1000
+                step["judge_asked"] = True
+                decision["mechanism"] = f"{service.backend.name}:changes_code"
+                if answer != "read_only" or (probability or 0) < 0.8:
+                    decision["reason"] = "judge_kept_host"
+                    st = self._eff_context(service)
+                    await service.emit("efficiency", efficiency.judge_only(
+                        lever="cheaper_model", mechanism=decision["mechanism"], decision="judge_kept_host",
+                        judge_seconds=ms / 1000, host_model=host, project=st["project"],
+                        traffic=st["traffic"]), service.last_decision_id)
+                    return decision
+            decision["model"] = decision["cheap_model"] = choice["model"]
+            decision["original_label"] = field_value(request, "model", None) or "provider-default"
+            decision["original_request_model"] = field_value(request, "model", None)
+            if isinstance(request, dict):
+                request["model"] = choice["model"]
+            else:
+                setattr(request, "model", choice["model"])
+            kwargs["model"] = choice["model"]
+            return decision
+        except asyncio.CancelledError:
+            raise
+        except Exception:  # noqa: BLE001 -- on any doubt, the host runs the step
+            if decision.get("model"):
+                self._restore_host_model(request, kwargs, decision)
+            decision["model"] = None
+            decision["reason"] = "step_router_error"
+            return decision
+
+    def _cheap_step_discard_reason(self, step: dict, response: Any) -> str | None:
+        """Cheaper-model responses are read-only continuations only: an edit,
+        a mutating or test command, or (unless configured) a final answer is
+        discarded and the host runs the step."""
+        calls = step_actions.calls_of(response)
+        if not calls:
+            return None if step["cfg"]["cheap_may_answer"] else "final_answer"
+        return None if step_actions.response_readonly(calls) else "not_read_only"
+
+    @staticmethod
+    def _restore_host_model(request: Any, kwargs: dict, decision: dict) -> None:
+        kwargs.pop("model", None)
+        original = decision.get("original_request_model")
+        if isinstance(request, dict):
+            request["model"] = original
+        else:
+            try:
+                setattr(request, "model", original)
+            except Exception:  # noqa: BLE001
+                pass
+
+    async def _receipt_discarded_cheap(self, service: Any, response: Any, seconds: float, served: str,
+                                       mechanism: str, reason: str, decision_id: Any) -> None:
+        try:
+            st = self._eff_context(service)
+            host = getattr(self._provider, "default_model", None)
+            await service.emit("efficiency", efficiency.discarded_cheap_step(
+                usage=usage_fields(response), seconds=seconds, served_model=served,
+                host_model=host if isinstance(host, str) else None, mechanism=mechanism, reason=reason,
+                project=st["project"], traffic=st["traffic"]), decision_id)
+        except Exception:  # noqa: BLE001
             return
 
     async def _receipt_prepared_action(self, service: Any, turn: Any, tool: Any, seconds: float) -> None:
@@ -1547,6 +2042,21 @@ docs/UPSTREAM_CONTRACT.md.
         if not host_rates or not start_rates:
             return True
         return start_rates[0] < host_rates[0] and start_rates[1] < host_rates[1]
+    def _served_fields(self, response: Any, request: Any, kwargs: dict) -> dict:
+        """usage_fields plus a served_model on EVERY ok receipt: the model the
+        response names (served_model_source "response"), else the model this
+        call was actually sent with -- the kwargs/request override or the
+        provider's default (source "requested"), so benchmarks can store the
+        serving model per request even when a provider omits it."""
+        fields = usage_fields(response)
+        if "served_model" in fields:
+            fields["served_model_source"] = "response"
+            return fields
+        sent = kwargs.get("model") or field_value(request, "model") or getattr(self._provider, "default_model", None)
+        if isinstance(sent, str) and sent:
+            fields["served_model"] = sent[:80]
+            fields["served_model_source"] = "requested"
+        return fields
 
     def _host_model_field(self) -> dict:
         """The wrapped provider's configured default model -- the model a
@@ -1708,6 +2218,10 @@ class ObservedTool:
             raise
         else:
             success = field_value(result, "success", None)
+            if turn and tool_call_id in turn.tool_decisions:
+                # A prepared action's result size: the per-step receipt
+                # subtracts it from the next call's prompt.
+                turn.tool_decisions[tool_call_id]["result_chars"] = _result_chars(result)
             if (
                 turn
                 and success is not False
