@@ -115,9 +115,14 @@ class ScenarioTurnSequencingTests(unittest.TestCase):
         def fake_sleep(seconds):
             sleeps.append(seconds)
 
+        # Patch only the harness clock. Mutating time.sleep globally also
+        # captures subprocess.wait polling/backoff and makes the gap assertion
+        # depend on process scheduling (especially on loaded CI workers).
+        harness_clock = SimpleNamespace(**vars(forge_e2e.time))
+        harness_clock.sleep = fake_sleep
         with patch("forge_e2e.Path.home", return_value=fake_home), \
              patch.object(forge_e2e.subprocess, "Popen", fake_popen), \
-             patch.object(forge_e2e.time, "sleep", fake_sleep), \
+             patch.object(forge_e2e, "time", harness_clock), \
              patch.object(forge_e2e.urllib.request, "urlopen") as fake_urlopen, \
              patch.object(forge_e2e, "extract_receipts", lambda *a, **k: None), \
              patch.object(forge_e2e, "_unregister_benchmark_bundle", lambda *a, **k: None):
