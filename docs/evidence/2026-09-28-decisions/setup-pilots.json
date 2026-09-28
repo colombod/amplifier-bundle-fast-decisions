@@ -1,0 +1,166 @@
+{
+  "runs": [
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "answer_audit_log_key-jev-1",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 848.2126250000874,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "answer_audit_log_key-jev-2",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 844.5707499995478,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "answer_audit_log_key-laya-1",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 945.9990420000395,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "answer_audit_log_key-laya-2",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 929.9179169993295,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "answer_audit_log_key-plain-1",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 1160.7920000005834,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "answer_audit_log_key-plain-2",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 881.7902499995398,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "repair_parse_duration-jev-1",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 837.0367919997079,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "repair_parse_duration-jev-2",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 878.3804579998105,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "repair_parse_duration-laya-1",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 836.3850000005186,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "repair_parse_duration-laya-2",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 840.8720839997841,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "repair_parse_duration-plain-1",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 885.8013749995735,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v2",
+      "run": "repair_parse_duration-plain-2",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 876.6270000014629,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v3",
+      "run": "answer_audit_log_key-plain-1",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 25541.521291999743,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v4",
+      "run": "answer_audit_log_key-plain-1",
+      "session_id": "2576aa5d-46a6-415a-99a3-3b953061e0d4",
+      "passed": false,
+      "infrastructure_failure": false,
+      "wall_time_ms": 24176.94333399959,
+      "provider_calls": 4,
+      "provider_cost_usd": 0.0588405
+    },
+    {
+      "study": "alternatives-20260928-v5",
+      "run": "answer_audit_log_key-jev-1",
+      "session_id": null,
+      "passed": false,
+      "infrastructure_failure": true,
+      "wall_time_ms": 1422.5575419986853,
+      "provider_calls": null,
+      "provider_cost_usd": null
+    },
+    {
+      "study": "alternatives-20260928-v5",
+      "run": "answer_audit_log_key-plain-1",
+      "session_id": "6e5269cb-04cf-4659-8a86-88e211a16b02",
+      "passed": false,
+      "infrastructure_failure": false,
+      "wall_time_ms": 27263.948041998447,
+      "provider_calls": 5,
+      "provider_cost_usd": 0.063477
+    }
+  ],
+  "known_provider_cost_usd": 0.1223175,
+  "limits": "Setup pilots are outside paired means. Missing logging means unknown usage, not zero. Includes known recorded cost only."
+}

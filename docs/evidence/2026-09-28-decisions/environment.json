@@ -1,0 +1,68 @@
+{
+  "alternatives-20260928-v6": {
+    "created_at": "2026-09-28T04:10:06.897385+00:00",
+    "python": "3.12.11",
+    "hardware": "macOS-26.7-arm64-arm-64bit",
+    "packages": {
+      "amplifier-app-cli": "0.1.1",
+      "amplifier-core": "2.0.1",
+      "amplifier-foundation": "1.0.0",
+      "amplifier-module-loop-streaming": "1.0.0"
+    },
+    "provider": "anthropic",
+    "model": "claude-sonnet-5",
+    "provider_revision": "unknown",
+    "limits": {
+      "timeout_seconds": 180,
+      "max_iterations": 16,
+      "extended_thinking": false
+    },
+    "evaluator_sha256": "f5111afe10286634edde75a3539425ed0ea7206c5c11aebe33003c974fcf08a2",
+    "upstream_loop_source": "git+https://github.com/microsoft/amplifier-module-loop-streaming@4cc86dd4eae36b40af38b4e2e70b9045649d2903",
+    "runtime_source_hash": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2"
+  },
+  "retrieval-20260928": {
+    "created_at": "2026-09-28T04:21:00.750827+00:00",
+    "python": "3.12.11",
+    "hardware": "macOS-26.7-arm64-arm-64bit",
+    "packages": {
+      "amplifier-app-cli": "0.1.1",
+      "amplifier-core": "2.0.1",
+      "amplifier-foundation": "1.0.0",
+      "amplifier-module-loop-streaming": "1.0.0"
+    },
+    "provider": "anthropic",
+    "model": "claude-sonnet-5",
+    "provider_revision": "unknown",
+    "limits": {
+      "timeout_seconds": 180,
+      "max_iterations": 16,
+      "extended_thinking": false
+    },
+    "evaluator_sha256": "f5111afe10286634edde75a3539425ed0ea7206c5c11aebe33003c974fcf08a2",
+    "upstream_loop_source": "git+https://github.com/microsoft/amplifier-module-loop-streaming@4cc86dd4eae36b40af38b4e2e70b9045649d2903",
+    "runtime_source_hash": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2"
+  },
+  "laya-serialized-20260928": {
+    "created_at": "2026-09-28T04:24:47.901368+00:00",
+    "python": "3.12.11",
+    "hardware": "macOS-26.7-arm64-arm-64bit",
+    "packages": {
+      "amplifier-app-cli": "0.1.1",
+      "amplifier-core": "2.0.1",
+      "amplifier-foundation": "1.0.0",
+      "amplifier-module-loop-streaming": "1.0.0"
+    },
+    "provider": "anthropic",
+    "model": "claude-sonnet-5",
+    "provider_revision": "unknown",
+    "limits": {
+      "timeout_seconds": 180,
+      "max_iterations": 16,
+      "extended_thinking": false
+    },
+    "evaluator_sha256": "f5111afe10286634edde75a3539425ed0ea7206c5c11aebe33003c974fcf08a2",
+    "upstream_loop_source": "git+https://github.com/microsoft/amplifier-module-loop-streaming@4cc86dd4eae36b40af38b4e2e70b9045649d2903",
+    "runtime_source_hash": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840"
+  }
+}

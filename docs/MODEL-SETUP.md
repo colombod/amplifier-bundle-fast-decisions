@@ -463,3 +463,28 @@ implemented by installing a discovery skill.
 
 - Ollama's `qwen3:4b` tag is the thinking-only Qwen3-4B-Thinking build (its template always opens `<think>`); it returns no usable option letter on about 1 in 5 prompts. Use `qwen3:8b` or an instruct build instead.
 - The Ollama judge asks with `/api/generate` (no prefill) first and falls back to a chat `Answer:` prefill only when the plain reply is not an option letter.
+
+
+### Tested upstream Laya checkpoint (September 28)
+
+The native Laya backend now accepts batched choice/noul questions, including
+routing questions, as well as prepared read/list candidates. Run the local
+server from an environment containing the upstream `laya` SDK and this package:
+
+```sh
+python -m amplifier_fast_decisions.laya_server --model /absolute/path/to/checkpoint --port 8090
+```
+
+The upstream SDK chooses MPS on Apple Silicon when available. Use the pinned
+checkpoint already downloaded to `~/models/laya/checkpoint` for the recorded
+experiment. It was tested with `laya==0.3.21`, checkpoint revision
+`55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851`. Do not substitute newer weights while
+comparing the recorded results. No external key is needed for loopback Laya.
+The HTTP server serializes predictions against its shared model; simultaneous
+GPU predictions previously aborted the process during the live experiment.
+
+Laya remains opt-in. The [decision and task comparison](evidence/2026-09-28-decisions/REPORT.md)
+records both latency and incorrect decisions; faster scoring alone is not a
+reason to replace the default Jev judge. The standalone advisory smart tool's
+`select` command still exposes local Ollama and Jev; this Laya integration is
+for the Amplifier backend selected by `backend: laya`.

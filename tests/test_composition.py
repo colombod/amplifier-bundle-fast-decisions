@@ -128,6 +128,13 @@ class OrchestratorPrimaryBehaviorOfflineTests(unittest.TestCase):
 class YamlSourceTests(unittest.TestCase):
     """Always-on checks against the raw YAML; no amplifier_foundation needed."""
 
+    def test_default_behavior_includes_enabled_jevgrep(self):
+        behavior = _load_frontmatter(ROOT / 'behaviors/fast-decisions.yaml')
+        self.assertIn({'bundle': 'fast-decisions:behaviors/jevgrep'}, behavior['includes'])
+        retrieval = _load_frontmatter(ROOT / 'behaviors/jevgrep.yaml')
+        tool = next(t for t in retrieval['tools'] if t['module'] == 'tool-jevgrep')
+        self.assertTrue(tool['config']['allow_external_state'])
+
     def test_module_sources_use_supported_form_and_resolve(self):
         checked_any = False
         for path in COMPOSITION_FILES:
@@ -307,6 +314,9 @@ class BundleLoadTests(unittest.TestCase):
         tool_modules = {t["module"] for t in mount_plan.get("tools", [])}
         hook_modules = {h["module"] for h in mount_plan.get("hooks", [])}
         self.assertIn("tool-fast-workspace", tool_modules)
+        self.assertIn("tool-jevgrep", tool_modules)
+        retrieval = next(t for t in mount_plan["tools"] if t["module"] == "tool-jevgrep")
+        self.assertTrue(retrieval["config"]["allow_external_state"])
         self.assertIn("hooks-fast-decisions", hook_modules)
 
     def _assert_decision_bundle(

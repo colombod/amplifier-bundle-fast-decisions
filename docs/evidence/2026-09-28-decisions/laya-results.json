@@ -1,0 +1,342 @@
+{
+  "schema": "decision-alternatives-v1",
+  "model": "claude-sonnet-5",
+  "source_hash": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840",
+  "rows": [
+    {
+      "name": "answer_audit_log_key-plain-1",
+      "task": "answer_audit_log_key",
+      "arm": "plain",
+      "passed": true,
+      "checks": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 30.606414207999478,
+      "provider_calls": 6,
+      "tool_calls": 10,
+      "tool_names": {
+        "read_file": 9,
+        "bash": 1
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 0,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.0773127,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": 0.0773127,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "76757fd5-1ef8-4b4f-a8ca-00821af212f1",
+      "source_hash": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840",
+      "fallbacks": {},
+      "prompt_sha256": "c047226e6c4d5d6391b99abf8f6311249b6ea4e765648da7ddf17140c74b3416",
+      "workspace_hash": "0c46e89c20c3a1f30c3c2185c3daa65d7597e9a238c732bf9c413018b1e8e0ba",
+      "profile_sha256": "d83f7bed9261bc86fcb54705c34773a1cff00a4ab8ebbd9afdadbf971824b74f"
+    },
+    {
+      "name": "answer_audit_log_key-laya-1",
+      "task": "answer_audit_log_key",
+      "arm": "laya",
+      "passed": true,
+      "checks": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 25.817095582999173,
+      "provider_calls": 5,
+      "tool_calls": 10,
+      "tool_names": {
+        "bash": 2,
+        "read_file": 8
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 1,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.06763005,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": 0.06763005,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "7b2ce9d9-21ca-4b0a-9c43-e727700c9854",
+      "source_hash": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840",
+      "fallbacks": {
+        "selection_threshold": 1,
+        "read_shortcut_disabled": 4,
+        "hook_cannot_own_active": 1
+      },
+      "prompt_sha256": "c047226e6c4d5d6391b99abf8f6311249b6ea4e765648da7ddf17140c74b3416",
+      "workspace_hash": "0c46e89c20c3a1f30c3c2185c3daa65d7597e9a238c732bf9c413018b1e8e0ba",
+      "profile_sha256": "042bec71730ae34c7a9731f830bfbebda40fe5d89d25518e844ef133c68d9921"
+    },
+    {
+      "name": "answer_audit_log_key-laya-2",
+      "task": "answer_audit_log_key",
+      "arm": "laya",
+      "passed": true,
+      "checks": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 26.25659687500047,
+      "provider_calls": 5,
+      "tool_calls": 9,
+      "tool_names": {
+        "bash": 1,
+        "read_file": 8
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 1,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.0710391,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": 0.0710391,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "64258fff-5980-4d84-9f43-48996e46db1a",
+      "source_hash": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840",
+      "fallbacks": {
+        "hook_cannot_own_active": 1,
+        "read_shortcut_disabled": 4,
+        "selection_threshold": 1
+      },
+      "prompt_sha256": "c047226e6c4d5d6391b99abf8f6311249b6ea4e765648da7ddf17140c74b3416",
+      "workspace_hash": "0c46e89c20c3a1f30c3c2185c3daa65d7597e9a238c732bf9c413018b1e8e0ba",
+      "profile_sha256": "7cfba491c67ff5956b46c068604519c5541ef132328dc649df16933a5183f77d"
+    },
+    {
+      "name": "answer_audit_log_key-plain-2",
+      "task": "answer_audit_log_key",
+      "arm": "plain",
+      "passed": true,
+      "checks": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 25.704909000000043,
+      "provider_calls": 5,
+      "tool_calls": 10,
+      "tool_names": {
+        "bash": 2,
+        "read_file": 8
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 0,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.06867615,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": 0.06867615,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "92be0772-cc36-4710-9f58-de75c7ffea01",
+      "source_hash": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840",
+      "fallbacks": {},
+      "prompt_sha256": "c047226e6c4d5d6391b99abf8f6311249b6ea4e765648da7ddf17140c74b3416",
+      "workspace_hash": "0c46e89c20c3a1f30c3c2185c3daa65d7597e9a238c732bf9c413018b1e8e0ba",
+      "profile_sha256": "ccceb70f5a39ad8b468331285abf45d84678233d18a40bb570733cd406abfe8f"
+    },
+    {
+      "name": "repair_parse_duration-plain-1",
+      "task": "repair_parse_duration",
+      "arm": "plain",
+      "passed": true,
+      "checks": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 57.11489187499865,
+      "provider_calls": 6,
+      "tool_calls": 7,
+      "tool_names": {
+        "bash": 3,
+        "read_file": 3,
+        "write_file": 1
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 0,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.1318908,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": 0.1318908,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "94869c38-7d0d-49fd-b4c3-4fd5cf7a16db",
+      "source_hash": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840",
+      "fallbacks": {},
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "profile_sha256": "c4b14e6e4cd7f41eaa27f85171b7d1d4f2eb558e09532d1445cb16f7eff1dd40"
+    },
+    {
+      "name": "repair_parse_duration-laya-1",
+      "task": "repair_parse_duration",
+      "arm": "laya",
+      "passed": true,
+      "checks": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 49.04033341600007,
+      "provider_calls": 6,
+      "tool_calls": 7,
+      "tool_names": {
+        "bash": 3,
+        "read_file": 3,
+        "write_file": 1
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 1,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.11249265,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": 0.11249265,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "1af8c7a0-9c06-4403-a0b2-6c629875beb8",
+      "source_hash": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840",
+      "fallbacks": {
+        "read_shortcut_disabled": 5,
+        "selection_threshold": 1,
+        "hook_cannot_own_active": 1
+      },
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "profile_sha256": "43407f235d3f7ce6d95fd8fc69d693f4caa7cb22dc8266ff3196b1eb51b7f3f3"
+    },
+    {
+      "name": "repair_parse_duration-laya-2",
+      "task": "repair_parse_duration",
+      "arm": "laya",
+      "passed": true,
+      "checks": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 55.409171332999904,
+      "provider_calls": 7,
+      "tool_calls": 7,
+      "tool_names": {
+        "read_file": 4,
+        "write_file": 1,
+        "bash": 2
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 1,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.12170205,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": 0.12170205,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "0c18da1b-ce47-4e4f-95b3-92e6d5d92bd4",
+      "source_hash": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840",
+      "fallbacks": {
+        "read_shortcut_disabled": 6,
+        "selection_threshold": 1,
+        "hook_cannot_own_active": 1
+      },
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "profile_sha256": "4441af389113cdc531956ac07a02a5948e464bbd6a3bc8cf8c31a437c019b86c"
+    },
+    {
+      "name": "repair_parse_duration-plain-2",
+      "task": "repair_parse_duration",
+      "arm": "plain",
+      "passed": true,
+      "checks": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "wall_seconds": 78.7903980839983,
+      "provider_calls": 6,
+      "tool_calls": 7,
+      "tool_names": {
+        "bash": 3,
+        "read_file": 3,
+        "write_file": 1
+      },
+      "calls_bypassed": 0,
+      "judge_scored": 0,
+      "judge_failures": 0,
+      "provider_cost_usd": 0.1695333,
+      "judge_cost_usd": 0,
+      "total_estimated_cost_usd": 0.1695333,
+      "source_match": true,
+      "mode_match": true,
+      "session_id": "2f104b86-d61b-4f9d-9874-9a379fe6993d",
+      "source_hash": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840",
+      "fallbacks": {},
+      "prompt_sha256": "682c8a53ffdb7796bca8d191b087478a3bf74c501cf39dbade22e3515287dfca",
+      "workspace_hash": "4140625d410076071f4317880d4d165fb77dd04fa519ac1dcf5b5407c0548a2f",
+      "profile_sha256": "30db1e62efee5d6f2193bd51970b90a036e937209cf36f94a12861e50dcd08d8"
+    }
+  ],
+  "summary": [
+    {
+      "task": "answer_audit_log_key",
+      "arm": "plain",
+      "passed": 2,
+      "runs": 2,
+      "mean_seconds": 28.15566160399976,
+      "mean_provider_calls": 5.5,
+      "mean_provider_cost_usd": 0.072994425,
+      "mean_total_estimated_cost_usd": 0.072994425,
+      "calls_bypassed": 0
+    },
+    {
+      "task": "answer_audit_log_key",
+      "arm": "laya",
+      "passed": 2,
+      "runs": 2,
+      "mean_seconds": 26.03684622899982,
+      "mean_provider_calls": 5,
+      "mean_provider_cost_usd": 0.069334575,
+      "mean_total_estimated_cost_usd": 0.069334575,
+      "calls_bypassed": 0
+    },
+    {
+      "task": "repair_parse_duration",
+      "arm": "plain",
+      "passed": 2,
+      "runs": 2,
+      "mean_seconds": 67.95264497949847,
+      "mean_provider_calls": 6,
+      "mean_provider_cost_usd": 0.15071205,
+      "mean_total_estimated_cost_usd": 0.15071205,
+      "calls_bypassed": 0
+    },
+    {
+      "task": "repair_parse_duration",
+      "arm": "laya",
+      "passed": 2,
+      "runs": 2,
+      "mean_seconds": 52.224752374499985,
+      "mean_provider_calls": 6.5,
+      "mean_provider_cost_usd": 0.11709735,
+      "mean_total_estimated_cost_usd": 0.11709735,
+      "calls_bypassed": 0
+    }
+  ],
+  "limits": [
+    "2 repetitions per task/arm; illustrative public fixtures, not a general benchmark.",
+    "Jevgrep charges unavailable; retrieval total cost remains null.",
+    "Local model startup excluded; provider costs are estimates, not invoices."
+  ]
+}

@@ -20,6 +20,9 @@ bundle:
 # extended_thinking) are forwarded to the wrapped loop. Delegated sub-sessions
 # inherit the parent's orchestrator, so routing applies to them too. Want
 # measurement without the swap? Compose behaviors/fast-decisions-shadow.yaml.
+includes:
+  - bundle: fast-decisions:behaviors/jevgrep
+
 session:
   orchestrator:
     module: loop-fast-decisions

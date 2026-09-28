@@ -1,0 +1,55 @@
+{
+  "session_id": "b9233343-6aa6-45d0-bf14-d61f6438cc49",
+  "outcome_passed": true,
+  "source_match": true,
+  "mode_match": true,
+  "source_expected": {
+    "git_sha": "5a0b7be010872868053cc7ce00e96cce78dd9d8c",
+    "tree_sha256": "9642a616c2b9062703f19ba313410d53238ab44f1d437c9436994def4b864840"
+  },
+  "wall_time_ms": 21618.694666998636,
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "native": {
+    "provider_requests": 3,
+    "provider_responses": 3,
+    "provider_retries": 0,
+    "provider_errors": 0,
+    "tool_results": 5,
+    "tool_names": {
+      "read_file": 4,
+      "jevgrep": 1
+    },
+    "tool_failures_reported": 0,
+    "execution_completed": true,
+    "provider_response_duration_ms": 12977,
+    "usage": {
+      "input_tokens": 139521.0,
+      "output_tokens": 768.0,
+      "cache_read_tokens": null,
+      "cache_write_tokens": 71513.0,
+      "cost_usd": 0.32156625
+    },
+    "usage_known_calls": {
+      "input_tokens": 3,
+      "output_tokens": 3,
+      "cache_write_tokens": 3,
+      "cost_usd": 3,
+      "cache_read_tokens": 2
+    },
+    "cost_evidence": "provider_reported_estimate_not_billing"
+  },
+  "jevgrep_calls": [
+    {
+      "success": true,
+      "status": "complete",
+      "duration_ms": 1896.41,
+      "absolute_path_used": true
+    }
+  ],
+  "scope": "Default root bundle composed in native Amplifier via Forge; no explicit retrieval-tool override. Not a paired performance comparison."
+}

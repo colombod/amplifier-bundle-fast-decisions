@@ -1,0 +1,1257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Fast Decisions · Decision Observatory</title>
+<style>/* Decision Observatory — dark, high-contrast. Colour carries outcome, never identity alone:
+   every coloured chip also carries a label. */
+:root {
+  color-scheme: dark;
+  --plane: #101625;        /* page */
+  --surface: #172033;      /* panels */
+  --raised: #1c273c;       /* rows, cards */
+  --raised-2: #26334c;     /* hover */
+  --line: #303d54;         /* hairline */
+  --line-strong: #53627b;
+  --ink: #f3f5fb;
+  --ink-2: #c0cbdc;
+  --muted: #a4b2c8;
+  --accent: #80dfc5;       /* fast path / bundle */
+  --accent-ink: #0b1a13;
+  --info: #adaeff;         /* generative provider / reasoning */
+  --warn: #f0c681;         /* mismatch, abstain, scripted */
+  --bad: #ff9fba;          /* errors, retries */
+  --adv: #c9b8ff;          /* advisory smart tool */
+  --focus: #8ee9c5;
+  --sans: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --header-h: 58px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--plane); color: var(--ink); font: 13px/1.45 var(--sans); -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; }
+button { cursor: pointer; color: inherit; background: var(--raised); border: 1px solid var(--line-strong); border-radius: 6px; padding: 6px 10px; transition: background .12s, border-color .12s; }
+button:hover { background: var(--raised-2); }
+button:disabled { cursor: default; opacity: .5; }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+h1, h2, h3, h4, p { margin: 0; }
+h1 { font-size: 20px; font-weight: 650; letter-spacing: -.3px; line-height: 1.2; }
+h2 { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+h3 { font-size: 15px; font-weight: 650; }
+h4 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+input[type=search], input[type=password], select { min-width: 0; border: 1px solid var(--line-strong); background: var(--raised); color: var(--ink); border-radius: 6px; padding: 6px 9px; }
+input[type=checkbox] { accent-color: var(--accent); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+.skip { position: absolute; left: 10px; top: -80px; z-index: 10; background: var(--raised); padding: 12px; }
+.skip:focus { top: 10px; }
+.mono { font-family: var(--mono); font-size: 11px; }
+[hidden] { display: none !important; }
+
+/* ---------- header ---------- */
+.app-header { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid var(--line); background: var(--surface); gap: 16px; position: relative; z-index: 1; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand svg { color: var(--accent); }
+.brand strong { display: block; font-size: 17px; font-weight: 650; letter-spacing: -.5px; line-height: 1.2; }
+.brand span { display: block; font-size: 11px; color: var(--muted); }
+.header-actions { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.quiet { font-size: 12px; padding: 5px 9px; background: transparent; }
+.follow { font-size: 12px; padding: 5px 10px; color: var(--accent); border-color: rgba(52,211,153,.35); background: rgba(52,211,153,.08); }
+.follow[aria-pressed="false"] { color: var(--ink-2); border-color: var(--line-strong); background: transparent; }
+.connection { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; padding: 4px 9px 4px 7px; border: 1px solid var(--line-strong); border-radius: 999px; white-space: nowrap; }
+.connection::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.connection.connected::before { background: var(--accent); box-shadow: 0 0 0 3px rgba(52,211,153,.18); }
+.connection.problem { border-color: rgba(255,128,128,.45); }
+.connection.problem::before { background: var(--bad); }
+.connection.replay::before { background: var(--warn); }
+.freshness { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+.connection-notice { padding: 8px 18px; background: #3b2f1c; border-bottom: 1px solid #6b5326; color: #f3d48a; font-size: 12px; }
+.reconnect-panel { padding: 12px 18px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.reconnect-panel p { margin-bottom: 10px; max-width: 80ch; color: var(--ink-2); }
+.reconnect-panel form { display: flex; gap: 8px; align-items: center; max-width: 760px; }
+.reconnect-panel input { flex: 1; }
+
+/* ---------- layout ---------- */
+.app-layout { display: grid; grid-template-columns: 200px minmax(480px, 1fr) 300px; height: calc(100vh - var(--header-h)); }
+.sessions-panel, .activity-panel, .detail-panel { min-width: 0; overflow-y: auto; overscroll-behavior: contain; }
+.sessions-panel { padding: 16px 12px; border-right: 1px solid var(--line); background: var(--surface); }
+.activity-panel { padding: 24px 28px 28px; }
+.detail-panel { border-left: 1px solid var(--line); padding: 16px 18px; background: var(--surface); }
+
+/* ---------- sessions ---------- */
+.sessions-heading { display: flex; align-items: center; justify-content: space-between; margin: 0 4px 10px; }
+.count { font-size: 11px; font-family: var(--mono); background: var(--raised-2); border-radius: 4px; padding: 1px 6px; color: var(--ink-2); }
+.search { width: 100%; font-size: 12px; margin-bottom: 10px; }
+.all-sessions { width: 100%; display: flex; justify-content: space-between; align-items: center; background: transparent; border-color: transparent; font-weight: 600; font-size: 12px; margin-bottom: 4px; padding: 7px 10px; }
+.all-sessions.selected { color: var(--accent); background: rgba(52,211,153,.1); }
+.session-list { display: flex; flex-direction: column; gap: 2px; }
+.session-group { position: relative; }
+.session-row { width: 100%; text-align: left; background: transparent; border-color: transparent; padding: 8px 10px; border-radius: 6px; display: block; }
+.session-row:hover { background: var(--raised); }
+.session-row.selected { background: var(--raised); border-color: var(--line-strong); box-shadow: inset 2px 0 var(--accent); }
+.session-row.child { margin-left: 14px; width: calc(100% - 14px); border-left: 1px solid var(--line-strong); border-radius: 0 6px 6px 0; }
+.session-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.session-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.session-name.unnamed { font-family: var(--mono); font-weight: 500; }
+.session-age { font-size: 11px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.session-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; min-width: 0; }
+.session-id { font-family: var(--mono); font-size: 10.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-config { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.session-state { display: inline-flex; align-items: center; gap: 5px; margin-top: 5px; font-size: 11px; color: var(--ink-2); }
+.session-state::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex: none; }
+.session-state.working::before { background: var(--accent); animation: pulse 1.6s ease-in-out infinite; }
+.session-state.idle::before { background: var(--accent); }
+.session-state.issue { color: var(--bad); }
+.session-state.issue::before { background: var(--bad); }
+.session-state.closed, .session-state.stale { color: var(--muted); }
+.children-toggle { font-size: 11px; background: transparent; border: 0; color: var(--info); padding: 3px 10px 6px 24px; }
+.children-option { font-size: 11px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; margin: 14px 6px 0; }
+.sidebar-note { border-top: 1px solid var(--line); padding: 12px 6px 0; margin-top: 16px; font-size: 11px; color: var(--muted); line-height: 1.5; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,.55); } 60% { box-shadow: 0 0 0 5px rgba(52,211,153,0); } }
+
+/* ---------- workspace heading + KPIs ---------- */
+.workspace-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+.workspace-heading p { font-size: 12px; color: var(--muted); margin-top: 4px; max-width: 70ch; }
+.time-filter select { font-size: 12px; padding: 5px 8px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0; border-block: 1px solid var(--line); padding: 12px 0; }
+.kpi { border-right: 1px solid var(--line); padding: 2px 11px; min-width: 0; }
+.kpi:last-child { border-right: 0; }
+.kpi span { display: block; font-size: 10.5px; color: var(--muted); line-height: 1.25; min-height: 26px; }
+.kpi strong { display: block; font-size: 24px; font-weight: 500; line-height: 1.2; margin-top: 5px; letter-spacing: -.5px; }
+.kpi.accent strong { color: var(--accent); }
+.kpi.bad strong { color: var(--ink); }
+.kpi.bad.has-issues strong { color: var(--bad); }
+.kpi-note { font-size: 11px; color: var(--muted); line-height: 1.5; margin: 8px 2px 14px; }
+.study-panel { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+.study-heading { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.study-heading h2 { margin: 0; font-size: 14px; }
+.study-heading span, .study-panel p { color: var(--muted); font-size: 12px; }
+.study-panel progress { width: 100%; height: 6px; margin: 12px 0; accent-color: #65ddb4; }
+.study-panel summary { cursor: pointer; font-size: 12px; }
+.study-table-wrap { overflow-x: auto; }
+.study-panel table { width: 100%; text-align: left; font-size: 12px; border-collapse: collapse; margin-top: 10px; }
+.study-panel th, .study-panel td { padding: 7px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.impact-evidence { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin-top: 10px; }
+.impact-evidence > div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.impact-evidence span, .impact-evidence strong, .impact-evidence small { display: block; }
+.impact-evidence span, .impact-evidence small { color: var(--muted); font-size: 11px; line-height: 1.5; }
+.impact-evidence strong { font-size: 14px; margin: 3px 0; }
+
+/* ---------- toolbar ---------- */
+.feed-toolbar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); gap: 12px; margin-bottom: 12px; }
+.feed-tabs { display: flex; gap: 18px; }
+.feed-tabs button { border: 0; background: none; border-bottom: 2px solid transparent; border-radius: 0; padding: 8px 0 9px; font-size: 13px; color: var(--muted); margin-bottom: -1px; }
+.feed-tabs button:hover { color: var(--ink); }
+.feed-tabs button.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.synthetic-option { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+/* ---------- live: runtime strip ---------- */
+.runtime-strip { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.runtime-strip:empty { display: none; }
+.runtime-pulse { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; background: var(--surface); border-radius: 999px; padding: 4px 11px 4px 8px; border-color: var(--line); }
+.runtime-pulse strong { font-weight: 600; }
+.runtime-pulse span:last-child { color: var(--muted); }
+.live-dot { width: 7px; height: 7px; background: var(--muted); border-radius: 50%; flex-shrink: 0; }
+.runtime-pulse.working .live-dot { background: var(--accent); animation: pulse 1.6s ease-in-out infinite; }
+.runtime-pulse.idle .live-dot { background: var(--accent); }
+.runtime-pulse.issue .live-dot { background: var(--bad); }
+
+/* ---------- live: decision ledger ---------- */
+.ledger-heading, .flow-summary { display: grid; grid-template-columns: 58px 150px minmax(140px, 1.2fr) 22px minmax(140px, 1.2fr) 118px 62px; gap: 10px; align-items: center; }
+.ledger-heading { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; padding: 0 12px 6px; }
+.ledger-heading span:last-child { text-align: right; }
+.ledger { display: flex; flex-direction: column; gap: 6px; }
+.flow-card { background: var(--raised); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.flow-card.in-flight { border-color: rgba(52,211,153,.45); box-shadow: inset 3px 0 var(--accent); }
+.flow-card.selected-card { border-color: var(--line-strong); }
+.flow-card:not(.selected-card):not(.in-flight) .flow-stages,
+.flow-card:not(.selected-card):not(.in-flight) .flow-outcome { display: none; }
+.flow-card.selected-card { border-color: var(--accent); }
+.ledger-help { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+.flow-inspect { display: block; padding: 2px 0; margin-top: 4px; background: transparent; border: 0; color: var(--ink-2); font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.flow-inspect:hover, .flow-inspect[aria-pressed="true"] { color: var(--accent); background: transparent; }
+.measurement-notes { margin: 10px 0 18px; }
+.measurement-notes > summary { cursor: pointer; color: var(--muted); font-size: 11px; width: fit-content; }
+.measurement-notes[open] > summary { margin-bottom: 12px; }
+.flow-summary { padding: 9px 12px 8px; }
+.flow-summary > * { min-width: 0; }
+.flow-when { font-family: var(--mono); font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; line-height: 1.3; }
+.flow-when small { display: block; color: var(--muted); font-size: 10px; }
+.clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; line-height: 1.3; }
+.flow-session { border: 0; padding: 0; background: transparent; text-align: left; font-weight: 600; font-size: 12.5px; width: 100%; border-radius: 0; }
+.flow-session:hover { color: var(--accent); background: transparent; }
+.flow-session-wrap { min-width: 0; }
+.flow-session-wrap .tagline { display: flex; align-items: center; gap: 5px; margin-top: 3px; min-width: 0; }
+.flow-parent { color: var(--muted); font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.flow-cell strong { font-size: 12.5px; font-weight: 600; }
+.flow-cell strong.id { font-family: var(--mono); font-size: 12px; }
+.flow-cell span { display: block; font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.flow-card.native { opacity: .75; }
+.flow-card.native:hover { opacity: 1; }
+.flow-cell .prob { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+.prob-bar { height: 4px; flex: 1; max-width: 120px; background: var(--line-strong); border-radius: 2px; overflow: hidden; }
+.prob-bar i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+.flow-cell .prob b { font-size: 11px; font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.flow-arrow { color: var(--muted); text-align: center; font-size: 14px; }
+.flow-arrow.pending { color: var(--accent); animation: blink 1.2s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+.flow-latency { text-align: right; font-family: var(--mono); font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.flow-latency small { display: block; color: var(--muted); font-size: 10px; font-family: var(--sans); }
+
+/* verdict chips + tags share one vocabulary */
+.tag, .verdict { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--ink-2); background: transparent; white-space: nowrap; letter-spacing: .01em; }
+.verdict { font-size: 11px; padding: 3px 9px; }
+.verdict::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.tone-ok, .verdict.ok, .tag.ok { color: var(--accent); border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.1); }
+.tone-info, .verdict.info, .tag.info { color: var(--info); border-color: rgba(124,180,255,.4); background: rgba(124,180,255,.1); }
+.tone-warn, .verdict.warn, .tag.warn, .tag.synthetic { color: var(--warn); border-color: rgba(245,192,75,.4); background: rgba(245,192,75,.1); }
+.tone-bad, .verdict.bad, .tag.bad, .tag.error { color: var(--bad); border-color: rgba(255,128,128,.45); background: rgba(255,128,128,.1); }
+.tone-adv, .verdict.adv, .tag.adv { color: var(--adv); border-color: rgba(201,184,255,.4); background: rgba(201,184,255,.1); }
+.verdict.live { color: var(--accent); border-style: dashed; background: transparent; }
+.verdict.live::before { animation: pulse 1.6s ease-in-out infinite; }
+
+/* stage chain: compact connected pills */
+.flow-stages { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 0; padding: 0 12px 9px; }
+.flow-stage { flex: none; display: inline-flex; flex-direction: column; align-items: flex-start; gap: 1px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px; text-align: left; min-width: 0; max-width: 220px; position: relative; }
+.flow-stage + .flow-stage { margin-left: 16px; }
+.flow-stage + .flow-stage::before { content: '›'; position: absolute; left: -13px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; line-height: 1; }
+.flow-stage strong { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.flow-stage span { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.flow-stage .flow-duration { color: var(--ink-2); font-family: var(--mono); }
+.flow-stage:hover { background: var(--raised-2); }
+.flow-stage.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.flow-stage.decision { border-left: 3px solid var(--accent); }
+.flow-stage.error { border-left: 3px solid var(--bad); }
+.flow-stage.synthetic { border-left: 3px solid var(--warn); }
+.flow-stage.runtime { border-left: 3px solid var(--line-strong); }
+.flow-outcome { font-size: 11px; color: var(--muted); padding: 0 12px 9px; }
+.flow-status { font-size: 11px; color: var(--muted); margin-top: 10px; }
+.flow-empty { font-size: 13px; line-height: 1.7; color: var(--muted); padding: 28px 12px; border: 1px dashed var(--line-strong); border-radius: 8px; margin-top: 8px; }
+.arriving { animation: record-arrival 1.4s ease-out; }
+@keyframes record-arrival { from { box-shadow: inset 0 0 0 2px var(--accent); background: rgba(52,211,153,.18); } to { box-shadow: inset 0 0 0 0 transparent; } }
+.flow-card.arriving { animation: card-arrival 1.4s ease-out; }
+@keyframes card-arrival { from { border-color: var(--accent); background: rgba(52,211,153,.12); } to { background: var(--raised); } }
+
+/* ---------- event feed ---------- */
+.feed-heading { display: grid; grid-template-columns: 22px minmax(0, 1fr) 130px 120px 70px; gap: 10px; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; padding: 0 10px 6px; }
+.feed-heading span:last-child { text-align: right; }
+.feed { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--raised); }
+.event-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) 130px 120px 70px; gap: 10px; align-items: start; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 8px 10px; background: transparent; text-align: left; width: 100%; }
+.event-row:first-child { border-top: 0; }
+.event-row:hover { background: var(--raised-2); }
+.event-row.selected { background: rgba(52,211,153,.08); box-shadow: inset 3px 0 var(--accent); }
+.event-row:focus-visible { outline-offset: -2px; }
+.event-icon { width: 18px; height: 18px; margin-top: 1px; border-radius: 4px; background: var(--line-strong); color: var(--ink-2); font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.event-icon.decision { background: rgba(52,211,153,.18); color: var(--accent); }
+.event-icon.error { background: rgba(255,128,128,.18); color: var(--bad); }
+.event-icon.synthetic { background: rgba(245,192,75,.18); color: var(--warn); }
+.event-title { font-size: 12.5px; font-weight: 600; display: block; overflow-wrap: anywhere; }
+.event-description { display: block; font-size: 11.5px; color: var(--muted); margin-top: 1px; overflow-wrap: anywhere; }
+.event-source { font-size: 11px; color: var(--ink-2); padding-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.event-session { font-size: 11px; color: var(--muted); padding-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.event-time { text-align: right; font-size: 11px; color: var(--muted); padding-top: 2px; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.event-duration { display: block; color: var(--ink-2); margin-top: 2px; }
+.empty-state { text-align: center; padding: 48px 20px 60px; border: 1px dashed var(--line-strong); border-radius: 8px; }
+.empty-state h2 { font-size: 15px; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--ink); margin-bottom: 6px; }
+.empty-state p { font-size: 12px; color: var(--muted); max-width: 50ch; margin: auto; }
+.feed-footer { display: flex; justify-content: space-between; gap: 16px; padding-top: 10px; margin-top: 8px; font-size: 11px; color: var(--muted); }
+
+/* ---------- details ---------- */
+.detail-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.detail-empty p { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.6; }
+#detailTitle { font-size: 16px; font-weight: 650; letter-spacing: -.2px; line-height: 1.3; overflow-wrap: anywhere; }
+#detailDescription { font-size: 12px; color: var(--ink-2); margin: 6px 0 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.facts { margin: 0; border-top: 1px solid var(--line); }
+.facts > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; border-bottom: 1px solid var(--line); padding: 6px 0; }
+.facts dt { font-size: 11px; color: var(--muted); }
+.facts dd { font-size: 11.5px; margin: 0; overflow-wrap: anywhere; }
+.facts dd.mono { font-family: var(--mono); font-size: 11px; color: var(--ink-2); }
+.runtime-config { margin-top: 16px; }
+.runtime-config p { font-size: 11.5px; color: var(--ink-2); margin: 6px 0 0; line-height: 1.55; }
+#distribution { margin-top: 16px; }
+.score-meaning { font-size: 11px; color: var(--muted); margin: 5px 0 10px; }
+.prob-row { margin-bottom: 8px; }
+.prob-label { display: flex; justify-content: space-between; font-size: 11.5px; gap: 10px; overflow-wrap: anywhere; }
+.prob-label b { font-weight: 600; }
+.prob-label span:last-child { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.prob-track { height: 5px; background: var(--line-strong); margin-top: 4px; border-radius: 3px; overflow: hidden; }
+.prob-fill { height: 100%; background: var(--line-strong); filter: brightness(1.6); border-radius: 3px; }
+.prob-row.chosen .prob-fill { background: var(--accent); filter: none; }
+.prob-row.reason .prob-fill { background: var(--info); filter: none; }
+.metadata { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 10px; }
+.metadata summary { cursor: pointer; font-size: 11.5px; color: var(--muted); }
+pre { font: 11px/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto; color: var(--ink-2); background: var(--plane); border-radius: 6px; padding: 8px; margin: 8px 0 0; }
+
+/* ---------- selected decision circuit ---------- */
+.circuit-map.fresh-score .shared-wire { animation: route-arrival 1.4s ease-out; stroke: var(--accent); }
+.circuit-map.fresh-fast .fast-wire, .circuit-map.fresh-slow .slow-wire { animation: route-arrival 1.4s ease-out; }
+@keyframes route-arrival { from { stroke-dasharray: 8 16; stroke-dashoffset: 96; stroke-width: 4; } to { stroke-dasharray: 8 16; stroke-dashoffset: 0; stroke-width: 2; } }
+.decision-circuit { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin: 0 0 18px; overflow: hidden; }
+.circuit-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 18px; cursor: pointer; list-style: none; }
+.circuit-heading::-webkit-details-marker { display: none; }
+.circuit-heading:hover { background: var(--raised); }
+.circuit-heading strong { display: block; font-size: 18px; line-height: 1.2; color: var(--ink); font-weight: 550; letter-spacing: -.3px; }
+#circuitContext { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; overflow-wrap: anywhere; }
+.circuit-disclosure { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 11px; white-space: nowrap; }
+.decision-circuit[open] .when-closed, .decision-circuit:not([open]) .when-open { display: none; }
+.decision-circuit[open] .circuit-disclosure > [aria-hidden] { transform: rotate(180deg); }
+.circuit-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; padding: 0 18px; color: var(--muted); font-size: 11px; }
+.fast-key::before, .slow-key::before { content: ''; display: inline-block; vertical-align: middle; width: 16px; height: 2px; margin-right: 7px; background: var(--accent); }
+.slow-key::before { background: var(--info); }
+.circuit-legend .tag { margin-left: auto; }
+.circuit-map { position: relative; height: 180px; margin: 4px 18px 8px; }
+.circuit-wires { position: absolute; width: 100%; height: 100%; inset: 0; pointer-events: none; }
+.wire { fill: none; stroke: var(--line-strong); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.circuit-map[data-branch="fast"] .fast-wire { stroke: var(--accent); stroke-width: 2; }
+.circuit-map[data-branch="slow"] .slow-wire { stroke: var(--info); stroke-width: 2; }
+.circuit-node { position: absolute; display: flex; flex-direction: column; justify-content: center; text-align: left; gap: 5px; min-height: 64px; padding: 10px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 7px; }
+.circuit-node:disabled { opacity: 1; cursor: default; }
+.circuit-node:disabled:hover { background: var(--surface); }
+.circuit-node span { font-size: 13px; font-weight: 600; line-height: 1.3; }
+.circuit-node small { color: var(--muted); font-size: 10.5px; line-height: 1.4; overflow-wrap: anywhere; }
+.circuit-node[aria-pressed="true"] { outline: 2px solid var(--focus); outline-offset: 3px; }
+.state-node { left: 0; width: 17%; top: 58px; }
+.judge-node { left: 23.5%; width: 19%; top: 58px; }
+.judge-node:not(:disabled) { background: #223746; border-color: var(--accent); }
+.judge-node span { font-size: 17px; font-weight: 500; color: var(--accent); }
+.fast-node { left: 52%; width: 19%; top: 8px; }
+.slow-node { left: 52%; width: 19%; top: 108px; }
+.host-node { left: 81%; width: 19%; top: 58px; border-color: #8a7755; }
+.host-node span { color: var(--warn); }
+.circuit-map[data-branch="fast"] .fast-node { border-color: var(--accent); }
+.circuit-map[data-branch="slow"] .slow-node { border-color: var(--info); }
+.slow-node span { color: var(--info); }
+.circuit-receipt { display: grid; grid-template-columns: minmax(0,1fr) 24px minmax(0,1.3fr) auto; align-items: center; gap: 14px; border-top: 1px solid var(--line); padding: 12px 18px; background: var(--raised); }
+.receipt-label { display: block; color: var(--muted); font-size: 11px; margin-bottom: 5px; }
+.circuit-receipt strong { display: block; font-size: 13px; font-weight: 550; overflow-wrap: anywhere; }
+.receipt-arrow { color: var(--muted); }
+#circuitOutcomeNote { color: var(--muted); font-size: 11px; display: block; margin-top: 4px; overflow-wrap: anywhere; }
+.receipt-button { font-size: 11px; padding: 7px 10px; max-width: 160px; }
+.receipt-button.ok { color: var(--accent); }.receipt-button.info { color: var(--info); }.receipt-button.bad { color: var(--bad); }.receipt-button.warn { color: var(--warn); }
+.circuit-evidence { font-size: 11px; color: var(--muted); padding: 0 18px 12px; background: var(--raised); line-height: 1.5; }
+
+/* ---------- responsive ---------- */
+@media (min-width: 1700px) {
+  .app-layout { grid-template-columns: 280px minmax(480px, 1fr) 380px; }
+  .activity-panel { padding: 22px 32px; }
+}
+@media (max-width: 1450px) {
+  .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 0; }
+  .kpi:nth-child(4) { border-right: 0; }
+  .ledger-heading { display: none; }
+  .flow-summary { grid-template-columns: 58px minmax(120px, 1fr) minmax(120px, 1fr) 22px minmax(120px, 1fr) 112px; }
+  .flow-summary .verdict-cell { grid-column: 6; grid-row: 1; justify-self: end; }
+  .flow-summary .flow-latency { grid-column: 6; grid-row: 2; text-align: right; margin-top: -6px; }
+}
+@media (max-width: 1100px) {
+  .app-layout { grid-template-columns: 200px minmax(0, 1fr); grid-template-rows: minmax(0, calc(100vh - var(--header-h))) auto; height: auto; min-height: calc(100vh - var(--header-h)); align-content: start; }
+  .sessions-panel { grid-row: 1 / 3; }
+  .sessions-panel { height: calc(100vh - var(--header-h)); overflow-y: auto; }
+  .detail-panel { grid-column: 2; border-left: 0; border-top: 1px solid var(--line); }
+  .sessions-panel, .activity-panel, .detail-panel { overflow: visible; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+}
+@media (max-width: 1000px) {
+  .app-header { height: auto; min-height: var(--header-h); padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+  .header-actions { flex-wrap: wrap; gap: 6px; }
+  .freshness { display: none; }
+  .quiet, .follow { font-size: 11px; padding: 4px 8px; }
+  .connection-notice, .reconnect-panel { padding: 10px 14px; }
+  .reconnect-panel form { flex-wrap: wrap; }
+  .reconnect-panel label { width: 100%; }
+  .reconnect-panel input { width: 60%; }
+  .app-layout { display: block; height: auto; }
+  .sessions-panel { height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 12px 14px; max-height: 240px; overflow: auto; }
+  .search { display: none; }
+  .all-sessions { width: auto; display: inline-flex; gap: 10px; margin: 0 6px 0 0; vertical-align: top; }
+  .session-list { display: inline-flex; flex-direction: row; max-width: 100%; overflow-x: auto; vertical-align: top; align-items: flex-start; }
+  .session-group { display: inline-block; }
+  .session-row { width: 180px; flex: none; padding: 7px 9px; }
+  .session-row.child { margin-left: 0; width: 180px; }
+  .sidebar-note, .session-state { display: none; }
+  .children-option { margin: 8px 0 0; }
+  .activity-panel { padding: 14px 14px 20px; }
+  h1 { font-size: 18px; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .kpi strong { font-size: 18px; }
+  .kpi:nth-child(even) { border-right: 0; }
+  .circuit-heading { padding: 14px; align-items: flex-start; gap: 10px; }
+  .circuit-heading strong { font-size: 17px; }
+  .circuit-legend { padding: 0 14px; gap: 12px; }
+  .circuit-map { height: auto; margin: 18px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .circuit-wires { display: none; }
+  .circuit-node { position: static; width: auto; min-width: 0; min-height: 78px; }
+  .host-node { grid-column: 1 / -1; min-height: 62px; }
+  .circuit-receipt { grid-template-columns: 1fr; padding: 16px; gap: 14px; }
+  .receipt-arrow { display: none; }
+  .receipt-button { justify-self: start; }
+  .circuit-evidence { padding: 0 16px 16px; }
+  .feed-toolbar { flex-wrap: wrap; }
+  .feed-tabs { gap: 12px; }
+  .feed-tabs button { font-size: 12px; }
+  .flow-summary { grid-template-columns: 1fr 1fr; gap: 6px 10px; padding: 9px 10px; }
+  .flow-summary .flow-when { grid-column: 1; }
+  .flow-summary .flow-session-wrap { grid-column: 2; }
+  .flow-summary .flow-cell { grid-column: 1 / 3; }
+  .flow-summary .flow-arrow { display: none; }
+  .flow-summary .verdict-cell { grid-column: 1; }
+  .flow-summary .flow-latency { grid-column: 2; text-align: right; }
+  .flow-stages { padding: 0 10px 8px; }
+  .feed-heading { grid-template-columns: 18px 1fr 60px; padding: 0 8px 6px; }
+  .feed-heading span:nth-child(3), .feed-heading span:nth-child(4) { display: none; }
+  .event-row { grid-template-columns: 18px minmax(0, 1fr) 60px; gap: 8px; padding: 8px; }
+  .event-source, .event-session { grid-column: 2; padding: 0; font-size: 10.5px; }
+  .event-time { grid-column: 3; grid-row: 1; }
+  .detail-panel { padding: 14px; border-left: 0; border-top: 1px solid var(--line); }
+  .facts { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, .arriving, .flow-card.arriving, .session-state.working::before, .runtime-pulse.working .live-dot, .verdict.live::before, .flow-arrow.pending { animation: none !important; transition: none !important; }
+}
+
+.savings-panel { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin: 12px 0 16px; }
+.savings-heading { display: flex; align-items: baseline; gap: 12px; }
+.savings-heading h2 { font-size: 14px; margin: 0; }
+.savings-heading span, .savings-note, .savings-grid small { color: var(--muted); font-size: 12px; }
+.savings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-top: 10px; }
+.savings-grid > div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.savings-grid span, .savings-grid strong, .savings-grid small { display: block; }
+.savings-grid strong { font-size: 20px; margin: 2px 0; }
+.savings-days { display: flex; align-items: flex-end; gap: 3px; height: 40px; margin-top: 12px; }
+.savings-days > i { flex: 1; min-width: 4px; max-width: 18px; background: #65ddb4; border-radius: 2px 2px 0 0; opacity: .85; }
+.savings-note { margin: 8px 0 0; }
+
+.kpis:not(.has-shortcut) .shortcut-kpi { display: none; }
+.session-context { display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.savings-projects { display: grid; gap: 4px; margin-top: 10px; font-size: 12px; }
+.savings-project { display: grid; grid-template-columns: minmax(120px, 1.2fr) 1.4fr 0.6fr 1.4fr; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.savings-project small { color: var(--muted); }
+</style>
+</head>
+<body>
+<a class="skip" href="#activity">Skip to activity</a>
+<header class="app-header">
+  <div class="brand"><svg viewBox="0 0 28 30" width="22" height="24" aria-hidden="true"><path d="M4 21 8 9M11 25 17 5M19 21 23 9" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg><div><strong>Fast Decisions</strong><span>Amplifier observatory</span></div></div>
+  <div class="header-actions">
+    <span id="connection" class="connection" role="status">Connecting</span>
+    <span id="freshness" class="freshness">Waiting for first response</span>
+    <button id="followBtn" class="follow" aria-pressed="true">Following live</button>
+    <button id="loadBtn" class="quiet">Open trace</button>
+    <button id="exportBtn" class="quiet">Export</button>
+    <input id="fileInput" type="file" accept=".jsonl,.json" multiple hidden>
+  </div>
+</header>
+<div id="connectionNotice" class="connection-notice" role="status" hidden></div>
+<section id="reconnectPanel" class="reconnect-panel" hidden aria-label="Reconnect viewer">
+  <p>Open the full viewer link from the launching terminal, or paste it here. This is the local viewer link, not a model API key.</p>
+  <form id="connectForm"><label for="viewerLink">Viewer link</label><input id="viewerLink" type="password" autocomplete="off" placeholder="http://127.0.0.1:…/#token=…"><button type="submit">Connect</button></form>
+</section>
+<div class="app-layout">
+  <aside class="sessions-panel" aria-label="Sessions">
+    <div class="sessions-heading"><h2>Sessions</h2><span id="sessionCount" class="count">0</span></div>
+    <label class="sr-only" for="sessionSearch">Find a session</label><input id="sessionSearch" class="search" type="search" placeholder="Find a session…">
+    <button id="allSessions" class="all-sessions selected" aria-pressed="true"><span>All sessions</span><span id="allSessionCount" class="count">0</span></button>
+    <div id="sessions" class="session-list"></div>
+    <label class="children-option"><input type="checkbox" id="includeChildren" checked> Include child sessions</label>
+    <div class="sidebar-note"><p>Local, read-only telemetry. Only sessions with the bundle loaded report here. Names are the session's working directory, never a full path.</p></div>
+  </aside>
+  <main id="activity" class="activity-panel">
+    <div class="workspace-heading">
+      <div><h1 id="viewTitle">All sessions</h1><p id="viewSubtitle">Runtime activity reported by the fast-decisions bundle.</p></div>
+      <label class="time-filter"><span class="sr-only">Time window</span><select id="timeWindow"><option value="3600000">Last hour</option><option value="86400000" selected>Last 24 hours</option><option value="all">All retained</option></select></label>
+    </div>
+    <details id="decisionCircuit" class="decision-circuit" open>
+      <summary class="circuit-heading"><span><strong>Decision path</strong><span id="circuitContext">Waiting for recorded decisions</span></span><span class="circuit-disclosure"><span class="when-open">Hide path</span><span class="when-closed">Show path</span><span aria-hidden="true">⌄</span></span></summary>
+      <div class="circuit-legend"><span class="fast-key">Fast path</span><span class="slow-key">Generative path</span><span id="circuitMode" class="tag">No records</span><button id="circuitLatest" class="quiet" hidden>Follow latest decision</button></div>
+      <div id="circuitMap" class="circuit-map" data-branch="unknown">
+        <svg class="circuit-wires" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true"><path class="wire shared-wire" d="M160 110H235"/><path class="wire fast-wire" d="M420 110H465V49H520M705 49H758V110H810"/><path class="wire slow-wire" d="M420 110H465V171H520M705 171H758V110H810"/></svg>
+        <button id="circuitState" class="circuit-node state-node" disabled><span>Current state</span><small id="circuitStateNote">No request recorded</small></button>
+        <button id="circuitJudge" class="circuit-node judge-node" disabled><span>Fast judge</span><small id="circuitJudgeNote">No score recorded</small></button>
+        <button id="circuitFast" class="circuit-node fast-node" disabled><span>Prepared action</span><small id="circuitFastNote">No fast route recorded</small></button>
+        <button id="circuitSlow" class="circuit-node slow-node" disabled><span>Generative model</span><small id="circuitSlowNote">No invocation recorded</small></button>
+        <button id="circuitHost" class="circuit-node host-node" disabled><span>Host controls execution</span><small id="circuitHostNote">Permissions stay upstream</small></button>
+      </div>
+      <div class="circuit-receipt"><div><span class="receipt-label">Judge proposed</span><strong id="circuitProposed">No proposal recorded</strong></div><span class="receipt-arrow" aria-hidden="true">→</span><div><span class="receipt-label">What happened</span><strong id="circuitHappened">No outcome recorded</strong><span id="circuitOutcomeNote"></span></div><button id="circuitReceipt" class="receipt-button" disabled>Awaiting evidence</button></div>
+      <p id="circuitEvidence" class="circuit-evidence">Recorded routes light up as events arrive. Select a node to inspect its evidence.</p>
+    </details>
+    <section class="kpis" aria-label="Activity in the selected window">
+      <div class="kpi" title="Per-request routing decisions (and any action scores) in this window"><span>Requests judged</span><strong id="modelCount">0</strong></div>
+      <div class="kpi accent" title="Model calls that ran on the faster model"><span>On faster model</span><strong id="fastCount">0</strong></div>
+      <div class="kpi" title="Model calls that ran on your usual model (hard requests, large projects, your own pick, or a switch)"><span>On usual model</span><strong id="usualCount">0</strong></div>
+      <div class="kpi" title="Model calls moved to your usual model partway through a request (only earlier builds did this; the current default switches only after a service error)"><span>Switched mid-request</span><strong id="switchedCount">0</strong></div>
+      <div class="kpi accent shortcut-kpi" title="Optional read shortcut: fast submissions with a successful tool execution"><span>Shortcut executed</span><strong id="fastExecuted">0</strong></div>
+      <div class="kpi accent shortcut-kpi" title="Optional read shortcut: provider calls bypassed at the complete() boundary"><span>Calls bypassed</span><strong id="bypassedCount">0</strong></div>
+      <div class="kpi" title="Shadow proposals that matched the tool the LLM actually chose"><span>Shadow matches</span><strong id="matchCount">—</strong></div>
+      <div class="kpi" title="Tool results reported by hooks or measured execution"><span>Tool results</span><strong id="toolCount">0</strong></div>
+      <div class="kpi bad" title="Provider retries, errors, fallbacks and failed executions"><span>Retries / errors</span><strong id="errorCount">0</strong></div>
+      <div class="kpi" title="95th percentile of the decision-maker's time per decision"><span>Judge p95</span><strong id="scorerP95">—</strong></div>
+    </section>
+    <section id="efficiencyPanel" class="savings-panel" aria-label="Efficiency ledger">
+      <div class="savings-heading"><h2>Efficiency ledger</h2><span id="effScope">Production traffic · from per-decision receipts</span></div>
+      <div class="savings-grid">
+        <div><span>Cost saved</span><strong id="effCost">—</strong><small id="effCostDetail"></small></div>
+        <div><span>Time saved</span><strong id="effTime">—</strong><small id="effTimeDetail"></small></div>
+        <div><span>Model calls saved</span><strong id="effCalls">—</strong><small id="effCallsDetail"></small></div>
+      </div>
+      <div id="effLevers" class="savings-projects" aria-label="By efficiency lever"></div>
+      <div id="effProjects" class="savings-projects" aria-label="By project"></div>
+      <div id="effHarness" class="savings-projects" aria-label="By harness"></div>
+      <p id="effNote" class="savings-note"></p>
+    </section>
+    <details class="measurement-notes" id="legacySavings"><summary>Earlier estimate (before receipts)</summary>
+    <section id="savingsPanel" class="savings-panel" aria-label="Estimated savings" hidden>
+      <div class="savings-heading"><h2>Estimated savings</h2><span id="savingsScope"></span></div>
+      <div class="savings-grid">
+        <div><span>Cost saved</span><strong id="savingsCost">—</strong><small id="savingsCostDetail"></small></div>
+        <div><span>Model time saved</span><strong id="savingsTime">—</strong><small id="savingsTimeDetail"></small></div>
+        <div><span>Turns on the cheaper model</span><strong id="savingsTurns">—</strong><small id="savingsTurnsDetail"></small></div>
+      </div>
+      <div id="savingsDays" class="savings-days" role="img" aria-label="Estimated cost saved per day"></div>
+      <div id="savingsProjects" class="savings-projects" aria-label="Savings by project"></div>
+      <p id="savingsNote" class="savings-note"></p>
+    </section>
+    </details>
+    <details class="measurement-notes"><summary>What these measurements tell us</summary>
+    <section class="impact-evidence" aria-label="Impact evidence">
+      <div><span>Poor tool calls diverted</span><strong>Not measured</strong><small>Bypassing a model call does not establish that a bad tool call was prevented.</small></div>
+      <div><span>Net time and cost saved</span><strong>Estimated</strong><small>The savings panel prices and times cheaper-model turns at host-model rates. Only matched task comparisons (the eval suites) establish net savings and quality.</small></div>
+    </section>
+    <p class="kpi-note"><span id="impactDetail">Waiting for recorded fast-path execution.</span> <span id="qualityEvidence"></span> <span id="scopeNotice">Counts exclude scripted and demo events.</span> Eliminated tool calls and task quality are not measured here; savings are estimates.</p>
+    </details>
+    <section id="studyPanel" class="study-panel" aria-label="Live study progress" hidden>
+      <div class="study-heading"><h2>Live three-arm study</h2><strong id="studyProgress"></strong><span id="studyStatus"></span></div>
+      <progress id="studyMeter" value="0" max="432" aria-label="Study runs completed"></progress>
+      <details><summary>Results so far · baseline / local / Jev</summary><div class="study-table-wrap"><table><thead><tr><th>Harness / arm</th><th>Completed</th><th>Passed</th><th>Median task time</th><th>FD requests</th></tr></thead><tbody id="studyRows"></tbody></table></div></details>
+      <p id="studyNote">Collection is in progress. Results are preliminary.</p>
+    </section>
+    <div class="feed-toolbar">
+      <div class="feed-tabs" role="group" aria-label="Event category"><button data-filter="live" class="active" aria-pressed="true">Decision ledger</button><button data-filter="activity" aria-pressed="false">All events</button><button data-filter="decisions" aria-pressed="false">Judgments</button><button data-filter="errors" aria-pressed="false">Issues</button></div>
+      <label class="synthetic-option"><input type="checkbox" id="includeSynthetic"> Scripted &amp; demo <span id="syntheticCount"></span></label>
+    </div>
+    <section id="liveFlows" class="live-flows" aria-label="Live decision flows">
+      <div id="runtimeStrip" class="runtime-strip"></div>
+      <p class="ledger-help">Inspect a decision to follow its path and recorded stages.</p>
+      <div class="ledger-heading"><span>When</span><span>Session</span><span>Model proposed</span><span></span><span>What happened</span><span>Verdict</span><span>Scoring</span></div>
+      <div id="flowCards" class="ledger"></div>
+      <p id="flowStatus" class="flow-status">Waiting for recorded events</p>
+      <p id="flowEmpty" class="flow-empty">No decisions in this window. Start a turn in a session with the bundle loaded, or widen the time window. Scripted shadow proposals never bypass a model call.</p>
+    </section>
+    <div id="feedHeading" class="feed-heading"><span></span><span>Event</span><span>Source</span><span>Session</span><span>Time</span></div>
+    <div id="feed" class="feed" aria-label="Recorded activity"></div>
+    <div id="emptyState" class="empty-state" hidden><h2 id="emptyTitle">Waiting for activity</h2><p id="emptyDetail">Start an Amplifier turn with the bundle loaded. Events appear here as they arrive.</p></div>
+    <div class="feed-footer"><span id="feedCount">0 events</span><span id="dataHealth">No prompts, tool contents, or private reasoning.</span></div>
+  </main>
+  <aside class="detail-panel" aria-label="Event details">
+    <div class="detail-heading"><h2>Details</h2><span id="evidenceKind" class="tag">No selection</span></div>
+    <div id="detailEmpty" class="detail-empty"><p>Select a decision stage or an event to inspect the evidence recorded with it.</p><p>Nothing here infers model reasoning or turns an observation into an execution claim.</p></div>
+    <div id="detailContent" hidden>
+      <h3 id="detailTitle"></h3><p id="detailDescription"></p>
+      <dl id="eventFacts" class="facts"></dl>
+      <section id="distribution" hidden><h4>Candidate scores</h4><p id="scoreMeaning" class="score-meaning"></p><div id="probabilities"></div></section>
+      <section class="runtime-config"><h4>Session configuration</h4><p id="sessionConfig"></p></section>
+      <details class="metadata"><summary>Recorded metadata</summary><pre id="eventJson"></pre></details>
+    </div>
+  </aside>
+</div>
+<script>window.AFAST_EMBEDDED=[{"data": {"mode": "active", "module": "loop-fast-decisions", "package_version": "0.1.0", "python": "3.12.11", "source_git_sha": "5a0b7be010872868053cc7ce00e96cce78dd9d8c", "source_kind": "worktree", "source_py_files": 49, "source_tree_sha256": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2"}, "decision_id": null, "event": "fast_decisions:source", "event_id": "467d93d41185451ea480f3ac3609e562", "monotonic_ns": 11995996574500, "parent_session_id": null, "schema_version": "1.0", "seq": 1, "session_id": "test-session", "synthetic": false, "timestamp": "2026-09-28T04:10:39.467156+00:00", "turn_id": null, "cursor": 1}, {"data": {"dropped_events": 0, "dropped_shadow_jobs": 0, "pending": 0, "queue_depth": 0, "recording_error": null}, "decision_id": null, "event": "fast_decisions:health", "event_id": "a785cc0c61eb43ff96da46012e233c42", "monotonic_ns": 11995999415416, "parent_session_id": null, "schema_version": "1.0", "seq": 2, "session_id": "test-session", "synthetic": false, "timestamp": "2026-09-28T04:10:39.469999+00:00", "turn_id": null, "cursor": 2}, {"data": {"mode": "active", "module": "loop-fast-decisions", "package_version": "0.1.0", "python": "3.12.11", "source_git_sha": "5a0b7be010872868053cc7ce00e96cce78dd9d8c", "source_kind": "worktree", "source_py_files": 49, "source_tree_sha256": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2"}, "decision_id": null, "event": "fast_decisions:source", "event_id": "d5139229cab842c1b4d1dcd223fcd46a", "monotonic_ns": 11996138237750, "parent_session_id": null, "schema_version": "1.0", "seq": 1, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:39.608818+00:00", "turn_id": null, "cursor": 3}, {"data": {"reason_code": "hook_cannot_own_active"}, "decision_id": null, "event": "fast_decisions:fallback", "event_id": "28adda0caa5441afa0921a60ab504366", "monotonic_ns": 11997632513208, "parent_session_id": null, "schema_version": "1.0", "seq": 1, "session_id": "test-session", "synthetic": false, "timestamp": "2026-09-28T04:10:41.103110+00:00", "turn_id": null, "cursor": 4}, {"data": {"mode": "shadow", "module": "hooks-fast-decisions", "package_version": "0.1.0", "python": "3.12.11", "source_git_sha": "5a0b7be010872868053cc7ce00e96cce78dd9d8c", "source_kind": "worktree", "source_py_files": 49, "source_tree_sha256": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2"}, "decision_id": null, "event": "fast_decisions:source", "event_id": "a3804f1d12b74e98826fe50547858249", "monotonic_ns": 11997633017333, "parent_session_id": null, "schema_version": "1.0", "seq": 2, "session_id": "test-session", "synthetic": false, "timestamp": "2026-09-28T04:10:41.103616+00:00", "turn_id": null, "cursor": 5}, {"data": {"allow_external_state": true, "backend": "jev", "backend_label": null, "branch": "main", "event_source": "native-hook-bridge", "harness": "Amplifier CLI", "mode": "shadow", "phase": "configuration", "policy_version": "policy-v1", "repo": "workspace", "session_label": "Forge answer_audit_log_key / active", "workspace_name": "workspace"}, "decision_id": null, "event": "fast_decisions:health", "event_id": "58c4197587884174bca5fbcec3f43022", "monotonic_ns": 11997633551416, "parent_session_id": null, "schema_version": "1.0", "seq": 3, "session_id": "test-session", "synthetic": false, "timestamp": "2026-09-28T04:10:41.104151+00:00", "turn_id": null, "cursor": 6}, {"data": {"event_source": "native-hook-bridge", "phase": "session_closed"}, "decision_id": null, "event": "fast_decisions:health", "event_id": "78c1557d3c94427e8646bfa98175ac13", "monotonic_ns": 11997633815166, "parent_session_id": null, "schema_version": "1.0", "seq": 4, "session_id": "test-session", "synthetic": false, "timestamp": "2026-09-28T04:10:41.104415+00:00", "turn_id": null, "cursor": 7}, {"data": {"dropped_events": 0, "dropped_shadow_jobs": 0, "pending": 0, "queue_depth": 0, "recording_error": null}, "decision_id": null, "event": "fast_decisions:health", "event_id": "f8e4c1670d9941b6b6c4e305f0ef8dc9", "monotonic_ns": 11997633954750, "parent_session_id": null, "schema_version": "1.0", "seq": 5, "session_id": "test-session", "synthetic": false, "timestamp": "2026-09-28T04:10:41.104553+00:00", "turn_id": null, "cursor": 8}, {"data": {"reason_code": "hook_cannot_own_active"}, "decision_id": null, "event": "fast_decisions:fallback", "event_id": "e600be5ecf204e99a8efa34a9c7321a0", "monotonic_ns": 11997759486375, "parent_session_id": null, "schema_version": "1.0", "seq": 2, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.230083+00:00", "turn_id": null, "cursor": 9}, {"data": {"mode": "active", "module": "hooks-fast-decisions", "package_version": "0.1.0", "python": "3.12.11", "source_git_sha": "5a0b7be010872868053cc7ce00e96cce78dd9d8c", "source_kind": "worktree", "source_py_files": 49, "source_tree_sha256": "a9a08d2f9dc73657cee7bbbb197377581eac1c9bac8d959b3d8d06d432e1efd2"}, "decision_id": null, "event": "fast_decisions:source", "event_id": "5650eba2356e49888b0f97a01d37af74", "monotonic_ns": 11997759762666, "parent_session_id": null, "schema_version": "1.0", "seq": 3, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.230360+00:00", "turn_id": null, "cursor": 10}, {"data": {"allow_external_state": true, "backend": "jev", "backend_label": null, "branch": "main", "event_source": "native-hook-bridge", "harness": "Amplifier CLI", "mode": "active", "phase": "configuration", "policy_version": "policy-v1", "repo": "workspace", "session_label": "Forge answer_audit_log_key / active", "workspace_name": "workspace"}, "decision_id": null, "event": "fast_decisions:health", "event_id": "8c11da5ae1df4d48b700b12a018418de", "monotonic_ns": 11997760306541, "parent_session_id": null, "schema_version": "1.0", "seq": 4, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.230906+00:00", "turn_id": null, "cursor": 11}, {"data": {"allow_external_state": true, "backend": "jev", "effort_routing_enabled": false, "engine": "upstream-loop-streaming", "mode": "active", "model_routing_enabled": false, "policy_version": "policy-v1"}, "decision_id": null, "event": "fast_decisions:turn_start", "event_id": "f468ab3dcd42468a83e83b66f57588a2", "monotonic_ns": 11998005929208, "parent_session_id": null, "schema_version": "1.0", "seq": 5, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.476524+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 12}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "execution:start", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": null, "tool_call_id": null}, "decision_id": null, "event": "fast_decisions:health", "event_id": "c854b320589442749b465f8aadae92c2", "monotonic_ns": 11998014743750, "parent_session_id": null, "schema_version": "1.0", "seq": 6, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.485342+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 13}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "provider:request", "phase": "turn_start", "provider": "anthropic-legacy-resume", "retry_attempt": null, "status": "observed", "status_code": null, "tool": null, "tool_call_id": null}, "decision_id": null, "event": "fast_decisions:health", "event_id": "7b1e947101c143c5adca22ae3026e7e8", "monotonic_ns": 11998022171125, "parent_session_id": null, "schema_version": "1.0", "seq": 7, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.492771+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 14}, {"data": {"backend": "jev", "candidate_count": 1, "candidate_order_hash": "c72104ff3f7cfe96222b35d04c17b0216e829ff5e16620f17708136af3660cf6", "candidates": [{"id": "win_f09572097d9c", "label": "Read file window 1", "tool": "fast_workspace"}], "candidates_suppressed_already_read": 0, "domain": "read-target", "mode": "active", "observation_count": 1, "observations_available": 3, "observations_clipped": 0, "observations_dropped": 2, "policy_version": "policy-v1", "question_count": 0, "state_chars": 887, "state_hash": "0831c125e1d8d483e8296583d9415ba2e5621e36a5a82fd9e620672dbc25d390", "state_revision": 0, "step": 1, "task_anchored": true, "truncation_reason": "budget"}, "decision_id": "89122a2388924949a3d788b4f22ec2df", "event": "fast_decisions:requested", "event_id": "b128b20a5f2444c8bb952435e8375c15", "monotonic_ns": 11998196076208, "parent_session_id": null, "schema_version": "1.0", "seq": 8, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.666678+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 15}, {"data": {"backend": "jev", "candidate_order_hash": "c72104ff3f7cfe96222b35d04c17b0216e829ff5e16620f17708136af3660cf6", "choice": "win_f09572097d9c", "confidence_kind": "chosen_option_probability", "domain": "read-target", "duration_ms": 169.2880829996284, "gate": 0.9, "input_tokens": 606, "latency_kind": "decision_model_wall_time", "margin": 0.8, "mode": "active", "model": "jev-1.13.0", "option_set_hash": "56ad304e1dffc32cdead1b6f0af4a3798e969a174a61470271578943a13a32dc", "output_tokens": 56, "passed_gate": true, "policy_version": "policy-v1", "probabilities": {"reason": 0.1, "win_f09572097d9c": 0.9}, "probability_kind": "backend_reported", "reported_confidence": 0.9, "selected_probability": 0.9, "state_revision": 0, "step": 1, "synthetic": false}, "decision_id": "89122a2388924949a3d788b4f22ec2df", "event": "fast_decisions:scored", "event_id": "6cd55fc9d3a64cd68214057cb41fea02", "monotonic_ns": 11998366223208, "parent_session_id": null, "schema_version": "1.0", "seq": 9, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.836818+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 16}, {"data": {"backend": "jev", "destination": "fast_workspace", "mode": "active", "policy_version": "policy-v1", "reason_code": "prepared_action_selected", "route": "fast", "selected_candidate": "win_f09572097d9c", "status": "submitted_to_upstream", "tool_call_id": "fd_4a4660d8cd8a4af48c8626a7", "transport_measured": "provider-complete"}, "decision_id": "89122a2388924949a3d788b4f22ec2df", "event": "fast_decisions:routed", "event_id": "f970a696779b44f5b85ce23fc45705dd", "monotonic_ns": 11998378900708, "parent_session_id": null, "schema_version": "1.0", "seq": 10, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.849495+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 17}, {"data": {"candidate_count": 1, "candidate_origin": "explicit_user_path", "expected_saving_s": 1.35, "judge_asked": true, "mechanism": "jev:next_action", "mode": "active", "step_action": "prepared", "step_class": "turn_start", "step_index": 0, "step_reason": "no_tool_result_yet", "tools": []}, "decision_id": "89122a2388924949a3d788b4f22ec2df", "event": "fast_decisions:step_decided", "event_id": "55cabd3c79f44741bfeff0d30cc1cfb0", "monotonic_ns": 11998380130916, "parent_session_id": null, "schema_version": "1.0", "seq": 11, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.850732+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 18}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:pre", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "fd_4a4660d8cd8a4af48c8626a7"}, "decision_id": "89122a2388924949a3d788b4f22ec2df", "event": "fast_decisions:health", "event_id": "68aec13f360c4c68aac533d1ecd339a2", "monotonic_ns": 11998382243583, "parent_session_id": null, "schema_version": "1.0", "seq": 12, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.852846+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 19}, {"data": {"status": "running", "tool": "fast_workspace", "tool_call_id": "fd_4a4660d8cd8a4af48c8626a7"}, "decision_id": "89122a2388924949a3d788b4f22ec2df", "event": "fast_decisions:tool_start", "event_id": "491f14da20504d50a89286b48a8804dc", "monotonic_ns": 11998383798916, "parent_session_id": null, "schema_version": "1.0", "seq": 13, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.854396+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 20}, {"data": {"duration_ms": 0.7097079997038236, "status": "ok", "success": true, "tool": "fast_workspace", "tool_call_id": "fd_4a4660d8cd8a4af48c8626a7"}, "decision_id": "89122a2388924949a3d788b4f22ec2df", "event": "fast_decisions:tool_end", "event_id": "afd83ab36f5744b7a856b05c8c60d491", "monotonic_ns": 11998386536875, "parent_session_id": null, "schema_version": "1.0", "seq": 14, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.857138+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 21}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:post", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "fd_4a4660d8cd8a4af48c8626a7"}, "decision_id": "89122a2388924949a3d788b4f22ec2df", "event": "fast_decisions:health", "event_id": "b46b5dc22ba54ece8238be01c8437aa1", "monotonic_ns": 11998388456333, "parent_session_id": null, "schema_version": "1.0", "seq": 15, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.859058+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 22}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "provider:request", "phase": null, "provider": "anthropic-legacy-resume", "retry_attempt": null, "status": "observed", "status_code": null, "tool": null, "tool_call_id": null}, "decision_id": "89122a2388924949a3d788b4f22ec2df", "event": "fast_decisions:health", "event_id": "eebb5b6bd6af4feb8a545b2cbcdf6b4d", "monotonic_ns": 11998395785208, "parent_session_id": null, "schema_version": "1.0", "seq": 16, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.866386+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 23}, {"data": {"backend": "jev", "destination": "provider", "mode": "active", "policy_version": "policy-v1", "reason_code": "read_shortcut_disabled", "route": "slow", "state_revision": 2, "step": 2}, "decision_id": "6a17f6ca39ee42929118aaf1a1c5f300", "event": "fast_decisions:routed", "event_id": "8ee74d4024234a19b2a28fa26ef30d29", "monotonic_ns": 11998488963083, "parent_session_id": null, "schema_version": "1.0", "seq": 17, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.959560+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 24}, {"data": {"candidate_count": 0, "expected_saving_s": null, "judge_asked": false, "mechanism": "rule:routine_readonly", "mode": "active", "step_action": "full", "step_class": "routine_readonly", "step_index": 1, "step_reason": "readonly:fast_workspace", "tools": ["fast_workspace"]}, "decision_id": "6a17f6ca39ee42929118aaf1a1c5f300", "event": "fast_decisions:step_decided", "event_id": "decc5aec88584e7f9b9ce3656b91ca02", "monotonic_ns": 11998490114625, "parent_session_id": null, "schema_version": "1.0", "seq": 18, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.960718+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 25}, {"data": {"destination": "anthropic-legacy-resume", "model": "provider-default", "provider": "anthropic-legacy-resume", "provider_call_id": "provider_a5edfd2a959e4c97882993616fda13d0", "route": "slow", "status": "running", "transport_measured": "provider-complete"}, "decision_id": "6a17f6ca39ee42929118aaf1a1c5f300", "event": "fast_decisions:slow_start", "event_id": "538c424f301b48d7ba14255754a40e00", "monotonic_ns": 11998491184166, "parent_session_id": null, "schema_version": "1.0", "seq": 19, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:41.961785+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 26}, {"data": {"cache_read_tokens": 11142, "cache_write_tokens": 1068, "cost_usd": 0.0095586, "duration_ms": 3929.4586249998247, "finish_reason": "tool_use", "host_model": "claude-sonnet-5", "input_tokens": 11144, "latency_kind": "provider_complete_wall_time", "model": "provider-default", "output_tokens": 147, "provider": "anthropic-legacy-resume", "provider_call_id": "provider_a5edfd2a959e4c97882993616fda13d0", "served_model": "claude-sonnet-5", "served_model_source": "requested", "status": "ok", "step_kind": "tool_call", "tool_calls": 1, "tools": ["fast_workspace"], "total_tokens": 11291, "transport_measured": "provider-complete"}, "decision_id": "6a17f6ca39ee42929118aaf1a1c5f300", "event": "fast_decisions:slow_end", "event_id": "aa4531249cc142e5991db4af23db9086", "monotonic_ns": 12002421741041, "parent_session_id": null, "schema_version": "1.0", "seq": 20, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:45.892377+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 27}, {"data": {"actual": {"calls": 0, "cost_usd": 0.0, "model": null, "seconds": 0.1854}, "baseline": {"calls": 1, "cost_usd": 0.0058776, "model": "claude-sonnet-5", "output_tokens": 150, "prompt_tokens": 12092, "seconds": 3.9295}, "calls_saved": 1, "decision": "prepared_fast_workspace", "lever": "prepared_action", "mechanism": "jev:next_action", "method": "skipped host call: next call's prompt minus the prepared result as cache reads, typical tool-step output; seconds from the next call's latency", "project": "workspace", "seconds_saved": 3.7441, "traffic": "production", "usd_saved": 0.0058776}, "decision_id": "6a17f6ca39ee42929118aaf1a1c5f300", "event": "fast_decisions:efficiency", "event_id": "76b230492dd0424e9b937c08eef14ff0", "monotonic_ns": 12002423502958, "parent_session_id": null, "schema_version": "1.0", "seq": 21, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:45.894141+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 28}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:pre", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_01HDAFoxdXZUJu95DNH23dvn"}, "decision_id": "6a17f6ca39ee42929118aaf1a1c5f300", "event": "fast_decisions:health", "event_id": "f5496c9dc1664cb48cbb4ddcdceea798", "monotonic_ns": 12002430355875, "parent_session_id": null, "schema_version": "1.0", "seq": 22, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:45.900993+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 29}, {"data": {"status": "running", "tool": "fast_workspace", "tool_call_id": "observed_093f8600fa984dc08692"}, "decision_id": "6a17f6ca39ee42929118aaf1a1c5f300", "event": "fast_decisions:tool_start", "event_id": "fd384466e40b4da5bee85dd2019f35c6", "monotonic_ns": 12002431983958, "parent_session_id": null, "schema_version": "1.0", "seq": 23, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:45.902622+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 30}, {"data": {"duration_ms": 0.6864999995741528, "status": "ok", "success": true, "tool": "fast_workspace", "tool_call_id": "observed_093f8600fa984dc08692"}, "decision_id": "6a17f6ca39ee42929118aaf1a1c5f300", "event": "fast_decisions:tool_end", "event_id": "74df9d054efd4373b63f12ab4754f5a7", "monotonic_ns": 12002434106916, "parent_session_id": null, "schema_version": "1.0", "seq": 24, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:45.904745+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 31}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:post", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_01HDAFoxdXZUJu95DNH23dvn"}, "decision_id": "6a17f6ca39ee42929118aaf1a1c5f300", "event": "fast_decisions:health", "event_id": "37d78c1b3be142aa9d70c7221aabe5a4", "monotonic_ns": 12002436685291, "parent_session_id": null, "schema_version": "1.0", "seq": 25, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:45.907321+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 32}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "provider:request", "phase": null, "provider": "anthropic-legacy-resume", "retry_attempt": null, "status": "observed", "status_code": null, "tool": null, "tool_call_id": null}, "decision_id": "6a17f6ca39ee42929118aaf1a1c5f300", "event": "fast_decisions:health", "event_id": "ad55eb601b6f44aa8ef3357b28f58e41", "monotonic_ns": 12002439705666, "parent_session_id": null, "schema_version": "1.0", "seq": 26, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:45.910345+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 33}, {"data": {"backend": "jev", "destination": "provider", "mode": "active", "policy_version": "policy-v1", "reason_code": "read_shortcut_disabled", "route": "slow", "state_revision": 4, "step": 3}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:routed", "event_id": "bbc9457014264b23bfb1b2fa2e8e60f5", "monotonic_ns": 12002530857333, "parent_session_id": null, "schema_version": "1.0", "seq": 27, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:46.001493+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 34}, {"data": {"candidate_count": 0, "expected_saving_s": null, "judge_asked": false, "mechanism": "rule:routine_readonly", "mode": "active", "step_action": "full", "step_class": "routine_readonly", "step_index": 2, "step_reason": "readonly:fast_workspace", "tools": ["fast_workspace"]}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:step_decided", "event_id": "416f26792bcb40cf96880364773700e4", "monotonic_ns": 12002532041708, "parent_session_id": null, "schema_version": "1.0", "seq": 28, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:46.002680+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 35}, {"data": {"destination": "anthropic-legacy-resume", "model": "provider-default", "provider": "anthropic-legacy-resume", "provider_call_id": "provider_0b68157a02b64800aa30cdd975c97e6c", "route": "slow", "status": "running", "transport_measured": "provider-complete"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:slow_start", "event_id": "5b6bdf454f2f4a63b498a512e8d83a30", "monotonic_ns": 12002533136041, "parent_session_id": null, "schema_version": "1.0", "seq": 29, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:46.003775+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 36}, {"data": {"cache_read_tokens": 12210, "cache_write_tokens": 294, "cost_usd": 0.0117765, "duration_ms": 4425.748999999996, "finish_reason": "tool_use", "host_model": "claude-sonnet-5", "input_tokens": 12212, "latency_kind": "provider_complete_wall_time", "model": "provider-default", "output_tokens": 467, "provider": "anthropic-legacy-resume", "provider_call_id": "provider_0b68157a02b64800aa30cdd975c97e6c", "served_model": "claude-sonnet-5", "served_model_source": "requested", "status": "ok", "step_kind": "tool_call", "tool_calls": 5, "tools": ["fast_workspace", "fast_workspace", "fast_workspace", "fast_workspace", "fast_workspace"], "total_tokens": 12679, "transport_measured": "provider-complete"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:slow_end", "event_id": "10f4cac61f6f4feba0ef01eaef44aed2", "monotonic_ns": 12006959928416, "parent_session_id": null, "schema_version": "1.0", "seq": 30, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.430607+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 37}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:pre", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_01L9E1tp8awcwK7yzUnx37dU"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "53b5b54ad053484b91a8edd3e4970a11", "monotonic_ns": 12006991571583, "parent_session_id": null, "schema_version": "1.0", "seq": 31, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.462231+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 38}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:pre", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_01DzoBcvP8TMpf9HP45JnzsS"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "2063d35f1edb48bf9524bd217fe78a71", "monotonic_ns": 12006992389500, "parent_session_id": null, "schema_version": "1.0", "seq": 32, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.463070+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 39}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:pre", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_016ZTpyjyxArb4BhKeTkfiPU"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "e832a4ef35d642f19bd3dd289c56aa55", "monotonic_ns": 12006992478958, "parent_session_id": null, "schema_version": "1.0", "seq": 33, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.463163+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 40}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:pre", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_01DtJhvjLLxm4mz8d73xMT8P"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "edba1e7b01664b9eadfc1d14277bd830", "monotonic_ns": 12006992633833, "parent_session_id": null, "schema_version": "1.0", "seq": 34, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.463317+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 41}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:pre", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_01NywyiGednVQL2DnmxZe1s8"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "a3b9990bc1f544758e7f66def0de059a", "monotonic_ns": 12006995468625, "parent_session_id": null, "schema_version": "1.0", "seq": 35, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.466147+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 42}, {"data": {"status": "running", "tool": "fast_workspace", "tool_call_id": "observed_be16d3418f5b432b8402"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:tool_start", "event_id": "530eee10e8d24fd9a49859ae8d08e76d", "monotonic_ns": 12007000315125, "parent_session_id": null, "schema_version": "1.0", "seq": 36, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.470994+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 43}, {"data": {"status": "running", "tool": "fast_workspace", "tool_call_id": "observed_c3560aad61334f59aecf"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:tool_start", "event_id": "d66fcd70a2fa4e7da1a750d2469bad27", "monotonic_ns": 12007000416000, "parent_session_id": null, "schema_version": "1.0", "seq": 37, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.471100+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 44}, {"data": {"status": "running", "tool": "fast_workspace", "tool_call_id": "observed_540412c51c7b44df80cc"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:tool_start", "event_id": "c64c09a7712344f0859a3d6352a70a28", "monotonic_ns": 12007001527833, "parent_session_id": null, "schema_version": "1.0", "seq": 38, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.472180+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 45}, {"data": {"status": "running", "tool": "fast_workspace", "tool_call_id": "observed_5073d052ec8f40a7a262"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:tool_start", "event_id": "e8355751e1014c99a89509239b1ec993", "monotonic_ns": 12007001929416, "parent_session_id": null, "schema_version": "1.0", "seq": 39, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.472611+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 46}, {"data": {"status": "running", "tool": "fast_workspace", "tool_call_id": "observed_79f1623c3983469c94fd"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:tool_start", "event_id": "ee7ad7a275624d0c85ff183790907b59", "monotonic_ns": 12007003907458, "parent_session_id": null, "schema_version": "1.0", "seq": 40, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.474590+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 47}, {"data": {"duration_ms": 2.1894170004088664, "status": "ok", "success": true, "tool": "fast_workspace", "tool_call_id": "observed_c3560aad61334f59aecf"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:tool_end", "event_id": "87f86716d0b8487eb099c37cfa14c1e7", "monotonic_ns": 12007008091833, "parent_session_id": null, "schema_version": "1.0", "seq": 41, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.478771+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 48}, {"data": {"duration_ms": 3.610167001170339, "status": "ok", "success": true, "tool": "fast_workspace", "tool_call_id": "observed_540412c51c7b44df80cc"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:tool_end", "event_id": "7584ad6e77724fe5ba31b4ebe9586174", "monotonic_ns": 12007010791541, "parent_session_id": null, "schema_version": "1.0", "seq": 42, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.481470+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 49}, {"data": {"duration_ms": 3.561665998859098, "status": "ok", "success": true, "tool": "fast_workspace", "tool_call_id": "observed_be16d3418f5b432b8402"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:tool_end", "event_id": "f61dcb40811c44f38bc8787058db78fc", "monotonic_ns": 12007011137000, "parent_session_id": null, "schema_version": "1.0", "seq": 43, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.481819+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 50}, {"data": {"duration_ms": 3.1029580004542368, "status": "ok", "success": true, "tool": "fast_workspace", "tool_call_id": "observed_79f1623c3983469c94fd"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:tool_end", "event_id": "d37b5e498ee441cd94185cf7764c641e", "monotonic_ns": 12007011903666, "parent_session_id": null, "schema_version": "1.0", "seq": 44, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.482582+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 51}, {"data": {"duration_ms": 2.779874999760068, "status": "ok", "success": true, "tool": "fast_workspace", "tool_call_id": "observed_5073d052ec8f40a7a262"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:tool_end", "event_id": "b0e746b4356a4b9bb4b21a84f54f46d9", "monotonic_ns": 12007012254833, "parent_session_id": null, "schema_version": "1.0", "seq": 45, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.482934+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 52}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:post", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_01DtJhvjLLxm4mz8d73xMT8P"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "b3728637e953444b87ca601f8f541e5b", "monotonic_ns": 12007017013541, "parent_session_id": null, "schema_version": "1.0", "seq": 46, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.487696+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 53}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:post", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_01L9E1tp8awcwK7yzUnx37dU"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "40f5f553d5534181b374042ccfc8067a", "monotonic_ns": 12007019873500, "parent_session_id": null, "schema_version": "1.0", "seq": 47, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.490554+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 54}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:post", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_016ZTpyjyxArb4BhKeTkfiPU"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "9d56a59db04541dd894d24f21529425e", "monotonic_ns": 12007020232708, "parent_session_id": null, "schema_version": "1.0", "seq": 48, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.490914+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 55}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:post", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_01DzoBcvP8TMpf9HP45JnzsS"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "bb97345b54f44e09b896f0fa92f07b1c", "monotonic_ns": 12007020318375, "parent_session_id": null, "schema_version": "1.0", "seq": 49, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.491004+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 56}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "tool:post", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": "fast_workspace", "tool_call_id": "toolu_01NywyiGednVQL2DnmxZe1s8"}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "eaa4c3eb590749729fcf041a78c5d6d6", "monotonic_ns": 12007023580000, "parent_session_id": null, "schema_version": "1.0", "seq": 50, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.494259+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 57}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "provider:request", "phase": null, "provider": "anthropic-legacy-resume", "retry_attempt": null, "status": "observed", "status_code": null, "tool": null, "tool_call_id": null}, "decision_id": "d19810786b464fb1acd2f4dbe3ae93aa", "event": "fast_decisions:health", "event_id": "58a477f5bf254534b0c6d9e5fe158d91", "monotonic_ns": 12007027024000, "parent_session_id": null, "schema_version": "1.0", "seq": 51, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.497659+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 58}, {"data": {"backend": "jev", "destination": "provider", "mode": "active", "policy_version": "policy-v1", "reason_code": "read_shortcut_disabled", "route": "slow", "state_revision": 14, "step": 4}, "decision_id": "79d670bcbcb340a4b4dbad4df09452b4", "event": "fast_decisions:routed", "event_id": "7663abb8e0d048e697637e695eb57d37", "monotonic_ns": 12007112056208, "parent_session_id": null, "schema_version": "1.0", "seq": 52, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.582730+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 59}, {"data": {"candidate_count": 0, "expected_saving_s": null, "judge_asked": false, "mechanism": "rule:needs_reasoning", "mode": "active", "step_action": "full", "step_class": "needs_reasoning", "step_index": 3, "step_reason": "many_calls:fast_workspace", "tools": ["fast_workspace", "fast_workspace", "fast_workspace", "fast_workspace", "fast_workspace"]}, "decision_id": "79d670bcbcb340a4b4dbad4df09452b4", "event": "fast_decisions:step_decided", "event_id": "97256497e783401e9df2414309d178d5", "monotonic_ns": 12007113620541, "parent_session_id": null, "schema_version": "1.0", "seq": 53, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.584301+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 60}, {"data": {"destination": "anthropic-legacy-resume", "model": "provider-default", "provider": "anthropic-legacy-resume", "provider_call_id": "provider_83d2f4e6315d4073bae7928d69943542", "route": "slow", "status": "running", "transport_measured": "provider-complete"}, "decision_id": "79d670bcbcb340a4b4dbad4df09452b4", "event": "fast_decisions:slow_start", "event_id": "d841e3766082419db22057e81b67dc6a", "monotonic_ns": 12007114663041, "parent_session_id": null, "schema_version": "1.0", "seq": 54, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:50.585345+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 61}, {"data": {"cache_read_tokens": 12504, "cache_write_tokens": 1381, "cost_usd": 0.01561095, "duration_ms": 5422.0830840004055, "finish_reason": "end_turn", "host_model": "claude-sonnet-5", "input_tokens": 12506, "latency_kind": "provider_complete_wall_time", "model": "provider-default", "output_tokens": 445, "provider": "anthropic-legacy-resume", "provider_call_id": "provider_83d2f4e6315d4073bae7928d69943542", "served_model": "claude-sonnet-5", "served_model_source": "requested", "status": "ok", "step_kind": "final_answer", "tool_calls": 0, "total_tokens": 12951, "transport_measured": "provider-complete"}, "decision_id": "79d670bcbcb340a4b4dbad4df09452b4", "event": "fast_decisions:slow_end", "event_id": "32cbf391cd9948b3ae0944640885b7fa", "monotonic_ns": 12012537620583, "parent_session_id": null, "schema_version": "1.0", "seq": 55, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:56.008348+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 62}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "execution:end", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": null, "tool_call_id": null}, "decision_id": "79d670bcbcb340a4b4dbad4df09452b4", "event": "fast_decisions:health", "event_id": "1fee1b8bcc5e4eaf900778c1d96cf0b9", "monotonic_ns": 12012544913333, "parent_session_id": null, "schema_version": "1.0", "seq": 56, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:56.015643+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 63}, {"data": {"dropped_events": 0, "duration_ms": 14535.967208999864, "fast_total": 1, "queue_depth": 0, "recording_error": null, "slow_total": 3, "status": "ok"}, "decision_id": "79d670bcbcb340a4b4dbad4df09452b4", "event": "fast_decisions:turn_end", "event_id": "a21b46f413524488a276e3f802f9b47a", "monotonic_ns": 12012547267291, "parent_session_id": null, "schema_version": "1.0", "seq": 57, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:56.017996+00:00", "turn_id": "f0b72d0dcd1c4665a11c09d785b881ef", "cursor": 64}, {"data": {"event_source": "native-hook-bridge", "exception_type": null, "native_event": "session:end", "phase": null, "provider": null, "retry_attempt": null, "status": "observed", "status_code": null, "tool": null, "tool_call_id": null}, "decision_id": null, "event": "fast_decisions:health", "event_id": "d53b8da93d1d4af890a4cc2abadcb714", "monotonic_ns": 12012574592958, "parent_session_id": null, "schema_version": "1.0", "seq": 58, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:56.045322+00:00", "turn_id": null, "cursor": 65}, {"data": {"event_source": "native-hook-bridge", "phase": "session_closed"}, "decision_id": null, "event": "fast_decisions:health", "event_id": "95d7b02a45c441f597df4a17432bf735", "monotonic_ns": 12012576149625, "parent_session_id": null, "schema_version": "1.0", "seq": 59, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:56.046877+00:00", "turn_id": null, "cursor": 66}, {"data": {"dropped_events": 0, "dropped_shadow_jobs": 0, "pending": 0, "queue_depth": 0, "recording_error": null}, "decision_id": null, "event": "fast_decisions:health", "event_id": "b278749d7c154c32ac9cb806ac9bd875", "monotonic_ns": 12012578480041, "parent_session_id": null, "schema_version": "1.0", "seq": 60, "session_id": "19ef04f7-ee9a-4129-86ca-0df2c892b9fe", "synthetic": false, "timestamp": "2026-09-28T04:10:56.049212+00:00", "turn_id": null, "cursor": 67}];</script>
+<script>/* Read-only event projection. No generated events or inferred savings.
+   Arrival animations are triggered only by newly received records.
+   The pure projections at the top are exported for tests/test_viewer.cjs; everything
+   after the `document` guard is the browser render layer. */
+(() => {
+  'use strict';
+
+  // ---------- pure projections ----------
+  const kind = e => e.event.replace('fast_decisions:', '');
+  const native = e => e.data.native_event || '';
+  const decisionKey = e => e.session_id + ':' + e.decision_id;
+  const isScore = e => ['scored', 'shadow_proposed'].includes(kind(e));
+  const stamp = e => Date.parse(e.timestamp) || 0;
+  const fmt = n => Number.isFinite(n) ? (n >= 1000 ? (n / 1000).toFixed(2) + ' s' : (n > 0 && n < 1 ? n.toFixed(1) : Math.round(n)) + ' ms') : '—';
+  const pretty = s => String(s || '').replaceAll('_', ' ');
+  const valid = e => e && e.schema_version === '1.0' && typeof e.event_id === 'string' && typeof e.session_id === 'string' && typeof e.event === 'string' && e.event.startsWith('fast_decisions:') && e.data && typeof e.data === 'object' && !Array.isArray(e.data);
+  const carriesConfig = e => e.data.phase === 'configuration' || kind(e) === 'turn_start' || e.data.mode === 'advisory' || typeof e.data.session_label === 'string' || typeof e.data.workspace_name === 'string' || typeof e.data.repo === 'string';
+  // Display name for a session: an explicit label wins, then the working-directory
+  // basename reported by the hook (never a full path), then the short id.
+  const repoLabel = config => config.repo ? config.repo + (config.subdir ? '/' + config.subdir : '') : '';
+  const sessionName = (config, id) => config.session_label || repoLabel(config) || config.workspace_name || id.slice(0, 8);
+  const HARNESS = { claude: 'Claude Code', codex: 'Codex', copilot: 'GitHub Copilot', cursor: 'Cursor', gemini: 'Gemini CLI', grok: 'Grok', opencode: 'OpenCode', amplifier: 'Amplifier', other: 'Other tool' };
+  // `engine` is the portable tool's caller label (claude, codex, ...); the loop also
+  // records its own engine name there, which is not a harness.
+  const harnessOf = config => config.harness || (config.engine && HARNESS[config.engine] ? HARNESS[config.engine] : '');
+  function scriptedKeys(events) {
+    return new Set(events.filter(e => e.decision_id && (e.synthetic || e.data.synthetic || (isScore(e) && e.data.backend === 'scripted-demo'))).map(decisionKey));
+  }
+  const synthetic = (e, keys) => !!(e.synthetic || e.data.synthetic || (e.decision_id && !['health', 'observatory'].includes(kind(e)) && keys.has(decisionKey(e))));
+  const issue = e => (e.data.phase === 'advisory_result' && e.data.success === false) || ['provider:error', 'provider:retry'].includes(native(e)) || ['error', 'cancelled'].includes(e.data.status) || kind(e) === 'fallback';
+  const useful = e => kind(e) !== 'health' || native(e) || e.data.reason_code || ['configuration', 'session_closed', 'advisory_result'].includes(e.data.phase);
+  // Operator-set display names (e.g. a Jev-compatible server), learned from
+  // each session's configuration event.
+  const backendLabels = new Map();
+  const noteLabel = e => { if (e && e.data && e.data.phase === 'configuration' && typeof e.data.backend_label === 'string' && e.data.backend_label) backendLabels.set(e.session_id, e.data.backend_label); };
+  const labelOf = e => backendLabels.get(e.session_id) || (e.data && typeof e.data.backend_label === 'string' ? e.data.backend_label : '');
+  // The once-per-request routing decision, by turn: every model call in the
+  // turn follows it, so rows for later calls can show why they ran where.
+  const turnJudgments = new Map();
+  const noteTurn = e => { if (e && kind(e) === 'difficulty_judged' && e.turn_id) turnJudgments.set(e.turn_id, e); };
+  const JUDGE_REASON = { scope_strong: 'Large project · kept on your usual model', user_model_strong: 'Your model pick', judge_cheap: 'Judged easy', judge_strong: 'Judged hard', rules_cheap: 'Short request (built-in rule)', rules_strong: 'Long request (built-in rule)', scope_judge_cheap: 'Large project · judged safe for a faster model', scope_judge_strong: 'Large project · judged to need your usual model', scope_fallback_strong: 'Large project · no judge answer, kept on your usual model' };
+  function judgmentView(j, backendLabel) {
+    if (!j) return null;
+    const d = j.data, pc = d.probabilities && typeof d.probabilities.complex === 'number' ? d.probabilities.complex : null;
+    const who = String(d.reason_code || '').startsWith('judge_') ? backendName(d.backend, backendLabel) : String(d.reason_code || '').startsWith('rules_') ? 'Built-in rule' : d.reason_code === 'scope_strong' ? 'Large-project rule' : d.reason_code === 'user_model_strong' ? 'You' : backendName(d.backend, backendLabel);
+    return { title: d.choice === 'cheap' ? 'Easy → faster model' : 'Hard → usual model', detail: (JUDGE_REASON[d.reason_code] || pretty(d.reason_code)) + ' · ' + who + (pc !== null ? ' · ' + Math.round(pc * 100) + '% hard' : '') + (d.reason_code === 'scope_strong' && Number.isFinite(d.candidate_count) ? ' · ' + d.candidate_count + ' files' : ''), choice: d.choice, probability: pc === null ? NaN : (d.choice === 'cheap' ? 1 - pc : pc) };
+  }
+  // Which model a provider call ran on, from its receipts.
+  function modelView(group) {
+    const end = group.findLast(e => kind(e) === 'slow_end') || group.findLast(e => kind(e) === 'slow_start');
+    const mr = group.findLast(e => kind(e) === 'model_routed');
+    if (!end && !mr) return null;
+    const model = end?.data.model && end.data.model !== 'provider-default' ? end.data.model : (mr?.data.requested_model || null);
+    const reason = mr?.data.reason_code || '';
+    const faster = reason === 'start_model' || (!!model && !!mr?.data.requested_model && model === mr.data.requested_model && !String(reason).startsWith('escalated'));
+    const usual = end?.data.host_model || 'your usual model';
+    return { faster, model: faster ? model : usual, switched: String(reason).startsWith('escalated'), reason };
+  }
+  const backendName = (b, label) => label || ({ 'scripted-demo': 'Scripted scorer', deterministic: 'Scripted scorer', 'ollama-token': 'Local model', ollama: 'Local model', jev: 'Jev', unavailable: 'No scorer' }[b] || b || 'Backend not recorded');
+  const money = v => (v < 0 ? '−' : '') + (Math.abs(v) >= 100 ? '$' + Math.round(Math.abs(v)) : '$' + Math.abs(v).toFixed(2));
+  const minutes = s => (s >= 3600 ? (s / 3600).toFixed(1) + ' h' : s >= 60 ? Math.round(s / 60) + ' min' : Math.round(s) + ' s');
+  const ageOf = t => { const n = Math.max(0, Math.floor((Date.now() - t) / 1000)); return n < 60 ? n + 's ago' : n < 3600 ? Math.floor(n / 60) + 'm ago' : n < 86400 ? Math.floor(n / 3600) + 'h ago' : Math.floor(n / 86400) + 'd ago'; };
+  const shortModel = m => String(m || '').replace(/^claude-/, '').replace(/-\d{8}$/, '');
+  const hostLabel = r => { const hs = Object.keys(r.cheap_turn_hosts || {}); return hs.length > 1 ? 'each session\'s usual model (' + hs.slice(0, 3).map(shortModel).join(', ') + ')' : hs.length === 1 ? hs[0] : (r.host_model || 'the host model'); };
+  function projectRows(r) {
+    return (r.by_project || []).slice(0, 6).map(p => ({ name: p.project, turns: p.cheap_turns + ' of ' + (p.cheap_turns + p.strong_turns) + ' on the faster model',
+      saved: money(p.saved_usd || 0), why: (p.by_reason && p.by_reason.scope_strong) ? p.by_reason.scope_strong + ' kept by the large-project rule' : '' }));
+  }
+  const signedMoney = v => (v > 0 ? '' : '') + money(v);
+  const signedTime = v => (v < 0 ? '−' + minutes(-v) + ' (slower)' : minutes(v));
+  function efficiencyView(r) {
+    const t = (r && r.totals) || { receipts: 0 };
+    const levers = Object.entries((r && r.by_lever) || {}).map(([k, v]) => ({ key: k, name: v.label || k, receipts: v.receipts,
+      calls: v.calls_saved, usd: money(v.usd_saved || 0), secs: signedTime(v.seconds_saved || 0), active: v.receipts > 0 }));
+    const projects = Object.entries((r && r.by_project) || {}).map(([name, lv]) => {
+      const sum = k => Object.values(lv).reduce((a, v) => a + (v[k] || 0), 0);
+      return { name, receipts: sum('receipts'), calls: sum('calls_saved'), usd: money(sum('usd_saved')), secs: signedTime(sum('seconds_saved')) };
+    }).sort((a, b) => b.receipts - a.receipts);
+    const harnesses = Object.entries((r && r.by_harness) || {}).map(([name, v]) => ({ name, receipts: v.receipts,
+      calls: v.calls_saved, usd: money(v.usd_saved || 0), secs: signedTime(v.seconds_saved || 0) }))
+      .sort((a, b) => b.receipts - a.receipts);
+    return {
+      cost: t.receipts ? money(t.usd_saved || 0) : '—', time: t.receipts ? signedTime(t.seconds_saved || 0) : '—',
+      calls: t.receipts ? String(t.calls_saved) : '—',
+      costDetail: t.receipts ? t.receipts + ' receipts' + (t.usd_unknown ? ' · ' + t.usd_unknown + ' without a cost baseline' : '') : 'No efficiency receipts yet',
+      timeDetail: t.receipts && t.seconds_unknown ? t.seconds_unknown + ' without a time baseline' : 'vs the same steps on the default model',
+      callsDetail: 'model calls avoided (negative = added)',
+      levers, projects, harnesses,
+      note: 'Every number is a plain sum of stored receipts (fast_decisions:efficiency); each receipt fixed its baseline and savings when the decision was made. ' +
+        ((r && r.excluded_test_receipts) ? r.excluded_test_receipts + ' test/benchmark receipts excluded. ' : '') + 'Recompute with: afast efficiency --json',
+    };
+  }
+  function savingsView(r) {
+    const t = r.turns || {}, c = r.cost || {}, tm = r.time || {};
+    if (!t.total) return { scope: 'No routed turns recorded yet', cost: '—', costDetail: 'Appears once the orchestrator routes turns.', time: '—', timeDetail: '', turns: '0', turnsDetail: '', note: 'Estimates cover only turns the orchestrator routes to the cheaper model.' };
+    const view = {
+      scope: 'All recorded sessions · ' + r.files + ' session files',
+      cost: (c.saved_usd || 0) < 0 ? money(c.saved_usd) + ' (costs more)' : money(c.saved_usd || 0),
+      costDetail: money(c.cheap_turns_actual_usd || 0) + ' spent vs ' + money(c.cheap_turns_on_host_usd || 0) + ' on ' + hostLabel(r),
+      time: tm.available ? ((tm.saved_seconds || 0) < 0 ? '−' + minutes(-tm.saved_seconds) + ' (slower)' : minutes(tm.saved_seconds || 0)) : 'Not yet',
+      timeDetail: tm.available ? minutes(tm.cheap_turns_model_seconds || 0) + ' on the faster model vs ' + minutes(tm.cheap_turns_on_host_seconds || 0) + ' at your usual model\'s measured speed' + ((tm.saved_seconds || 0) < 0 ? ' — on your requests the "faster" model wrote more slowly' : '') : 'Needs more measured requests on both models',
+      turns: t.cheap + ' of ' + t.total,
+      projects: projectRows(r),
+      turnsDetail: (t.judge_calls ? t.judge_calls + ' judged by the decision-maker; ' : '') + t.strong + ' kept on the host model',
+      note: 'Estimates: the same recorded work priced and timed at host-model rates. Host-model turns are unchanged, so they save nothing. Tool time, start-up and decision-maker calls are not counted.',
+    };
+    const rc = r.recent || {};
+    if (rc.turns_since) {
+      const reasons = rc.turns_since_by_reason || {}, big = reasons.scope_strong || 0;
+      view.recent = (rc.last_cheap_turn_at ? 'Last request on the faster model ' + ageOf(Date.parse(rc.last_cheap_turn_at)) + '. ' : '') + 'Since then ' + rc.turns_since + ' request' + (rc.turns_since === 1 ? '' : 's') + ' stayed on your usual model' + (big ? ' (' + big + ' in large projects, where the size rule always keeps the usual model)' : '') + ', so the totals are not moving.';
+      view.note = view.recent + ' ' + view.note;
+    }
+    if (c.requests_without_cache_data) view.note += ' ' + c.requests_without_cache_data + ' older requests lack cache data, so their dollars are overstated.';
+    return view;
+  }
+  function configFor(events, id) {
+    return events.filter(e => e.session_id === id && carriesConfig(e)).reduce((config, e) => ({ ...config, ...e.data }), {});
+  }
+  const WORKING = new Set(['execution:start', 'provider:request', 'tool:pre', 'tool:post', 'llm:response', 'context:compaction']);
+  const LIFE = new Set([...WORKING, 'execution:end', 'session:end', 'provider:error', 'provider:retry']);
+  function sessionsFor(events, now) {
+    const map = new Map();
+    for (const e of events) {
+      let s = map.get(e.session_id);
+      if (!s) { s = { id: e.session_id, parent: null, events: [], latest: e, config: {} }; map.set(s.id, s); }
+      s.events.push(e);
+      if (e.parent_session_id) s.parent = e.parent_session_id;
+      if (stamp(e) >= stamp(s.latest)) s.latest = e;
+      if (carriesConfig(e)) s.config = { ...s.config, ...e.data };
+    }
+    for (const s of map.values()) {
+      const life = s.events.findLast(e => LIFE.has(native(e)) || ['turn_start', 'turn_end'].includes(kind(e)) || e.data.phase === 'session_closed');
+      const beat = s.events.findLast(e => ['session_heartbeat', 'configuration'].includes(e.data.phase));
+      const closed = life && (life.data.phase === 'session_closed' || native(life) === 'session:end');
+      s.reporting = !closed && !!beat && now - stamp(beat) < 45000;
+      s.name = sessionName(s.config, s.id);
+      if (s.config.mode === 'advisory') { s.state = 'Advisory invocation recorded'; s.stateKind = 'advisory'; }
+      else if (closed) { s.state = 'Session closed'; s.stateKind = 'closed'; }
+      else if (!s.reporting) { s.state = 'No recent heartbeat'; s.stateKind = 'stale'; }
+      else if (!life) { s.state = 'Connected, idle'; s.stateKind = 'idle'; }
+      else if (issue(life)) { s.state = 'Provider issue reported'; s.stateKind = 'issue'; }
+      else if (native(life) === 'execution:end' || kind(life) === 'turn_end') { s.state = 'Connected, idle'; s.stateKind = 'idle'; }
+      else { s.state = 'Working'; s.stateKind = 'working'; }
+    }
+    return [...map.values()].sort((a, b) => stamp(b.latest) - stamp(a.latest));
+  }
+  function metrics(events) {
+    const scores = events.filter(isScore), fast = new Set(events.filter(e => kind(e) === 'routed' && e.data.route === 'fast').map(decisionKey));
+    const executions = events.filter(e => kind(e) === 'tool_end' && (e.data.success === true || e.data.status === 'ok'));
+    const nativePosts = events.filter(e => native(e) === 'tool:post');
+    const postSessions = new Set(nativePosts.map(e => e.session_id));
+    const judged = events.filter(e => kind(e) === 'difficulty_judged');
+    const durations = scores.concat(judged.filter(e => String(e.data.reason_code || '').startsWith('judge_'))).map(e => e.data.duration_ms).filter(Number.isFinite).sort((a, b) => a - b);
+    const routedCalls = events.filter(e => kind(e) === 'model_routed');
+    return {
+      judged: judged.length, cheapCalls: routedCalls.filter(e => e.data.reason_code === 'start_model').length,
+      hostCalls: routedCalls.filter(e => e.data.reason_code !== 'start_model').length,
+      switched: routedCalls.filter(e => String(e.data.reason_code || '').startsWith('escalated')).length,
+      scores: scores.length, fast: fast.size, fastExecuted: executions.filter(e => fast.has(decisionKey(e))).length,
+      tools: nativePosts.length + executions.filter(e => !postSessions.has(e.session_id)).length,
+      bypassed: new Set(events.filter(e => kind(e) === 'routed' && e.data.route === 'fast' && e.data.status === 'submitted_to_upstream').map(decisionKey)).size,
+      comparisons: events.filter(e => kind(e) === 'shadow_agreement' && ['match', 'mismatch'].includes(e.data.agreement)),
+      failedFast: events.filter(e => kind(e) === 'tool_end' && fast.has(decisionKey(e)) && (e.data.status === 'error' || e.data.success === false)).length,
+      issues: events.filter(issue).length, p95: durations.length ? durations[Math.ceil(durations.length * .95) - 1] : NaN,
+    };
+  }
+  const STAGES = new Set(['requested', 'scored', 'shadow_proposed', 'shadow_observed', 'routed', 'fallback', 'tool_start', 'tool_end', 'slow_start', 'slow_end', 'shadow_agreement', 'role_proposed', 'role_agreement']);
+  function decisionPath(events, session, selected) {
+    const focus = events.find(e => e.event_id === selected && e.decision_id && e.session_id === session)
+      || events.findLast(e => e.session_id === session && e.decision_id && kind(e) === 'scored')
+      || events.findLast(e => e.session_id === session && e.decision_id && kind(e) === 'requested')
+      || events.findLast(e => e.session_id === session && e.decision_id && isScore(e));
+    if (!focus) return [];
+    return events.filter(e => decisionKey(e) === decisionKey(focus) && STAGES.has(kind(e)))
+      .sort((a, b) => stamp(a) - stamp(b) || (a.seq || 0) - (b.seq || 0));
+  }
+  function describe(e, simulated = false) {
+    const k = kind(e), d = e.data, n = native(e);
+    let title = pretty(k), detail = d.reason_code ? pretty(d.reason_code) : d.status || 'Recorded metadata', source = 'Runtime record', tone = 'runtime';
+    if (n) { title = ({ 'execution:start': 'Turn started', 'execution:end': 'Turn finished', 'session:end': 'Session ended', 'provider:request': 'Provider request', 'provider:retry': 'Provider retry', 'provider:error': 'Provider error', 'tool:pre': 'Tool proposed', 'tool:post': 'Tool result observed', 'context:compaction': 'Context compaction observed', 'llm:response': 'Provider response observed' }[n] || n); detail = [d.tool || d.provider, d.exception_type, d.retry_attempt ? 'Attempt ' + d.retry_attempt : '', d.status_code ? 'HTTP ' + d.status_code : ''].filter(Boolean).join(' · ') || 'Reported by an Amplifier hook'; source = 'Native hook observation'; }
+    if (d.phase === 'configuration') { title = 'Bundle mounted'; detail = [d.harness, backendName(d.backend, labelOf(e)), d.mode || 'Mode not recorded', repoLabel(d) || d.workspace_name, d.branch ? '⎇ ' + d.branch : ''].filter(Boolean).join(' · '); source = 'Runtime configuration'; }
+    if (d.phase === 'session_closed') { title = 'Telemetry session closed'; detail = 'The bundle observer was unmounted.'; }
+    if (k === 'requested') { title = 'Decision requested'; detail = (d.candidate_count ?? '?') + ' prepared candidates'; source = 'Decision service'; tone = 'decision'; }
+    if (isScore(e)) { title = k === 'shadow_proposed' ? 'Shadow proposal scored' : 'Decision scored'; detail = d.model || backendName(d.backend, labelOf(e)); source = simulated ? 'Scripted score' : 'Model score'; tone = 'decision'; }
+    if (d.mode === 'advisory' && isScore(e)) { title = 'Advisory decision scored'; source = 'Portable Smart Tool'; }
+    if (d.phase === 'advisory_result') { title = 'Advisory result returned'; detail = 'Caller owns execution and policy; no bypass claimed.'; source = 'Portable Smart Tool'; }
+    if (k === 'routed') { title = d.route === 'fast' ? 'Fast action submitted' : 'Reasoning provider selected'; detail = pretty(d.reason_code); source = 'Routing decision'; tone = 'decision'; }
+    if (k === 'tool_start') { title = 'Tool execution started'; detail = d.tool || 'Tool not recorded'; source = 'Measured execution'; }
+    if (k === 'tool_end') { title = d.success === false || d.status === 'error' ? 'Tool execution failed' : 'Tool execution ' + (d.status === 'ok' ? 'completed' : (d.status || 'ended')); detail = d.tool || 'Tool not recorded'; source = 'Measured execution'; }
+    if (k === 'slow_start' || k === 'slow_end') { title = k === 'slow_start' ? 'Model invocation started' : 'Model invocation ended'; detail = d.provider || d.model || 'Provider not recorded'; source = 'Measured invocation'; }
+    if (k === 'shadow_observed') { title = 'Tool choice observed'; detail = d.tool || 'Tool not recorded'; source = 'Shadow observation'; }
+    if (k === 'shadow_agreement') { title = 'Shadow comparison: ' + pretty(d.agreement); detail = 'Compared with the observed tool choice; no execution changed.'; source = 'Shadow comparison'; }
+    if (k === 'role_proposed' || k === 'role_agreement') { title = 'Model-role ' + (k === 'role_proposed' ? 'suggestion' : 'comparison'); detail = 'Shadow only; provider selection is unchanged.'; source = 'Shadow comparison'; }
+    if (d.reason_code === 'no_eligible_candidates') { title = 'No prepared action available'; detail = 'The request did not produce an eligible candidate.'; }
+    if (k === 'difficulty_judged') { const jv = judgmentView(e, labelOf(e)); title = 'Request routed: ' + jv.title; detail = jv.detail; source = 'Difficulty router'; }
+    if (d.reason_code === 'judge_disabled') { title = 'Routed to model (routing-only)'; detail = 'No judge configured; effort and model routing still apply.'; }
+    if (d.reason_code === 'provider_not_matched') { title = 'Model routing skipped'; detail = 'This provider does not match model_routing.provider_match; its own model is used.'; }
+    if (k === 'turn_start') { title = 'Hybrid turn started'; detail = backendName(d.backend, labelOf(e)) + ' · ' + d.mode; }
+    if (k === 'turn_end') { title = 'Hybrid turn finished'; detail = (d.fast_total ?? 0) + ' fast submissions · ' + (d.slow_total ?? 0) + ' measured provider calls'; }
+    if (k === 'observatory') { title = 'Viewer ' + (d.action || 'event'); detail = pretty(d.reason) || 'Viewer lifecycle metadata'; }
+    if (issue(e)) tone = 'error';
+    if (simulated) { source = 'Synthetic / scripted'; tone = 'synthetic'; }
+    return { title, detail, source, tone };
+  }
+  // One decision group -> the ledger row: what was proposed, what happened, and a verdict.
+  // Every verdict is a label with a tone; the tone never carries meaning alone.
+  function summarize(group, simulated, opts = {}) {
+    const by = k => group.find(e => kind(e) === k), last = k => group.findLast(e => kind(e) === k);
+    const nat = n => group.findLast(e => native(e) === n);
+    const request = by('requested'), score = last('scored') || last('shadow_proposed');
+    const routed = last('routed'), fallback = last('fallback'), agreement = last('shadow_agreement');
+    const toolEnd = last('tool_end'), slowEnd = last('slow_end'), observed = last('shadow_observed') || nat('tool:pre');
+    const roleProposed = last('role_proposed'), roleAgreement = last('role_agreement');
+    const advisory = group.some(e => e.data.mode === 'advisory' || e.data.phase === 'advisory_result');
+    const judgment = group.find(e => kind(e) === 'difficulty_judged') || turnJudgments.get(group.find(e => e.turn_id)?.turn_id);
+    const jv = judgmentView(judgment, judgment ? labelOf(judgment) : '');
+    const mv = modelView(group);
+    const names = new Map((request?.data.candidates || []).map(c => [c.id, c.label]));
+    names.set('reason', 'Defer to reasoning model');
+    const label = id => names.get(id) || id; // a raw candidate id stays verbatim (rendered monospace)
+    const choice = score?.data.choice;
+    const probability = score ? (Number.isFinite(score.data.selected_probability) ? score.data.selected_probability : score.data.probabilities?.[choice]) : NaN;
+    const submitted = routed?.data.route === 'fast' && routed.data.status === 'submitted_to_upstream';
+    const toolOK = !!toolEnd && (toolEnd.data.success === true || toolEnd.data.status === 'ok') && !['error', 'cancelled'].includes(toolEnd.data.status) && toolEnd.data.success !== false;
+    const providerOK = slowEnd?.data.status === 'ok';
+    const terminal = !!(toolEnd || slowEnd || agreement || fallback || roleAgreement || nat('tool:post') || group.some(e => e.data.phase === 'advisory_result') || (routed && routed.data.route !== 'fast' && !opts.live));
+    const inFlight = !!opts.live && !terminal && (opts.now - stamp(group.at(-1))) < 90000;
+    // proposed
+    let proposed = { title: 'No FD judgment recorded', detail: 'Tool activity only' };
+    if (roleProposed && !score) proposed = { title: roleProposed.data.proposed_model_role ? 'Role: ' + roleProposed.data.proposed_model_role : 'Role router abstained', detail: pretty(roleProposed.data.reason_code) };
+    else if (score) proposed = { title: choice ? label(choice) : 'No choice recorded', id: !!choice && !names.has(choice), detail: (score.data.model || backendName(score.data.backend, labelOf(score))) + (request ? ' · ' + (request.data.candidate_count ?? '?') + ' candidates' : ''), probability };
+    else if (fallback) proposed = { title: fallback.data.reason_code === 'no_eligible_candidates' ? 'No prepared action' : 'Fallback', detail: pretty(fallback.data.reason_code) };
+    else if (request) proposed = { title: 'Awaiting score', detail: (request.data.candidate_count ?? '?') + ' candidates' };
+    if (!score && !roleProposed && jv) proposed = { title: jv.title, detail: jv.detail, probability: jv.probability };
+    // happened
+    let happened = { title: '—', detail: '' };
+    if (routed?.data.route === 'fast') happened = { title: 'Fast action → ' + (routed.data.destination || routed.data.selected_candidate || 'tool'), detail: toolEnd ? (!toolOK ? 'execution ' + (toolEnd.data.status || 'outcome unknown') : 'executed' + (Number.isFinite(toolEnd.data.duration_ms) ? ' in ' + fmt(toolEnd.data.duration_ms) : '')) : routed.data.status === 'submitted_to_upstream' ? 'submitted to upstream · no execution recorded' : pretty(routed.data.status) };
+    else if (routed && mv) happened = { title: (mv.faster ? 'Faster model · ' : 'Usual model · ') + mv.model, detail: (providerOK && Number.isFinite(slowEnd.data.duration_ms) ? 'answered in ' + fmt(slowEnd.data.duration_ms) : slowEnd ? 'provider ' + (slowEnd.data.status || 'outcome unknown') : inFlight ? 'running…' : 'no completion recorded') + (mv.switched ? ' · switched mid-request' : '') };
+    else if (routed) happened = { title: 'Reasoning provider' + (slowEnd?.data.provider || routed.data.destination ? ' · ' + (slowEnd?.data.provider || routed.data.destination) : ''), detail: (providerOK && Number.isFinite(slowEnd.data.duration_ms) ? 'answered in ' + fmt(slowEnd.data.duration_ms) + ' · ' : '') + pretty(routed.data.reason_code) };
+    else if (advisory) happened = { title: 'Suggestion returned to caller', detail: 'no execution or bypass claimed' };
+    else if (observed) happened = { title: 'LLM called ' + (observed.data.tool || 'a tool'), detail: nat('tool:post') ? 'result observed' : inFlight ? 'running…' : 'no result observed' };
+    else if (roleAgreement) happened = { title: 'Delegate used role ' + (roleAgreement.data.actual_model_role || 'default'), detail: 'read from the tool result' };
+    else if (fallback) happened = { title: 'Deferred to the provider', detail: fallback.data.exception_type || '' };
+    else if (score) happened = { title: inFlight ? 'Waiting for the LLM' : 'Outcome not joined', detail: '' };
+    // verdict
+    let verdict;
+    if (simulated) verdict = { label: 'Scripted', tone: 'warn', note: 'Scripted evidence · excluded from counts' };
+    else if (advisory) verdict = { label: 'Advisory', tone: 'adv', note: 'Advisory only · no execution or savings claimed' };
+    else if (routed?.data.route === 'fast') {
+      const bypassNote = submitted ? 'Generative call bypassed' : 'Bypass not confirmed';
+      verdict = toolEnd
+        ? toolOK ? { label: 'Fast · executed', tone: 'ok', note: bypassNote + ' · tool executed · task quality unverified' }
+          : { label: 'Fast · ' + (toolEnd.data.status === 'cancelled' ? 'cancelled' : toolEnd.data.success === false || toolEnd.data.status === 'error' ? 'failed' : 'outcome unknown'), tone: 'bad', note: bypassNote + ' · successful execution not recorded' }
+        : { label: submitted ? 'Fast · submitted' : 'Fast · selected', tone: submitted ? 'ok' : 'info', note: bypassNote + ' · no completed tool recorded' };
+    }
+    else if (routed && mv) verdict = mv.switched ? { label: 'Switched up', tone: 'warn', note: 'Moved to your usual model mid-request (' + pretty(mv.reason) + ')' } : mv.faster ? { label: 'Faster model', tone: 'ok', note: (jv ? jv.detail : 'Routed to the faster model') + (providerOK ? ' · provider answered' : '') } : { label: 'Usual model', tone: 'info', note: (jv ? jv.detail : 'Standard setup') + (providerOK ? ' · provider answered' : '') };
+    else if (routed) verdict = { label: 'Reasoning model', tone: 'info', note: pretty(routed.data.reason_code) + (providerOK ? ' · provider answered' : slowEnd ? ' · provider ' + (slowEnd.data.status || 'outcome unknown') : ' · no provider completion recorded') };
+    else if (fallback && fallback.data.reason_code === 'no_eligible_candidates') verdict = { label: 'No candidate', tone: 'muted', note: 'No eligible prepared action · provider path unchanged' };
+    else if (fallback) verdict = { label: 'Fallback', tone: fallback.data.exception_type ? 'bad' : 'warn', note: pretty(fallback.data.reason_code) + ' · deferred to the provider' };
+    else if (agreement) verdict = ({ match: { label: 'Match', tone: 'ok' }, mismatch: { label: 'Mismatch', tone: 'warn' }, abstained: { label: 'Abstained', tone: 'info' } }[agreement.data.agreement] || { label: pretty(agreement.data.agreement), tone: 'muted' });
+    else if (roleAgreement) verdict = roleAgreement.data.agreement === 'match' ? { label: 'Role match', tone: 'ok' } : roleAgreement.data.agreement === 'mismatch' ? { label: 'Role mismatch', tone: 'warn' } : { label: 'Role ' + pretty(roleAgreement.data.agreement), tone: 'muted' };
+    else if (score && choice === 'reason') verdict = { label: 'Proposed: defer', tone: 'info' };
+    else if (score || roleProposed) verdict = inFlight ? { label: 'In flight', tone: 'live' } : { label: 'Unjoined', tone: 'muted', note: 'No matching outcome was recorded' };
+    else verdict = inFlight ? { label: 'In flight', tone: 'live' } : { label: 'Observed only', tone: 'muted', note: 'The monitoring hook recorded this call; no Fast Decisions evaluation is linked to it' };
+    if (!verdict.note) verdict.note = group.some(e => kind(e).startsWith('shadow_')) ? 'Shadow comparison · execution unchanged' : 'Recorded runtime path · no fast bypass claimed';
+    const mode = simulated ? 'Scripted' : advisory ? 'Advisory' : group.some(e => kind(e).startsWith('shadow_') || kind(e).startsWith('role_')) ? 'Shadow' : routed || request ? 'Active' : group.some(e => native(e)) ? 'Native' : 'Runtime';
+    // Scoring column: an action score's latency, else the per-request routing
+    // decision -- who decided, how fast, and with what confidence.
+    let scoring = { value: Number.isFinite(score?.data.duration_ms) ? fmt(score.data.duration_ms) : '—', label: score ? 'scoring' : 'no score' };
+    if (!score && judgment) {
+      const jd = judgment.data, rc = String(jd.reason_code || ''), pc = jd.probabilities && typeof jd.probabilities.complex === 'number' ? jd.probabilities.complex : null;
+      if (rc.startsWith('judge_')) scoring = { value: Number.isFinite(jd.duration_ms) ? fmt(jd.duration_ms) : '—', label: backendName(jd.backend, labelOf(judgment)) + (pc !== null ? ' · ' + Math.round(pc * 100) + '% hard' : '') };
+      else if (rc === 'scope_strong') scoring = { value: 'rule', label: 'large project · no judge call' };
+      else if (rc === 'user_model_strong') scoring = { value: 'you', label: 'your model pick' };
+      else if (rc.startsWith('rules_')) scoring = { value: 'rule', label: 'length rule' + (jd.backend && jd.backend !== 'unavailable' ? ' (judge unavailable)' : '') };
+    }
+    return { proposed, happened, verdict, inFlight, mode, score, request, latency: score?.data.duration_ms, scoring };
+  }
+  // Circuit edges require route/invocation evidence. A score, shadow agreement,
+  // or advisory result alone never lights an execution path.
+  function circuitFor(group) {
+    const last = k => group.findLast(e => kind(e) === k);
+    const route = last('routed'), score = last('scored') || last('shadow_proposed') || last('difficulty_judged') || turnJudgments.get(group.find(e => e.turn_id)?.turn_id);
+    const advisory = group.some(e => e.data.mode === 'advisory' || e.data.phase === 'advisory_result');
+    const shadow = group.some(e => kind(e).startsWith('shadow_') || kind(e).startsWith('role_'));
+    const provider = last('slow_end') || last('slow_start');
+    const fast = !advisory && !shadow && route?.data.route === 'fast' ? route : null;
+    const slow = provider || (!advisory && !shadow && route?.data.route === 'slow' ? route : null);
+    return { request: last('requested'), score, fast, slow,
+      host: group.findLast(e => ['tool_start', 'tool_end'].includes(kind(e)) || ['tool:pre', 'tool:post'].includes(native(e))),
+      branch: fast ? 'fast' : slow ? 'slow' : 'unknown',
+      receipt: last('tool_end') || last('slow_end') || last('shadow_agreement') || group.at(-1) };
+  }
+  if (typeof module !== 'undefined') module.exports = { kind, valid, scriptedKeys, synthetic, sessionsFor, metrics, describe, decisionPath, summarize, sessionName, circuitFor, savingsView, harnessOf, efficiencyView };
+  if (typeof document === 'undefined') return;
+
+  // ---------- browser render layer ----------
+  const $ = id => document.getElementById(id), put = (id, text) => { $(id).textContent = text; };
+  const make = (tag, cls, text) => { const node = document.createElement(tag); if (cls) node.className = cls; if (text !== undefined) node.textContent = text; return node; };
+  let events = [], seen = new Set(), cursor = 0, epoch = null, session = '', selected = null, category = 'live', following = true, source = 'live', lastPoll = 0, connectionError = '', retained = 0, invalidLines = 0, windowGap = false, hasMore = false;
+  let frozenIds = null, expanded = new Set(), token = '', pollTimer = null, pollGeneration = 0, arrivals = new Set(), renderedAt = 0;
+  let circuitFocus = null;
+  let historyReady = false;
+  let lastStudyPoll = 0;
+  // Older Ledger/Circuit URLs now open the same dashboard. Collapse only the
+  // diagram; the event stream, selection and filters always remain shared.
+  try { $('decisionCircuit').open = sessionStorage.getItem('afast-path-collapsed') !== 'true'; } catch (_) { }
+  $('decisionCircuit').ontoggle = () => {
+    try { sessionStorage.setItem('afast-path-collapsed', String(!$('decisionCircuit').open)); } catch (_) { }
+  };
+  const tokenKey = 'afast-token:' + location.host;
+  try { token = new URLSearchParams(location.hash.slice(1)).get('token') || sessionStorage.getItem(tokenKey) || ''; if (token) sessionStorage.setItem(tokenKey, token); } catch (_) { }
+  if (location.hash.startsWith('#token=')) history.replaceState(null, '', location.pathname + location.search);
+  const age = t => { const n = Math.max(0, Math.floor((Date.now() - t) / 1000)); return n < 5 ? 'just now' : n < 60 ? n + 's ago' : n < 3600 ? Math.floor(n / 60) + 'm ago' : n < 86400 ? Math.floor(n / 3600) + 'h ago' : Math.floor(n / 86400) + 'd ago'; };
+  const clock = e => new Date(e.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const shortId = id => id.length > 12 ? id.slice(0, 8) : id;
+  const toneClass = t => ({ ok: 'ok', info: 'info', warn: 'warn', bad: 'bad', adv: 'adv', live: 'live' }[t] || '');
+
+  function ingest(batch, force = false) {
+    arrivals = new Set(source === 'live' && historyReady && following ? batch.filter(e => !seen.has(e.event_id)).map(e => e.event_id) : []);
+    for (const e of batch) if (valid(e) && !seen.has(e.event_id)) { seen.add(e.event_id); events.push(e); noteLabel(e); noteTurn(e); }
+    events.sort((a, b) => stamp(a) - stamp(b) || (a.session_id === b.session_id ? (a.seq || 0) - (b.seq || 0) : 0));
+    if (events.length > 20000) { events = events.slice(-20000); seen = new Set(events.map(e => e.event_id)); }
+    if (force || batch.length || source !== 'live' || Date.now() - renderedAt > 5000) render();
+    arrivals.clear();
+  }
+  function currentWindow() { const limit = $('timeWindow').value; return events.filter(e => (limit === 'all' || Date.now() - stamp(e) <= Number(limit)) && (!frozenIds || frozenIds.has(e.event_id))); }
+  function scopeData(base) {
+    const children = $('includeChildren').checked;
+    const parents = new Map(events.filter(e => e.parent_session_id).map(e => [e.session_id, e.parent_session_id]));
+    const descendant = id => { const visited = new Set(); while (parents.has(id) && !visited.has(id)) { visited.add(id); id = parents.get(id); if (id === session) return true; } return false; };
+    return base.filter(e => session ? (e.session_id === session || (children && descendant(e.session_id))) : (children || !parents.has(e.session_id)));
+  }
+  function selectSession(id) { session = id; selected = null; render(); }
+
+  function renderSessions(base, keys) {
+    const sessions = sessionsFor(base, Date.now()), map = new Map(sessions.map(s => [s.id, s]));
+    const roots = sessions.filter(s => !s.parent), orphans = sessions.filter(s => s.parent && !map.has(s.parent));
+    for (const child of orphans) if (!roots.some(s => s.id === child.parent)) roots.push({ id: child.parent, parent: null, events: [], latest: child.latest, config: {}, name: child.parent.slice(0, 8), state: 'Parent not observed', stateKind: 'stale', reporting: false });
+    const search = $('sessionSearch').value.toLowerCase();
+    put('sessionCount', roots.length); put('allSessionCount', roots.length);
+    $('allSessions').classList.toggle('selected', !session); $('allSessions').setAttribute('aria-pressed', String(!session));
+    const target = $('sessions'); target.replaceChildren();
+    function row(s, child = false) {
+      const button = make('button', 'session-row' + (s.id === session ? ' selected' : '') + (child ? ' child' : ''));
+      button.setAttribute('aria-pressed', String(s.id === session)); button.title = s.id; button.dataset.sessionId = s.id;
+      const named = !!(s.config.session_label || s.config.repo || s.config.workspace_name);
+      const top = make('span', 'session-top');
+      top.append(make('span', 'session-name' + (named ? '' : ' unnamed'), s.name), make('span', 'session-age', age(stamp(s.latest))));
+      const meta = make('span', 'session-meta');
+      if (named) meta.append(make('span', 'session-id', shortId(s.id)));
+      meta.append(make('span', 'session-config', s.config.mode ? backendName(s.config.backend, s.config.backend_label) + ' · ' + s.config.mode : 'Configuration not recorded'));
+      const context = [harnessOf(s.config), s.config.branch ? '⎇ ' + s.config.branch : ''].filter(Boolean).join(' · ');
+      button.append(top);
+      if (context) button.append(make('span', 'session-context', context));
+      button.append(meta, make('span', 'session-state ' + (s.stateKind || ''), s.state));
+      button.title = [sessionName(s.config, s.id), harnessOf(s.config), s.config.branch, s.id].filter(Boolean).join(' · ');
+      button.onclick = () => selectSession(s.id); return button;
+    }
+    function group(s, level = 0, visited = new Set()) {
+      if (visited.has(s.id)) return null; visited = new Set([...visited, s.id]);
+      const kids = sessions.filter(x => x.parent === s.id);
+      const matches = [s, ...kids].some(x => (x.id + ' ' + (x.name || '') + ' ' + (x.config.session_label || '') + ' ' + (x.config.workspace_name || '')).toLowerCase().includes(search));
+      if (!matches) return null;
+      const wrap = make('div', 'session-group'); wrap.append(row(s, level > 0));
+      if (kids.length) {
+        const toggle = make('button', 'children-toggle', (expanded.has(s.id) ? 'Hide ' : 'Show ') + kids.length + ' child session' + (kids.length === 1 ? '' : 's'));
+        toggle.dataset.childrenId = s.id; toggle.setAttribute('aria-expanded', String(expanded.has(s.id)));
+        toggle.onclick = () => { expanded.has(s.id) ? expanded.delete(s.id) : expanded.add(s.id); render(); };
+        wrap.append(toggle);
+        if (expanded.has(s.id)) for (const child of kids) { const g = group(child, level + 1, visited); if (g) wrap.append(g); }
+      }
+      return wrap;
+    }
+    for (const s of roots) { const g = group(s); if (g) target.append(g); }
+    if (!roots.length) target.append(make('p', 'session-config', 'No sessions in this window.'));
+    return sessions;
+  }
+
+  function renderDetails(e, keys) {
+    $('detailEmpty').hidden = !!e; $('detailContent').hidden = !e;
+    if (!e) { put('evidenceKind', 'No selection'); $('evidenceKind').className = 'tag'; return; }
+    const simulated = synthetic(e, keys), info = describe(e, simulated), d = e.data;
+    put('evidenceKind', info.source); $('evidenceKind').className = 'tag ' + ({ decision: 'ok', error: 'bad', synthetic: 'warn' }[info.tone] || '');
+    put('detailTitle', info.title); put('detailDescription', info.detail);
+    const cfg = configFor(events, e.session_id), related = e.decision_id ? events.filter(x => decisionKey(x) === decisionKey(e)) : [e];
+    const score = related.findLast(isScore), request = related.find(x => kind(x) === 'requested');
+    const facts = [
+      ['Session', sessionName(cfg, e.session_id), false], ['Session id', e.session_id, true],
+      ...(e.parent_session_id ? [['Parent', e.parent_session_id, true]] : []),
+      ...(cfg.workspace_name ? [['Directory', cfg.workspace_name, false]] : []),
+      ['Recorded', new Date(e.timestamp).toLocaleString(), false], ['Event', e.event, true], ['Source', info.source, false],
+      ...(d.tool ? [['Tool', d.tool, true]] : []), ...(d.choice ? [['Choice', d.choice, true]] : []), ...(d.tool_call_id ? [['Tool call', d.tool_call_id, true]] : []),
+      ...(e.decision_id ? [['Decision', e.decision_id, true]] : []),
+      ...(Number.isFinite(d.duration_ms) ? [['Measured duration', fmt(d.duration_ms) + (d.latency_kind ? ' · ' + pretty(d.latency_kind) : ''), false]] : []),
+      ...(d.reason_code ? [['Reason code', pretty(d.reason_code), false]] : []),
+      ...(d.agreement ? [['Agreement', pretty(d.agreement) + (d.proposed_candidate ? ' · proposed ' + d.proposed_candidate : '') + (d.actual_tool ? ' · actual ' + d.actual_tool : ''), false]] : []),
+      ...(d.domain ? [['Domain', d.domain, false]] : []),
+    ];
+    $('eventFacts').replaceChildren();
+    for (const [label, value, mono] of facts) { const row = make('div'); row.append(make('dt', '', label), make('dd', mono ? 'mono' : '', value)); $('eventFacts').append(row); }
+    put('sessionConfig', cfg.mode ? backendName(cfg.backend, cfg.backend_label) + ' in ' + cfg.mode + ' mode. ' + (cfg.backend === 'scripted-demo' ? 'Scores are scripted; no model is connected to this scorer.' : cfg.mode === 'shadow' ? 'Proposals do not change execution.' : cfg.mode === 'advisory' ? 'Portable suggestion only; caller owns execution.' : 'Fast selections still pass native approval.') : 'No configuration event is available for this session.');
+    $('distribution').hidden = !score; $('probabilities').replaceChildren();
+    if (score) {
+      put('scoreMeaning', synthetic(score, keys) ? 'Scripted values. These did not come from a model.' : score.data.probability_kind === 'token_mass_with_abstention_residual' ? 'Uncalibrated token scores from ' + (score.data.model || backendName(score.data.backend, labelOf(score))) + '. They do not measure correctness.' : 'Backend-reported scores; not independent evidence of correctness.');
+      const names = new Map((request?.data.candidates || []).map(c => [c.id, c.label])); names.set('reason', 'Use reasoning model');
+      for (const [id, p] of Object.entries(score.data.probabilities || {}).filter(([, p]) => Number.isFinite(p)).sort((a, b) => b[1] - a[1])) {
+        const row = make('div', 'prob-row' + (id === score.data.choice ? ' chosen' : '') + (id === 'reason' ? ' reason' : '')), caption = make('div', 'prob-label'), track = make('div', 'prob-track'), fill = make('div', 'prob-fill');
+        caption.append(make(id === score.data.choice ? 'b' : 'span', '', (names.get(id) || id) + (id === score.data.choice ? ' · chosen' : '')), make('span', '', (p * 100).toFixed(1) + '%'));
+        fill.style.width = Math.max(0, Math.min(100, p * 100)) + '%'; track.append(fill); row.append(caption, track); $('probabilities').append(row);
+      }
+    }
+    put('eventJson', JSON.stringify(e, null, 2));
+  }
+
+  // Group events into decision flows. A native tool:pre/tool:post pair joins the decision
+  // whose shadow_observed / tool_start recorded the same tool_call_id in the same session;
+  // otherwise it forms its own hook-observation flow.
+  function flowGroups(scoped) {
+    const callToDecision = new Map();
+    for (const e of scoped) if (e.decision_id && e.data.tool_call_id) callToDecision.set(e.session_id + ':' + e.data.tool_call_id, decisionKey(e));
+    const groups = new Map();
+    for (const e of scoped) {
+      const nativeCall = !e.decision_id && native(e) && e.data.tool_call_id;
+      if (!nativeCall && (!e.decision_id || (['health', 'observatory'].includes(kind(e)) && e.data.phase !== 'advisory_result'))) continue;
+      const key = nativeCall ? (callToDecision.get(e.session_id + ':' + e.data.tool_call_id) || e.session_id + ':native:' + e.data.tool_call_id) : decisionKey(e);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(e);
+    }
+    for (const g of groups.values()) g.sort((a, b) => stamp(a) - stamp(b) || (a.seq || 0) - (b.seq || 0));
+    return groups;
+  }
+  const isStage = e => STAGES.has(kind(e)) || e.data.phase === 'advisory_result' || (native(e) && e.data.tool_call_id);
+
+  function renderCircuit(rows) {
+    const focused = rows.find(row => row.group.some(e => e.event_id === selected));
+    const decisions = rows.filter(row => row.group.some(e => e.decision_id));
+    const latestRow = (decisions.length ? decisions : rows).reduce((latest, row) => !latest || stamp(row.group.at(-1)) > stamp(latest.group.at(-1)) ? row : latest, null);
+    const row = focused || latestRow;
+    const group = row?.group || [], s = row?.summary, path = circuitFor(group);
+    $('circuitLatest').hidden = !focused;
+    const latest = group.at(-1);
+    circuitFocus = path.score || path.receipt || null;
+    put('circuitContext', latest ? sessionName(configFor(events, latest.session_id), latest.session_id) + ' · ' + (focused ? 'Selected decision' : 'Latest decision') + ' · ' + clock(latest) : 'Start a turn or open a saved trace to follow a decision.');
+    put('circuitMode', s?.mode || 'No records');
+    $('circuitMode').className = 'tag ' + (s?.mode === 'Scripted' ? 'warn' : s?.mode === 'Advisory' ? 'adv' : '');
+    $('circuitMap').dataset.branch = path.branch;
+    const newStage = kinds => source === 'live' && following && group.some(e => arrivals.has(e.event_id) && kinds.includes(kind(e)));
+    $('circuitMap').classList.toggle('fresh-score', newStage(['scored', 'shadow_proposed']));
+    $('circuitMap').classList.toggle('fresh-fast', !!path.fast && newStage(['routed', 'tool_start', 'tool_end']));
+    $('circuitMap').classList.toggle('fresh-slow', !!path.slow && newStage(['routed', 'slow_start', 'slow_end']));
+    const bind = (id, event) => {
+      const node = $(id); node.disabled = !event;
+      node.classList.toggle('arriving', !!event && arrivals.has(event.event_id));
+      if (event) node.dataset.circuitEventId = event.event_id; else delete node.dataset.circuitEventId;
+      node.setAttribute('aria-pressed', String(!!event && selected === event.event_id));
+      node.onclick = event ? () => { selected = event.event_id; render(); } : null;
+    };
+    bind('circuitState', path.request); bind('circuitJudge', path.score);
+    bind('circuitFast', path.fast); bind('circuitSlow', path.slow); bind('circuitReceipt', path.receipt);
+    bind('circuitHost', path.host);
+    put('circuitHostNote', path.host ? describe(path.host).title : 'Permissions stay upstream');
+    put('circuitStateNote', path.request ? (path.request.data.candidate_count ?? '?') + ' prepared candidates' : 'No request recorded');
+    put('circuitJudgeNote', path.score ? (kind(path.score) === 'difficulty_judged' ? judgmentView(path.score, labelOf(path.score)).title : (path.score.data.model || backendName(path.score.data.backend, labelOf(path.score)))) : 'No score recorded');
+    put('circuitFastNote', path.fast ? (path.fast.data.status === 'submitted_to_upstream' ? 'Submitted to host' : 'Selected; not confirmed') : 'No fast route recorded');
+    put('circuitSlowNote', path.slow ? ((path.slow.data.model === 'provider-default' ? (path.slow.data.host_model || 'Your usual model') : path.slow.data.model) || path.slow.data.provider || (kind(path.slow) === 'routed' ? 'Selected; not yet invoked' : 'Invocation recorded')) : 'No invocation recorded');
+    put('circuitProposed', s?.proposed.title || 'No proposal recorded');
+    put('circuitHappened', s?.happened.title === '—' ? 'No outcome recorded' : s?.happened.title || 'No outcome recorded');
+    put('circuitOutcomeNote', s?.happened.detail || '');
+    put('circuitReceipt', s?.verdict.label || 'Awaiting evidence');
+    $('circuitReceipt').className = 'receipt-button ' + (s ? toneClass(s.verdict.tone) : '');
+    put('circuitEvidence', s ? s.verdict.note + '. Select a node or receipt to inspect recorded evidence.' : 'Recorded routes light up as events arrive. Select a node to inspect its evidence.');
+  }
+
+  function renderFlows(scoped, keys) {
+    $('liveFlows').hidden = category !== 'live';
+    const now = Date.now();
+    const groups = flowGroups(scoped);
+    const roots = sessionsFor(scoped, now);
+    $('runtimeStrip').replaceChildren();
+    for (const item of roots.filter(s => s.stateKind !== 'closed' && s.stateKind !== 'advisory' && (s.reporting || (now - stamp(s.latest) < 120000 && s.events.some(e => native(e))))).slice(0, 8)) {
+      const observed = item.events.findLast(e => native(e)), row = make('button', 'runtime-pulse ' + (item.stateKind || '') + (arrivals.has(observed?.event_id) ? ' arriving' : ''));
+      row.dataset.runtimeSessionId = item.id;
+      row.append(make('span', 'live-dot'), make('strong', '', item.name), make('span', '', (item.parent ? 'child · ' : '') + (item.reporting ? item.state.toLowerCase() : 'presence unknown') + (observed ? ' · ' + describe(observed).title.toLowerCase() + ' ' + age(stamp(observed)) : '')));
+      row.onclick = () => selectSession(item.id); $('runtimeStrip').append(row);
+    }
+    const live = source === 'live';
+    const rows = [...groups.entries()].map(([key, group]) => ({ key, group, summary: summarize(group, synthetic(group.at(-1), keys), { live, now }) }));
+    rows.sort((a, b) => (b.summary.inFlight - a.summary.inFlight) || stamp(b.group.at(-1)) - stamp(a.group.at(-1)));
+    renderCircuit(rows);
+    if (category !== 'live') return;
+    const shown = rows.slice(0, 40);
+    put('flowStatus', source !== 'live' ? 'Saved records · ' + rows.length + ' decision flows' : !following ? 'Paused · ' + rows.length + ' decision flows' : rows.length ? (rows.length > shown.length ? 'Latest ' + shown.length + ' of ' + rows.length + ' decision flows' : rows.length + ' decision flow' + (rows.length === 1 ? '' : 's') + ' · following live') : 'Waiting for decisions');
+    $('flowCards').replaceChildren(); $('flowEmpty').hidden = rows.length > 0;
+    for (const { key, group, summary } of shown) {
+      const first = group[0], latest = group.at(-1), cfg = configFor(events, latest.session_id);
+      const simulated = synthetic(latest, keys), s = summary;
+      const card = make('article', 'flow-card' + (s.inFlight ? ' in-flight' : '') + (s.mode === 'Native' ? ' native' : '') + (group.some(e => arrivals.has(e.event_id)) ? ' arriving' : '') + (group.some(e => e.event_id === selected) ? ' selected-card' : ''));
+      card.dataset.decisionKey = key;
+      // summary row
+      const line = make('div', 'flow-summary');
+      const when = make('span', 'flow-when', clock(first)); when.append(make('small', '', age(stamp(latest))));
+      const sessionWrap = make('span', 'flow-session-wrap');
+      const sessionButton = make('button', 'flow-session clamp2', sessionName(cfg, latest.session_id)); sessionButton.title = latest.session_id;
+      sessionButton.onclick = () => selectSession(latest.session_id);
+      const tagline = make('span', 'tagline');
+      tagline.append(make('span', 'tag ' + ({ Scripted: 'warn', Advisory: 'adv', Active: 'ok', Shadow: '', Native: '', Runtime: '' }[s.mode]), s.mode));
+      if (latest.parent_session_id) { const parentName = sessionName(configFor(events, latest.parent_session_id), latest.parent_session_id); const parent = make('span', 'flow-parent', 'child of ' + parentName); parent.title = 'Child of ' + parentName + ' (' + latest.parent_session_id + ')'; tagline.append(parent); }
+      sessionWrap.append(sessionButton, tagline);
+      const cell = (heading, headingClass, detail) => { const node = make('span', 'flow-cell'), strong = make('strong', 'clamp2' + headingClass, heading); strong.title = heading; node.append(strong); return { node, detail: () => { if (detail) { const d = make('span', '', detail); d.title = detail; node.append(d); } } }; };
+      const proposedCell = cell(s.proposed.title, s.proposed.id ? ' id' : '', s.proposed.detail), proposed = proposedCell.node;
+      if (Number.isFinite(s.proposed.probability)) { const prob = make('span', 'prob'), bar = make('span', 'prob-bar'), fill = make('i'); fill.style.width = Math.max(0, Math.min(100, s.proposed.probability * 100)) + '%'; bar.append(fill); prob.append(bar, make('b', '', (s.proposed.probability * 100).toFixed(0) + '%')); prob.title = 'Score reported for the chosen candidate; uncalibrated, not a correctness estimate'; proposed.append(prob); }
+      proposedCell.detail();
+      const arrow = make('span', 'flow-arrow' + (s.inFlight ? ' pending' : ''), s.inFlight ? '…' : '→');
+      const happenedCell = cell(s.happened.title, '', s.happened.detail), happened = happenedCell.node; happenedCell.detail();
+      const verdictCell = make('span', 'verdict-cell'); const verdict = make('span', 'verdict ' + toneClass(s.verdict.tone), s.verdict.label); verdict.title = s.verdict.note; verdictCell.append(verdict);
+      const latency = make('span', 'flow-latency', s.scoring.value); latency.append(make('small', '', s.scoring.label));
+      line.append(when, sessionWrap, proposed, arrow, happened, verdictCell, latency);
+      const focusEvent = s.score || latest;
+      const inspect = make('button', 'flow-inspect', 'Inspect');
+      inspect.dataset.inspectId = focusEvent.event_id;
+      inspect.setAttribute('aria-pressed', String(group.some(e => e.event_id === selected)));
+      inspect.setAttribute('aria-label', 'Inspect decision at ' + clock(first) + ' in ' + sessionName(cfg, latest.session_id));
+      inspect.onclick = e => { e.stopPropagation(); selected = focusEvent.event_id; render(); };
+      verdictCell.append(inspect);
+      for (const cell of [proposed, happened, verdictCell, when, latency]) { cell.style.cursor = 'pointer'; cell.onclick = () => { selected = focusEvent.event_id; render(); }; }
+      // stage chain
+      const stages = make('div', 'flow-stages');
+      for (const e of group.filter(isStage)) {
+        const info = describe(e, synthetic(e, keys)), stage = make('button', 'flow-stage ' + info.tone + (arrivals.has(e.event_id) ? ' arriving' : '') + (e.event_id === selected ? ' selected' : ''));
+        stage.dataset.stageId = e.event_id; stage.setAttribute('aria-pressed', String(e.event_id === selected)); stage.title = clock(e) + ' · ' + info.source;
+        stage.append(make('strong', '', info.title), make('span', '', info.detail));
+        if (Number.isFinite(e.data.duration_ms)) stage.append(make('span', 'flow-duration', fmt(e.data.duration_ms)));
+        stage.onclick = () => { selected = e.event_id; render(); }; stages.append(stage);
+      }
+      card.append(line, stages, make('p', 'flow-outcome', s.verdict.note));
+      $('flowCards').append(card);
+      if (following && group.some(e => arrivals.has(e.event_id))) stages.scrollLeft = stages.scrollWidth;
+    }
+  }
+
+  function render() {
+    renderedAt = Date.now();
+    if (source !== 'live') $('studyPanel').hidden = true;
+    const focused = document.activeElement;
+    const focusKey = ['eventId', 'sessionId', 'childrenId', 'stageId', 'runtimeSessionId', 'circuitEventId', 'inspectId'].find(key => focused?.dataset?.[key]);
+    const focusValue = focusKey ? focused.dataset[focusKey] : null;
+    const keys = scriptedKeys(events), base = currentWindow(), realBase = base.filter(e => !synthetic(e, keys));
+    const sessions = renderSessions($('includeSynthetic').checked ? base : realBase, keys);
+    const scoped = scopeData(base), hidden = scoped.filter(e => synthetic(e, keys)).length;
+    const real = scoped.filter(e => !synthetic(e, keys)), m = metrics(real);
+    put('modelCount', m.scores + m.judged); put('fastCount', m.cheapCalls); put('usualCount', m.hostCalls); put('switchedCount', m.switched); put('toolCount', m.tools); put('errorCount', m.issues); put('fastExecuted', m.fastExecuted); put('scorerP95', fmt(m.p95));
+    document.querySelector('.kpis')?.classList.toggle('has-shortcut', m.fast > 0 || m.bypassed > 0);
+    put('matchCount', m.comparisons.length ? m.comparisons.filter(e => e.data.agreement === 'match').length + '/' + m.comparisons.length : '—');
+    $('errorCount').closest('.kpi').classList.toggle('has-issues', m.issues > 0);
+    put('impactDetail', m.fastExecuted ? m.fastExecuted + ' tool execution' + (m.fastExecuted === 1 ? '' : 's') + ' confirmed after a fast submission.' : m.fast ? 'Fast actions were submitted; no completed fast-path execution is recorded.' : 'No executed fast path in this window; shadow proposals never change execution.');
+    put('qualityEvidence', m.failedFast ? m.failedFast + ' fast execution' + (m.failedFast === 1 ? '' : 's') + ' failed.' : '');
+    put('scopeNotice', 'Scripted and demo events are excluded; tool results may be hook observations.');
+    const cfg = session ? configFor(events, session) : null;
+    const current = session ? sessions.find(s => s.id === session) : null;
+    put('viewTitle', session ? sessionName(cfg, session) : 'All sessions');
+    put('viewSubtitle', session ? [cfg.mode ? backendName(cfg.backend, cfg.backend_label) + ' · ' + cfg.mode + ' mode' : 'Configuration not recorded', current?.state, shortId(session) !== sessionName(cfg, session) ? session : ''].filter(Boolean).join(' · ') : 'Runtime activity from ' + sessions.filter(s => !s.parent && s.reporting).length + ' session(s) currently reporting.');
+    put('syntheticCount', hidden ? '(' + hidden + ($('includeSynthetic').checked ? ' shown)' : ' hidden)') : '');
+    const display = scoped.filter(e => ($('includeSynthetic').checked || !synthetic(e, keys)) && useful(e) && (category === 'decisions' ? ['requested', 'scored', 'routed', 'shadow_proposed', 'shadow_observed', 'shadow_agreement', 'role_proposed', 'role_agreement', 'fallback'].includes(kind(e)) : category === 'errors' ? issue(e) : true));
+    const rows = display.slice(-250).reverse(); $('feed').replaceChildren();
+    if (selected && !scoped.some(e => e.event_id === selected && ($('includeSynthetic').checked || !synthetic(e, keys)))) selected = null;
+    for (const e of rows) {
+      const info = describe(e, synthetic(e, keys)), button = make('button', 'event-row' + (selected === e.event_id ? ' selected' : ''));
+      button.setAttribute('aria-pressed', String(selected === e.event_id)); button.dataset.eventId = e.event_id;
+      const icon = make('span', 'event-icon ' + info.tone, info.tone === 'error' ? '!' : info.tone === 'decision' ? '◆' : info.tone === 'synthetic' ? '~' : '·'), body = make('span');
+      body.append(make('span', 'event-title', info.title), make('span', 'event-description', info.detail));
+      const when = make('span', 'event-time', clock(e)); if (Number.isFinite(e.data.duration_ms)) when.append(make('span', 'event-duration', fmt(e.data.duration_ms)));
+      const sessionCfg = configFor(events, e.session_id);
+      button.append(icon, body, make('span', 'event-source', info.source), make('span', 'event-session', sessionName(sessionCfg, e.session_id)), when);
+      button.onclick = () => { selected = e.event_id; render(); }; $('feed').append(button);
+    }
+    $('emptyState').hidden = category === 'live' || rows.length > 0; $('feed').hidden = category === 'live' || !rows.length; $('feedHeading').hidden = category === 'live' || !rows.length;
+    put('emptyTitle', connectionError ? 'Connection needs attention' : hidden ? 'Scripted events are hidden' : category === 'errors' ? 'No issues recorded' : 'No activity in this window');
+    put('emptyDetail', connectionError ? 'Restore the viewer connection above. Existing records remain available.' : hidden ? 'Enable scripted & demo events to inspect them. They never count as model decisions or measured improvements.' : source !== 'live' ? 'This is a saved trace. Try another category or session.' : 'The viewer is listening. Start a turn in a session with the bundle loaded, or widen the time window.');
+    put('feedCount', category === 'live' ? display.length + ' events in window' : display.length > 250 ? 'Latest 250 of ' + display.length + ' events' : display.length + ' events');
+    put('dataHealth', invalidLines ? invalidLines + ' invalid records skipped' : windowGap ? 'Older events expired from the retained window' : 'No prompts, tool contents, or private reasoning.');
+    put('freshness', source !== 'live' ? 'Saved trace · no live updates' : lastPoll ? 'Checked ' + age(lastPoll) + ' · last event ' + (events.length ? age(stamp(events.at(-1))) : 'not received') : 'Waiting for first response');
+    put('followBtn', source !== 'live' ? 'Return to live' : following ? 'Following live' : 'Resume live'); $('followBtn').setAttribute('aria-pressed', String(source === 'live' && following));
+    put('bypassedCount', m.bypassed);
+    renderFlows(scoped.filter(e => $('includeSynthetic').checked || !synthetic(e, keys)), keys);
+    renderDetails(events.find(e => e.event_id === selected) || circuitFocus, keys);
+    if (source !== 'live') { put('connection', 'Saved trace'); $('connection').className = 'connection replay'; }
+    else if (connectionError) { put('connection', 'Disconnected'); $('connection').className = 'connection problem'; }
+    else { put('connection', lastPoll ? (hasMore ? 'Syncing history' : following ? 'Connected' : 'Connected · paused') : 'Connecting'); $('connection').className = 'connection' + (lastPoll ? ' connected' : ''); }
+    $('connectionNotice').hidden = !connectionError; put('connectionNotice', connectionError);
+    if (focusKey) { const replacement = [...document.querySelectorAll('button')].find(node => node.dataset[focusKey] === focusValue); replacement?.focus({ preventScroll: true }); }
+  }
+
+  $('circuitLatest').onclick = () => { selected = null; render(); };
+  $('allSessions').onclick = () => selectSession(''); $('sessionSearch').oninput = render;
+  for (const id of ['timeWindow', 'includeSynthetic', 'includeChildren']) $(id).onchange = () => { selected = null; render(); };
+  document.querySelectorAll('[data-filter]').forEach(b => { b.onclick = () => { category = b.dataset.filter; document.querySelectorAll('[data-filter]').forEach(x => { x.classList.toggle('active', x === b); x.setAttribute('aria-pressed', String(x === b)); }); render(); }; });
+  $('followBtn').onclick = () => { if (source !== 'live') { pollGeneration++; source = 'live'; events = []; seen.clear(); cursor = 0; epoch = null; historyReady = false; selected = null; session = ''; following = true; frozenIds = null; $('timeWindow').value = '3600000'; schedule(0); } else { following = !following; frozenIds = following ? null : new Set(events.map(e => e.event_id)); } render(); };
+  $('loadBtn').onclick = () => $('fileInput').click();
+  $('fileInput').onchange = async () => { try { const batch = []; for (const file of $('fileInput').files) { const text = await file.text(); batch.push(...(text.trim().startsWith('[') ? JSON.parse(text) : text.split(/\r?\n/).filter(Boolean).map(JSON.parse))); } pollGeneration++; clearTimeout(pollTimer); source = 'file'; events = []; seen.clear(); selected = null; session = ''; frozenIds = null; following = false; connectionError = ''; $('reconnectPanel').hidden = true; $('timeWindow').value = 'all'; ingest(batch); } catch (_) { connectionError = 'Could not read this trace. Choose a JSON array or a JSONL event file.'; render(); } };
+  $('exportBtn').onclick = () => { const keys = scriptedKeys(events), data = scopeData(currentWindow()).filter(e => $('includeSynthetic').checked || !synthetic(e, keys)), blob = new Blob([data.map(e => JSON.stringify(e)).join('\n') + '\n'], { type: 'application/x-ndjson' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'amplifier-events.jsonl'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
+  $('connectForm').onsubmit = e => { e.preventDefault(); try { const url = new URL($('viewerLink').value); if (url.origin !== location.origin) throw Error(); const value = new URLSearchParams(url.hash.slice(1)).get('token'); if (!value) throw Error(); pollGeneration++; token = value; try { sessionStorage.setItem(tokenKey, token); } catch (_) { } $('viewerLink').value = ''; connectionError = ''; $('reconnectPanel').hidden = true; schedule(0); } catch (_) { connectionError = 'Use the full viewer link for this same local address and port.'; render(); } };
+  function schedule(delay) { clearTimeout(pollTimer); pollTimer = setTimeout(poll, delay); }
+  window.addEventListener('hashchange', () => {
+    const value = new URLSearchParams(location.hash.slice(1)).get('token');
+    if (!value) return;
+    token = value; pollGeneration++;
+    try { sessionStorage.setItem(tokenKey, token); } catch (_) { }
+    history.replaceState(null, '', location.pathname + location.search);
+    connectionError = ''; schedule(0);
+  });
+  let lastEfficiencyPoll = 0;
+  async function pollEfficiency() {
+    if (Date.now() - lastEfficiencyPoll < 30000 || source !== 'live') return;
+    lastEfficiencyPoll = Date.now();
+    try {
+      const response = await fetch('/api/efficiency', { credentials: 'same-origin', headers: token ? { Authorization: 'Bearer ' + token } : {}, signal: AbortSignal.timeout(20000) });
+      if (!response.ok || source !== 'live') return;
+      const v = efficiencyView(await response.json());
+      put('effCost', v.cost); put('effCostDetail', v.costDetail); put('effTime', v.time); put('effTimeDetail', v.timeDetail);
+      put('effCalls', v.calls); put('effCallsDetail', v.callsDetail); put('effNote', v.note);
+      const row = (cells) => { const r = make('div', 'savings-project'); cells.forEach((c, i) => r.append(make(i ? 'span' : 'b', '', c))); return r; };
+      $('effLevers').replaceChildren(row(['Lever', 'Receipts · calls', 'Cost', 'Time']), ...v.levers.map(l => row([l.name, l.active ? l.receipts + ' · ' + l.calls + ' calls' : 'not active yet', l.active ? l.usd : '—', l.active ? l.secs : '—'])));
+      $('effProjects').replaceChildren(...(v.projects.length ? [row(['Project', 'Receipts · calls', 'Cost', 'Time'])] : []), ...v.projects.map(p => row([p.name, p.receipts + ' · ' + p.calls + ' calls', p.usd, p.secs])));
+      const byHarness = $('effHarness');
+      if (byHarness) byHarness.replaceChildren(...(v.harnesses.length > 1 || (v.harnesses[0] && v.harnesses[0].name !== 'Amplifier') ? [row(['Harness', 'Receipts · calls', 'Cost', 'Time']), ...v.harnesses.map(h => row([h.name, h.receipts + ' · ' + h.calls + ' calls', h.usd, h.secs]))] : []));
+    } catch (_) { /* keep last values */ }
+  }
+  let lastSavingsPoll = 0;
+  async function pollSavings() {
+    if (Date.now() - lastSavingsPoll < 60000 || source !== 'live') return;
+    lastSavingsPoll = Date.now();
+    try {
+      const response = await fetch('/api/savings', { credentials: 'same-origin', headers: token ? { Authorization: 'Bearer ' + token } : {}, signal: AbortSignal.timeout(20000) });
+      if (!response.ok || source !== 'live') return;
+      renderSavings(await response.json());
+    } catch (_) { /* the panel keeps its last values */ }
+  }
+  function renderSavings(r) {
+    const view = savingsView(r);
+    $('savingsPanel').hidden = false;
+    put('savingsScope', view.scope);
+    put('savingsCost', view.cost); put('savingsCostDetail', view.costDetail);
+    put('savingsTime', view.time); put('savingsTimeDetail', view.timeDetail);
+    put('savingsTurns', view.turns); put('savingsTurnsDetail', view.turnsDetail);
+    put('savingsNote', view.note);
+    const list = $('savingsProjects');
+    if (list) list.replaceChildren(...(view.projects || []).map(p => { const row = make('div', 'savings-project'); row.append(make('b', '', p.name), make('span', '', p.turns), make('span', '', p.saved), make('small', '', p.why)); return row; }));
+    const days = (r.by_day || []).slice(-30), peak = Math.max(0, ...days.map(d => d.saved_usd || 0));
+    $('savingsDays').replaceChildren(...days.map(d => { const bar = make('i'); bar.style.height = peak > 0 ? Math.max(2, Math.round(40 * Math.max(0, d.saved_usd) / peak)) + 'px' : '2px'; bar.title = d.day + ': $' + (d.saved_usd || 0).toFixed(2) + ' · ' + d.cheap_turns + ' cheaper / ' + d.strong_turns + ' host'; return bar; }));
+  }
+  async function pollStudy() {
+    if (Date.now() - lastStudyPoll < 5000 || source !== 'live') return;
+    lastStudyPoll = Date.now();
+    try {
+      const response = await fetch('/api/study', { credentials: 'same-origin', headers: token ? { Authorization: 'Bearer ' + token } : {}, signal: AbortSignal.timeout(5000) });
+      if (!response.ok) return;
+      const study = await response.json();
+      if (source !== 'live') return;
+      $('studyPanel').hidden = study.status === 'not_configured';
+      if (!study.available) { put('studyStatus', 'Data unavailable'); return; }
+      put('studyProgress', study.completed + ' / ' + study.planned + ' runs');
+      put('studyStatus', pretty(study.status));
+      $('studyMeter').max = study.planned; $('studyMeter').value = study.completed;
+      put('studyNote', study.complete ? 'Collection complete. Event counts alone do not establish savings or quality.' : 'Collection incomplete. These counts include failures and non-use; they are not a final performance verdict.');
+      $('studyRows').replaceChildren();
+      for (const arm of study.arms) {
+        const row = make('tr');
+        const seconds = Number.isFinite(arm.median_seconds) ? Math.round(arm.median_seconds) + ' s' : '—';
+        for (const value of [arm.harness + ' / ' + arm.arm, arm.completed + '/' + arm.planned, arm.passed, seconds, arm.fd_requests]) row.append(make('td', '', String(value)));
+        $('studyRows').append(row);
+      }
+    } catch (_) { put('studyStatus', 'Update unavailable'); }
+  }
+  async function poll() {
+    if (source !== 'live') return;
+    const generation = ++pollGeneration;
+    try {
+      const response = await fetch('/api/events?after=' + cursor, { credentials: 'same-origin', headers: token ? { Authorization: 'Bearer ' + token } : {}, signal: AbortSignal.timeout(5000) });
+      if (source !== 'live' || generation !== pollGeneration) return;
+      if (!response.ok) { if (response.status === 401) { $('reconnectPanel').hidden = false; throw Error('The viewer link has expired or is missing its access token. Reopen the launching link.'); } throw Error('The local viewer returned HTTP ' + response.status + '. Retrying…'); }
+      const payload = await response.json();
+      if (source !== 'live' || generation !== pollGeneration) return;
+      if (epoch && epoch !== payload.epoch) { events = []; seen.clear(); cursor = 0; epoch = payload.epoch; historyReady = false; selected = null; windowGap = false; schedule(0); return; }
+      if (cursor && payload.first_cursor > cursor + 1) windowGap = true;
+      const repaint = !lastPoll || !!connectionError || hasMore !== !!payload.has_more;
+      epoch = payload.epoch; cursor = payload.cursor; retained = payload.retained; invalidLines = payload.invalid_lines || 0; hasMore = !!payload.has_more; lastPoll = Date.now(); connectionError = ''; $('reconnectPanel').hidden = true; ingest(payload.events || [], repaint);
+      if (!hasMore) historyReady = true;
+      void pollStudy(); void pollSavings(); void pollEfficiency();
+    } catch (error) { if (source !== 'live' || generation !== pollGeneration) return; connectionError = error.name === 'TimeoutError' ? 'The viewer did not respond within 5 seconds. Retrying…' : error instanceof TypeError ? 'Cannot reach the local viewer. Retrying…' : error.message; render(); }
+    if (source === 'live' && generation === pollGeneration) schedule(connectionError ? 2000 : hasMore ? 0 : 500);
+  }
+  // Refresh relative ages and in-flight state even when no event arrives.
+  setInterval(() => { if (source === 'live' && following && Date.now() - renderedAt > 4000) render(); }, 5000);
+  if (window.AFAST_EMBEDDED) { source = 'embedded'; following = false; $('timeWindow').value = 'all'; ingest(window.AFAST_EMBEDDED); }
+  else { render(); schedule(0); }
+})();
+</script>
+</body>
+</html>

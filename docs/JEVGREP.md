@@ -1,6 +1,6 @@
 # Jevgrep source retrieval
 
-The bundle includes an optional `jevgrep` tool for questions such as “where
+The bundle mounts `jevgrep` by default through its main behavior for questions such as “where
 are events buffered and flushed?” It calls the actual upstream `jg` CLI and
 returns file references and source excerpts through Amplifier's ordinary tool
 path. It does not bypass the host's tool hooks or select itself as a fast-path
@@ -15,46 +15,39 @@ is MIT licensed and is installed separately; its source is not vendored here.
 
 ## Setup
 
-Requires Node.js 22+ on macOS or Linux. Install and authenticate the pinned
-CLI yourself; the tool never installs software or changes credentials:
+Requires Node.js 22+ on macOS or Linux. Install the pinned CLI; the tool never installs software or changes saved credentials:
 
 ```bash
 npm install --global @dzhng/jevgrep@0.4.0
 jg --version
-jg auth
+jg auth  # only needed if using a saved provider instead of TYPESAFE_API_KEY
 ```
 
 `jg auth` uses a hidden local prompt. Do not paste keys into a model prompt.
 The upstream CLI uses its saved provider and credentials under
 `$XDG_CONFIG_HOME/jevgrep` (or `~/.config/jevgrep`); it does **not** read
-`TYPESAFE_API_KEY`. We do not copy Amplifier's credentials into that file.
+`TYPESAFE_API_KEY`. When no saved credentials exist, the wrapper uses `TYPESAFE_API_KEY` in an owner-only temporary CLI configuration, deleted when the invocation finishes or is cancelled. A saved provider always takes precedence; no global credential file is created or replaced.
 `jg doctor` sends a synthetic question to check provider access.
 [Upstream authentication implementation](https://github.com/dzhng/jevgrep/blob/24adac80dd57b673eafd8e8c477e4800b39c6c01/apps/cli/src/auth.ts)
 
-Compose `fast-decisions:behaviors/jevgrep` alongside the usual Fast Decisions
-behavior. It can also be added with:
+`behaviors/fast-decisions.yaml` includes this behavior, so both the root bundle
+and the usual app behavior mount it. Source sharing is enabled in the shipped
+Jevgrep behavior: searches send eligible source under the workspace root to the
+saved provider, or to TypeSafe when using the existing environment key.
 
-```bash
-amplifier bundle add --app \
-  'git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=behaviors/jevgrep.yaml'
-```
-
-The behavior starts with source sharing **off**. Enable this separate tool
-setting only for a workspace you intend to send to the saved provider:
+Disable retrieval source sharing for a workspace with:
 
 ```yaml
 overrides:
   tool-jevgrep:
     config:
-      root: /absolute/path/to/approved/workspace
-      allow_external_state: true
-      # executable: /absolute/path/to/jg   # if not on the host's PATH
+      allow_external_state: false
 ```
 
-The router's `allow_external_state` setting does not enable this tool. Existing
-installed bundles do not contain this new module until updated to a revision
-that includes it. The Forge acceptance test used temporary authentication for a disposable public
-fixture; it did not change default app settings or save global Jevgrep credentials.
+The lower-level Python tool constructor remains off unless configured explicitly.
+The router's separate permission setting does not control retrieval. Update the
+bundle and start a new session to load the tool; an existing session's tool list
+is not rewritten in place.
 
 Use the mounted tool with:
 
@@ -73,7 +66,7 @@ inside Amplifier. Other assistants can use upstream's skill separately.
 |---|---|---|
 | `root` | `.` | Trusted workspace directory. Tool inputs may only narrow this scope. |
 | `executable` | `jg` | Installed CLI on PATH, or trusted absolute executable path. |
-| `allow_external_state` | `false` | Separate permission to send source content. |
+| `allow_external_state` | `true` in shipped behavior | Permission to send source content; set false to opt out. |
 | `timeout_ms` | `60000` | Deadline including version check and retrieval; range 100–120000. |
 | `max_source_bytes` | `32768` | Source excerpt allocation passed to upstream, never unlimited. |
 | `max_output_bytes` | `65536` | Entire response cap; excess output stops the invocation and marks it incomplete. |
@@ -86,7 +79,7 @@ Provider usage/cost is unknown to this wrapper and is not included in router
 savings estimates. A future combined benchmark must count it separately.
 
 The wrapper passes arguments directly, without a shell, and supports no flags
-for broadening hidden/sensitive/dependency/ignore exclusions. Workspace-relative
+for broadening hidden/sensitive/dependency/ignore exclusions. Relative or absolute workspace
 search directories cannot traverse outside the configured root or use symlink
 components. Upstream handles source traversal and filtering inside that root.
 It excludes common sensitive files and respects ignores, but this is not a
@@ -108,17 +101,16 @@ retrieval. The agent can continue with its ordinary search tools.
 
 ## Evidence and promotion
 
-Upstream's published study reports a cost reduction alongside a lower solve
-rate and explicitly says its quality gate failed. That supports testing an
-optional retrieval path, not replacing all search or claiming improved task
-quality. [Upstream results](https://github.com/dzhng/jevgrep/tree/24adac80dd57b673eafd8e8c477e4800b39c6c01#what-we-measured)
+The originally reviewed upstream snapshot reported a cost reduction alongside a lower solve
+rate and a failed quality gate. The current upstream README reports 8/10 solves
+in both arms and 28.6% lower generative cost, explicitly excluding Jev charges.
+Neither result establishes faster search for every task; exact symbols still use
+ordinary grep. [Current upstream comparison](https://github.com/dzhng/jevgrep#what-we-measured). [Upstream results](https://github.com/dzhng/jevgrep/tree/24adac80dd57b673eafd8e8c477e4800b39c6c01#what-we-measured)
 
 Verification includes wrapper tests, upstream synthetic-provider tests, and
 actual Amplifier sessions launched through Forge. A real TypeSafe retrieval
 returned the relevant public fixture source and a correct explanation; a
 separate native hook denied execution. These are integration checks, not a
-completed-task performance comparison. See the [Forge record](evidence/2026-09-27/forge/VERIFICATION.md). Before making it a default, compare the
-same repeated tasks with and without retrieval, including failed tasks,
-Jevgrep charges, total wall time and solve quality.
+completed-task performance comparison. See the [Forge record](evidence/2026-09-27/forge/VERIFICATION.md). Default inclusion is a product choice, not a speed guarantee. Matched retrieval and prepared-action results are recorded in [the September 28 study](evidence/2026-09-28-decisions/REPORT.md), including failures and unknown retrieval charges.
 
 See [verification](evidence/2026-09-27/jevgrep/VERIFICATION.md).

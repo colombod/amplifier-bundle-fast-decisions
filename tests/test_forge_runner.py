@@ -268,6 +268,15 @@ class SideProfileAmplifierBundleTests(unittest.TestCase):
         return {'limits': {'max_iterations': 30, 'extended_thinking': True},
                 'events_dir': '/tmp/e', 'upstream_loop_source': 'git+x', **extra}
 
+    def test_answer_extraction_uses_canonical_transcript_without_raw_events(self):
+        import forge_e2e
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root/'events.jsonl').write_text(json.dumps({'event': 'llm:response', 'data': {'model': 'host'}})+'\n')
+            (root/'transcript.jsonl').write_text(json.dumps({'role': 'assistant', 'content': [
+                {'type': 'text', 'text': 'ANSWER: verified'}]})+'\n')
+            self.assertEqual(forge_e2e._extract_final_message(root, root), 'ANSWER: verified')
+
     def test_default_is_foundation_and_unchanged(self):
         import forge_e2e
         cfg = self._cfg()
@@ -298,6 +307,9 @@ class SideProfileAmplifierBundleTests(unittest.TestCase):
         self.assertTrue(providers, active)
         entry = next(p for p in providers if p['module'] == 'provider-anthropic')
         self.assertIn('source', entry)
+        self.assertEqual(active['session']['context']['module'], 'context-simple')
+        logging = next(h for h in active['hooks'] if h['module'] == 'hooks-logging')
+        self.assertIn('{session_id}', logging['config']['session_log_template'])
 
     def test_lean_and_amplifier_effort_combine_on_one_provider_entry(self):
         import forge_e2e

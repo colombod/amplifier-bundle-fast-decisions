@@ -6,9 +6,13 @@ Jevgrep sends source to its saved provider; consent is separate from routing.
 from __future__ import annotations
 
 import asyncio
+from contextlib import contextmanager
+import json
 import os
+from pathlib import Path
 import shutil
 import signal
+import tempfile
 import time
 
 from .workspace import WorkspaceTool
@@ -45,13 +49,38 @@ async def _terminate(process):
         pass
 
 
-async def _run_bounded(argv, *, cwd, max_bytes):
+@contextmanager
+def _credentials_env():
+    """Respect saved provider choice; otherwise lend the existing TypeSafe key.
+
+    Upstream requires a credentials file. Use an owner-only temporary directory
+    for this invocation, removed on success, failure and cancellation. Never
+    alter the user's saved credentials or pass a key in argv/environment.
+    """
+    saved = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config"))) / "jevgrep/credentials.json"
+    key = os.environ.get("TYPESAFE_API_KEY", "").strip()
+    if saved.exists() or not key:
+        yield {}
+        return
+    if len(key.encode()) > 8192 or any(c.isspace() for c in key):
+        raise ValueError("Invalid TypeSafe credential")
+    with tempfile.TemporaryDirectory(prefix="afast-jevgrep-") as temporary:
+        directory = Path(temporary) / "jevgrep"
+        directory.mkdir(mode=0o700)
+        credential = directory / "credentials.json"
+        with open(credential, "x", opener=lambda p, flags: os.open(p, flags, 0o600)) as handle:
+            json.dump({"provider": "typesafe", "apiKey": key}, handle)
+        yield {"XDG_CONFIG_HOME": temporary}
+
+
+async def _run_bounded(argv, *, cwd, max_bytes, config_env=None):
     # Preserve the user's saved CLI credential location, without forwarding
     # unrelated API keys or Node preload hooks into the child process.
     env = {key: os.environ[key] for key in (
         "PATH", "HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "TMPDIR", "LANG", "LC_ALL",
         "SSL_CERT_FILE", "SSL_CERT_DIR", "NODE_EXTRA_CA_CERTS",
     ) if key in os.environ}
+    env.update(config_env or {})
     process = await asyncio.create_subprocess_exec(
         *argv, cwd=cwd, env=env, stdin=asyncio.subprocess.DEVNULL,
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
@@ -85,7 +114,8 @@ class JevgrepTool:
         "type": "object", "additionalProperties": False,
         "properties": {
             "query": {"type": "string", "minLength": 1, "maxLength": 2000},
-            "path": {"type": "string", "maxLength": 512, "default": "."},
+            "path": {"type": "string", "maxLength": 512, "default": ".",
+                     "description": "Directory inside the workspace; relative or absolute. Defaults to workspace root."},
         },
         "required": ["query"],
     }
@@ -111,13 +141,18 @@ class JevgrepTool:
 
     async def search(self, input):
         if not isinstance(input, dict) or set(input) - {"query", "path"}:
-            raise ValueError("Expected query and optional workspace-relative path")
+            raise ValueError("Expected query and optional workspace path")
         query = input.get("query")
         if not isinstance(query, str) or not query.strip() or len(query) > 2000 or "\x00" in query:
             raise ValueError("query must contain 1..2000 characters")
         if not self.allow_external_state:
             return {"status": "disabled", "message": "Enable tool-jevgrep.allow_external_state to send source to the saved Jev provider."}
-        root = self.workspace._path(input.get("path", "."))
+        target = input.get("path", ".")
+        if isinstance(target, str) and Path(target).is_absolute():
+            # Convert lexically, then apply the existing traversal, symlink and
+            # sensitive-path checks. Resolving first would hide symlink input.
+            target = str(Path(target).relative_to(self.workspace.root))
+        root = self.workspace._path(target)
         if not root.is_dir():
             raise ValueError("jevgrep path must be a directory inside the workspace")
         executable = shutil.which(self.executable)
@@ -134,7 +169,9 @@ class JevgrepTool:
                 # paths, change auth, or invoke installation. No shell parsing.
                 argv = [executable, "--no-cache", "--concurrency", str(self.concurrency),
                         "--max-source-bytes", str(self.max_source_bytes), "--", query, str(root)]
-                code, content, truncated = await _run_bounded(argv, cwd=root, max_bytes=self.max_output_bytes)
+                with _credentials_env() as config_env:
+                    code, content, truncated = await _run_bounded(
+                        argv, cwd=root, max_bytes=self.max_output_bytes, config_env=config_env)
         except TimeoutError:
             return {"status": "timeout", "message": "Jevgrep deadline exceeded; use a narrower directory or ordinary search."}
         if truncated:
