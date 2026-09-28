@@ -16,6 +16,33 @@ import forge_swebench as s
 
 
 class CompleteCampaignTests(unittest.TestCase):
+    def test_update_check_time_does_not_change_effective_settings_hash(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'settings.yaml'
+            with patch.object(s,'SETTINGS',path):
+                path.write_text('updates:\n  last_check: first\nconfig:\n  model: a\n')
+                first=s._settings_sha256()
+                path.write_text('config: {model: a}\nupdates: {last_check: second}\n')
+                self.assertEqual(first,s._settings_sha256())
+                path.write_text('config: {model: b}\nupdates: {last_check: second}\n')
+                self.assertNotEqual(first,s._settings_sha256())
+
+    def test_incremental_grading_preserves_prior_issue_index(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'grading').mkdir();runs={}
+            for iid in ['a__b-1','a__b-2']:
+                run=root/'runs'/iid;run.mkdir(parents=True)
+                (run/'result.json').write_text('{}');(run/'patch.diff').write_text('patch')
+                runs[iid]={'instance_id':iid,'arm':'plain-matched','rep':1}
+            (root/'manifest.json').write_text(json.dumps({'runs':runs}))
+            args=SimpleNamespace(root=str(root),swe_python=sys.executable,max_workers=1,
+                timeout=10,per_instance=True,instances=['a__b-1'])
+            with patch.object(s.subprocess,'run'),contextlib.redirect_stdout(io.StringIO()):
+                s.cmd_grade(args)
+                args.instances=['a__b-2'];s.cmd_grade(args)
+            index=json.loads((root/'grading/active-reports.json').read_text())
+            self.assertEqual(len(index),2)
+
     def test_matched_profiles_have_one_model_and_retrieval_only_in_its_arm(self):
         source = Path('/tmp/frozen-source')
         config = {'limits': {'max_iterations': 100, 'extended_thinking': True}, 'events_dir': '/tmp/events'}

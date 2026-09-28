@@ -854,7 +854,7 @@ def _build_laya_input(request: DecisionRequest) -> tuple[str, dict[str, str], st
 
     Mirrors ``_build_label_prompt``'s validation and evidence text (same
     routing-classifier instructions, same 1..12 prepared ``fast_workspace``
-    read/list candidates, same scrubbed observations) but the option set
+    read/list or bounded Git-status candidates, same scrubbed observations) but the option set
     travels in Laya's ``criteria`` mapping instead of being rendered into
     the prose, and criteria keys are the candidates' own ids (Laya's
     ``choice`` questions are not limited to single letters).
@@ -870,6 +870,12 @@ def _build_laya_input(request: DecisionRequest) -> tuple[str, dict[str, str], st
         raise BackendUnavailable("Invalid candidate identifiers")
     for c in request.candidates:
         operation, path = c.arguments.get("operation"), c.arguments.get("path")
+        if operation == "git":
+            # WorkspaceTool.git_candidate supplies exactly this read-only
+            # repository snapshot. No arbitrary git arguments or commands.
+            if set(c.arguments) == {"operation", "path"} and path == ".":
+                continue
+            raise BackendUnavailable("Laya backend requires the bounded Git-status action")
         if operation not in {"read", "list"} or not isinstance(path, str) or not path:
             raise BackendUnavailable("Laya backend requires a prepared read/list target")
     observations = request.state.get("observations", [])

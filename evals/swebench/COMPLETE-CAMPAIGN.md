@@ -28,7 +28,8 @@ with the recorded seed. Every arm gets a fresh base-commit checkout.
 
 - Dataset: `princeton-nlp/SWE-bench_Verified`, revision
   `c104f840cc67f8b6eec6f759ebc8b2693d585d4a` (500 test instances).
-- Runtime candidate: `e1039f51115e4ee98f8c19febfca4e6b4778fccc`.
+- Initial runtime candidate: `e1039f51115e4ee98f8c19febfca4e6b4778fccc`.
+  The repaired campaign records its newer frozen `candidate_sha` in the manifest.
 - Foundation: `89575c3482e3e8afe5a03df72e723cf815fa1f6c`.
 - Official grader installed for preflight: `swebench 4.1.0`.
 - Jev: `jev-1.13.0`; Jevgrep: `0.4.0`.
@@ -37,7 +38,10 @@ with the recorded seed. Every arm gets a fresh base-commit checkout.
 
 The manifest records profiles, prompts, dataset revision, runner hash, runtime
 source hash, installed host package fingerprints and user settings hash.
-Changed inputs stop subsequent runs. Pinning Foundation's root does not by
+Changed inputs stop subsequent runs. The settings fingerprint excludes only
+the CLI's automatically rewritten `updates.last_check` timestamp; changes to
+providers, routing, tools and other settings still stop the controller.
+Pinning Foundation's root does not by
 itself pin every transitive dependency; resolved host fingerprints must remain
 unchanged. Do not upgrade packages during this campaign.
 
@@ -70,7 +74,7 @@ PYTHONPATH=src ~/.local/share/uv/tools/amplifier/bin/python \
   evals/swebench/forge_swebench.py prepare \
   --root "$CAMPAIGN_ROOT" --instances all --dataset verified \
   --dataset-revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a \
-  --candidate-sha e1039f51115e4ee98f8c19febfca4e6b4778fccc \
+  --candidate-sha "$CANDIDATE_SHA" \
   --baseline-source "$PWD" --arms plain-matched,jev-prepared,laya-prepared,jevgrep \
   --foundation-source git+https://github.com/microsoft/amplifier-foundation@89575c3482e3e8afe5a03df72e723cf815fa1f6c \
   --docker-host unix:///Users/michaeljabbour/.colima/afast-swebench/docker.sock \
@@ -132,5 +136,52 @@ Private evidence root:
 - Live Jevgrep metadata metering: completed, estimated API cost **$0.000109326**.
 - SWE-bench harness regression tests: **58 passed**.
 
-No paid SWE-bench agent runs have started. The user selected Verified; the total
-spending limit is still pending. A prepared manifest is not a benchmark result.
+The user authorized a **$4,000 estimated API-spend limit**. Paid preflight runs
+have started; a prepared manifest or a completed preflight is not a full result.
+All setup and abandoned-run costs remain charged to that limit through the
+next manifest's `prior_cost_usd` and its `setup-costs.json` provenance.
+
+The first campaign stopped when the CLI rewrote its update-check timestamp.
+The next preflight exposed an adapter gap: Laya rejected the bounded prepared
+Git-status candidate before contacting its model. The adapter now accepts that
+exact read-only operation (`operation: git`, `path: .`, no extra arguments).
+Arbitrary Git commands remain rejected and native tool validation/approval is
+unchanged. A real local request selected the action at 0.9532 confidence in
+172 ms. This one request proves the adapter works, not a speed advantage.
+Frozen experiments preceding the fix are retained as setup evidence rather
+than mixed into the repaired candidate's four-arm comparison.
+
+## Durable execution and the results website
+
+After the repaired four-arm preflight passes its receipt audit and official
+grades, run the durable supervisor under the same approved cap:
+
+```sh
+PYTHONPATH=src ~/.local/share/uv/tools/amplifier/bin/python \
+  evals/swebench/supervise.py --root "$CAMPAIGN_ROOT" \
+  --output "$STUDY_SITE" --max-cost-usd 4000
+```
+
+It runs one issue block at a time, grades all four patches, removes only that
+block's image from the pinned Docker endpoint, and rebuilds the public website.
+It audits served model/thinking, runtime source/mode, judge failures and parent
+cost accounting. Unexpected delegation, unknown costs, configuration drift or
+grading errors stop more paid launches. It does not delete or automatically
+retry failures. `campaign-status.json`, `last-audit.json`, `controller.log` and
+the official grading reports remain the operational evidence.
+
+The site can be exported as static files or served locally with live read-only
+data. It exports an explicit field allowlist: no native transcript, prompt,
+reasoning, credential, local path or raw error text from the campaign.
+
+```sh
+PYTHONPATH=src ~/.local/share/uv/tools/amplifier/bin/python \
+  evals/swebench/build_site.py --root "$CAMPAIGN_ROOT" \
+  --output "$STUDY_SITE" --serve --port 52114
+```
+
+Open `http://127.0.0.1:52114/`. The site separates earlier small examples from
+SWE-bench, exposes all 500 issue states, offers paired comparisons and downloads,
+and marks missing costs and incomplete grades explicitly. It checks freshness
+and keeps the previous data visible with a warning if refresh fails. When the
+supervisor finishes, its final build remains a standalone website artifact.

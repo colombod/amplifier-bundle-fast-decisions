@@ -46,6 +46,8 @@ import subprocess
 import sys
 import threading
 import time
+from types import SimpleNamespace
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT/'scripts'))
@@ -313,6 +315,9 @@ def _mechanism_counts(directory, session_id):
 
 
 def cmd_prepare(args):
+    prior_cost = getattr(args, 'prior_cost_usd', 0.0)
+    if not math.isfinite(prior_cost) or prior_cost < 0:
+        raise SystemExit('Prior cost must be finite and nonnegative')
     root = Path(args.root).expanduser().resolve()
     if (root/'manifest.json').exists():
         raise SystemExit(f'{root} already prepared')
@@ -396,6 +401,8 @@ def cmd_prepare(args):
                 'upstream_loop_source': forge_e2e.UPSTREAM_LOOP_SOURCE, 'arms': {a: ARMS[a] for a in arms},
                 'seed': args.seed, 'reps': args.reps, 'deadline_seconds': args.deadline_seconds,
                 'limits': limits, 'settings_sha256': _settings_sha256(),
+                'settings_hash_method': 'canonical-yaml-except-update-check-time-v1',
+                'prior_cost_usd': getattr(args, 'prior_cost_usd', 0.0),
                 'run_order': list(runs), 'runs': runs}
     _dump(root/'manifest.json', manifest)
     print(json.dumps({'prepared': str(root), 'runs': len(runs), 'instances': ids, 'arms': arms}))
@@ -411,8 +418,14 @@ SETTINGS = Path.home()/'.amplifier'/'settings.yaml'
 
 
 def _settings_sha256():
-    import hashlib
-    return hashlib.sha256(SETTINGS.read_bytes()).hexdigest() if SETTINGS.exists() else None
+    if not SETTINGS.exists():
+        return None
+    settings = yaml.safe_load(SETTINGS.read_text()) or {}
+    # The CLI writes its automatic update-check timestamp when a session starts.
+    # It cannot affect a resolved profile; retain every other setting in the hash.
+    if isinstance(settings.get('updates'), dict):
+        settings['updates'].pop('last_check', None)
+    return hashlib.sha256(json.dumps(settings, sort_keys=True, default=str).encode()).hexdigest()
 
 
 def _capture_patch(workspace, base_commit, index_path):
@@ -526,7 +539,7 @@ def _run_one(root, manifest, name, forge):
             raise SystemExit('Frozen Fast Decisions source changed')
     # STUDY-DESIGN.md 18.5: a mid-campaign change to the user's Amplifier settings
     # (providers, overrides, modules) invalidates every later run; stop, don't continue.
-    if manifest.get('settings_sha256') and _settings_sha256() != manifest['settings_sha256']:
+    if 'settings_sha256' in manifest and _settings_sha256() != manifest['settings_sha256']:
         raise SystemExit(f'{SETTINGS} changed since prepare; refusing to launch {name} (STUDY-DESIGN.md 18.5)')
     if manifest.get('lazy'):
         instance = next(i for i in json.loads((root/'instances.json').read_text())
@@ -623,7 +636,7 @@ def _run_campaign(args, root):
                 raise SystemExit('Unknown prior cost; reconcile receipts before continuing')
             if any(r.get('infrastructure_failure') for r in settled):
                 raise SystemExit('Infrastructure failure; repair before continuing paid runs')
-            spent = sum(r['cost_usd'] for r in settled)
+            spent = sum(r['cost_usd'] for r in settled) + manifest.get('prior_cost_usd', 0.0)
             reserve = getattr(args, 'reserve_per_run_usd', 10.0)
             if not math.isfinite(reserve) or reserve <= 0:
                 raise SystemExit('Per-run reservation must be positive and finite')
@@ -639,9 +652,30 @@ def _run_campaign(args, root):
             if result.get('infrastructure_failure') or result.get('cost_usd') is None:
                 _dump(root/'campaign-status.json', {'status': 'needs_reconciliation', 'run': name})
                 raise SystemExit('Run needs infrastructure/cost reconciliation before continuing')
+            if getattr(args, 'grade_blocks', False):
+                iid = manifest['runs'][name]['instance_id']
+                block = [n for n, item in manifest['runs'].items() if item['instance_id'] == iid]
+                if all((root/'runs'/n/'result.json').exists() for n in block):
+                    _dump(root/'campaign-status.json', {'status': 'grading', 'instance_id': iid,
+                        'cap_usd': budget, 'spent_usd': spent + result['cost_usd']})
+                    cmd_grade(SimpleNamespace(root=str(root), swe_python=str(DEFAULT_SWE_PYTHON),
+                        max_workers=1, timeout=1800, per_instance=True, instances=[iid]))
+                    graded = [r for r in _report_rows(root, manifest) if r['instance_id'] == iid]
+                    if len(graded) != len(block) or any(r['resolved'] is None for r in graded):
+                        _dump(root/'campaign-status.json', {'status': 'grading_error', 'instance_id': iid,
+                            'cap_usd': budget})
+                        raise SystemExit('Official grading incomplete; repair before more paid launches')
+                    if getattr(args, 'prune_graded_images', False):
+                        if not manifest.get('docker_host'):
+                            raise SystemExit('Pruning requires a manifest-pinned Docker endpoint')
+                        subprocess.run(['docker','image','rm',instance_image({'instance_id':iid})],
+                            env=_docker_env(manifest), check=True, capture_output=True, text=True)
+                    cmd_report(SimpleNamespace(root=str(root), quiet=True))
         _dump(root/'campaign-status.json', {'status': 'run_limit_reached'
             if len(pending) < pending_total else 'agents_complete_grading_pending',
-            'pending': pending_total - len(pending)})
+            'pending': pending_total - len(pending), 'cap_usd': budget,
+            'spent_usd': manifest.get('prior_cost_usd', 0.0) + sum(
+                json.loads(p.read_text()).get('cost_usd', 0) for p in (root/'runs').glob('*/result.json'))})
         return
     print(json.dumps({'pending': len(pending), 'parallel': args.parallel}), flush=True)
     with ThreadPoolExecutor(max_workers=args.parallel) as pool:
@@ -671,6 +705,8 @@ def cmd_grade(args):
         dataset = str(snapshot)
     by_run_id = defaultdict(list)
     for name, item in manifest['runs'].items():
+        if getattr(args, 'instances', None) and item['instance_id'] not in args.instances:
+            continue
         result_path = root/'runs'/name/'result.json'
         if not result_path.exists():
             continue
@@ -678,9 +714,11 @@ def cmd_grade(args):
         if not patch_path.exists():
             continue  # infrastructure failure stays ungraded
         patch = patch_path.read_text()
-        by_run_id[f"{item['arm']}-r{item['rep']}"].append(
+        suffix = '-'+item['instance_id'] if getattr(args, 'per_instance', False) else ''
+        by_run_id[f"{item['arm']}{suffix}-r{item['rep']}"].append(
             {'instance_id': item['instance_id'], 'model_name_or_path': item['arm'], 'model_patch': patch})
-    active_reports = {}
+    active_reports = (json.loads((grading/'active-reports.json').read_text())
+                      if (grading/'active-reports.json').exists() and getattr(args, 'per_instance', False) else {})
     for group_id, preds in sorted(by_run_id.items()):
         digest = hashlib.sha256(json.dumps(preds, sort_keys=True).encode()).hexdigest()[:16]
         arm, rep = group_id.rsplit('-r', 1)
@@ -803,7 +841,8 @@ def cmd_report(args):
                                'Local inference hardware cost is unpriced. x86_64 tests are emulated on this Apple Silicon host.',
                                'exec time = first llm:request to last llm:response in the parent session.']}
     _dump(root/'report.json', out)
-    print(json.dumps(out, indent=2))
+    if not getattr(args, 'quiet', False):
+        print(json.dumps(out, indent=2))
 
 
 def _median(xs):
@@ -826,6 +865,7 @@ def main(argv=None):
     p.add_argument('--instances', required=True)
     p.add_argument('--dataset', choices=sorted(DATASETS), default='verified')
     p.add_argument('--dataset-revision')
+    p.add_argument('--prior-cost-usd', type=float, default=0.0, help='Known setup/abandoned-run costs charged against the campaign limit')
     p.add_argument('--docker-host', help='Freeze a dedicated Docker endpoint without changing the user context')
     p.add_argument('--foundation-source', default='git+https://github.com/microsoft/amplifier-foundation@main')
     p.add_argument('--lazy', action='store_true', help='Prepare manifests without pulling every image or checkout')
@@ -842,6 +882,8 @@ def main(argv=None):
     p.add_argument('--root', required=True)
     p.add_argument('--parallel', type=int, default=3)
     p.add_argument('--max-runs', type=int, help='Limit new agent runs for a paid preflight; resume retains every receipt')
+    p.add_argument('--grade-blocks', action='store_true', help='Officially grade each completed issue block before advancing')
+    p.add_argument('--prune-graded-images', action='store_true', help='Remove only each completed block image from the pinned Docker endpoint')
     p.add_argument('--max-cost-usd', type=float, help='Launch guard on recorded estimated API costs, not a billing cap')
     p.add_argument('--reserve-per-run-usd', type=float, default=10.0,
                    help='Reserve before each run; an in-flight run can exceed this estimate')
@@ -855,6 +897,8 @@ def main(argv=None):
     p.add_argument('--swe-python', default=str(DEFAULT_SWE_PYTHON))
     p.add_argument('--max-workers', type=int, default=1)
     p.add_argument('--timeout', type=int, default=1800)
+    p.add_argument('--per-instance', action='store_true', help='Stable per-issue grading cache for incremental campaigns')
+    p.add_argument('--instances', nargs='+', help='Grade only these completed issue IDs')
     p.set_defaults(func=cmd_grade)
     p = sub.add_parser('report')
     p.add_argument('--root', required=True)

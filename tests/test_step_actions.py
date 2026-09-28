@@ -3,6 +3,7 @@ the workspace's read-only additions, and the loop's per-step decisions and
 receipts (step_actions.py, orchestrator.RoutedProvider.complete)."""
 from __future__ import annotations
 
+import asyncio
 import json
 import subprocess
 import tempfile
@@ -466,9 +467,15 @@ class LoopTests(unittest.IsolatedAsyncioTestCase):
         self.assertLessEqual(receipt["usd_saved"], 0)
 
     async def test_judge_declining_is_charged_as_overhead_and_the_model_runs(self):
+        class MeasurableJudge(PickJudge):
+            async def ask(self, request):
+                # An instantaneous fake can round to zero at receipt precision.
+                # Exercise a measurable overhead instead of depending on CPU speed.
+                await asyncio.sleep(0.002)
+                return await super().ask(request)
         with tempfile.TemporaryDirectory() as tmp:
             subprocess.run(["git", "init", "-q"], cwd=tmp, check=True)
-            service, facade, provider, events = self.setup(PickJudge(None), {"prepared": True}, [reply()], root=tmp)
+            service, facade, provider, events = self.setup(MeasurableJudge(None), {"prepared": True}, [reply()], root=tmp)
             await facade.complete({"messages": [user("which branch?")], "tools": [{"name": "fast_workspace"}],
                                    "tool_choice": "auto"})
         self.assertEqual(provider.calls, [None])
