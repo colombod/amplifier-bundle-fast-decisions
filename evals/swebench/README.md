@@ -1,4 +1,11 @@
-# S3 -- SWE-bench Verified slice
+# SWE-bench evaluation
+
+For the complete **500-task, four-arm Verified campaign**, use
+[COMPLETE-CAMPAIGN.md](COMPLETE-CAMPAIGN.md) and `forge_swebench.py`.
+It uses real Amplifier sessions through Forge and the official Docker grader.
+The older 30-task DTU scaffold below is a separate evaluation path.
+
+## S3 -- older Verified slice
 
 STUDY-DESIGN.md section 15. Third task suite for the fast-decisions
 evaluation, alongside S1 (`scripts/battery_tasks.py`) and S2

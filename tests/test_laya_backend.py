@@ -32,6 +32,7 @@ from amplifier_fast_decisions.local_backend import (
     LAYA_DEFAULT_TOKEN_ENV,
     LAYA_DEFAULT_URL,
     LayaBackend,
+    _build_laya_input,
     laya_base_url,
 )
 
@@ -181,6 +182,18 @@ def _running_server(handler_cls):
 
 
 class LayaAskTests(unittest.TestCase):
+    def test_prepared_git_snapshot_is_scoreable_but_arbitrary_git_is_rejected(self):
+        request = DecisionRequest(state={'observations':[]}, candidates=(
+            Candidate('git_status','Read repository status','fast_workspace',{'operation':'git','path':'.'}),))
+        _, criteria, _ = _build_laya_input(request)
+        self.assertIn('git_status',criteria)
+        self.assertIn(SLOW,criteria)
+        for args in [{'operation':'git','path':'..'},
+                     {'operation':'git','path':'.','command':'reset --hard'}]:
+            with self.subTest(args=args), self.assertRaises(BackendUnavailable):
+                _build_laya_input(DecisionRequest(state={},candidates=(
+                    Candidate('git_status','Git','fast_workspace',args),)))
+
     def test_typed_questions_are_batched_and_missing_answers_fail_closed(self):
         import asyncio
         questions = (Question("difficulty", "choice", "How difficult?", {"easy": "easy", "hard": "hard"}),

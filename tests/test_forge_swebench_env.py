@@ -63,6 +63,7 @@ class CmdAgentEnvTests(unittest.TestCase):
                 forge_swebench.cmd_agent(args)
 
             self.assertEqual(captured["env"]["AMPLIFIER_MEMORY_CAPTURE"], "off")
+            self.assertEqual(captured["env"]["AFAST_TRAFFIC"], "test")
             self.assertEqual(captured["argv"][0:2], ["amplifier", "run"])
 
 
