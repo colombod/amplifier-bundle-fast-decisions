@@ -476,6 +476,7 @@ def cmd_agent(args):
         # worker's same fix. amplifier-bundle-memory's automation_gate
         # module honors this var; harmless no-op on older/no memory bundle.
         env['AMPLIFIER_MEMORY_CAPTURE'] = 'off'
+        env['AFAST_TRAFFIC'] = 'test'
         if manifest.get('arms', {}).get(item.get('arm'), {}).get('retrieval'):
             # A benchmark-local empty config makes the existing environment
             # TypeSafe key the measured provider; saved user providers are untouched.
