@@ -72,6 +72,17 @@ async def judge_rows(judge: str, rows: list[dict]) -> list[dict]:
     elif judge.startswith('ollama:'):
         from amplifier_fast_decisions.local_backend import OllamaBackend
         backend = OllamaBackend(model=judge.split(':', 1)[1], timeout_ms=20000)
+    elif judge.startswith('anyjev:'):
+        # Explicit level/model: anyjev:L0:qwen-routing. This probe permits
+        # uncalibrated L0; active bundle routing requires fitted L1/L2.
+        import os
+        from amplifier_fast_decisions.anyjev_backend import AnyJevBackend, DEFAULT_URL
+        _, level, model = judge.split(':', 2)
+        backend = AnyJevBackend(model=model, level=level,
+                                url=os.getenv('FAST_DECISIONS_ANYJEV_URL', DEFAULT_URL),
+                                timeout_ms=20000)
+    elif judge != 'rules':
+        raise ValueError(f'Unknown judge: {judge}')
     for row in rows:
         t0 = time.perf_counter()
         p_complex, error = None, None

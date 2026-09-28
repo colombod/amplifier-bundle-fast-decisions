@@ -172,7 +172,10 @@ def get_runtime(coordinator: Any, config: dict[str, Any], *, owner: bool = False
             # mounts with config: {}) might build the runtime first. Backend/
             # telemetry remain the one-per-session singleton regardless of
             # who built them first.
-            existing.service.policy = Policy.from_config(config)
+            owner_policy = Policy.from_config(config)
+            if owner_policy.mode == "active" and existing.service.backend.name == "anyjev-L0":
+                raise ValueError("AnyJev L0 is uncalibrated; use shadow evaluation or fit L1/L2 first")
+            existing.service.policy = owner_policy
             existing.orchestrator_owned = True
         return existing, False
     policy = Policy.from_config(config)
@@ -184,10 +187,10 @@ def get_runtime(coordinator: Any, config: dict[str, Any], *, owner: bool = False
     backend_name = config.get("backend") or _env_backend_default() or "jev"
     if backend_name == "none":  # readable alias: routing-only, no judge
         backend_name = "unavailable"
-    if backend_name not in {"jev", "unavailable", "deterministic", "ollama", "mlx", "hosted", "gateway", "laya"}:
+    if backend_name not in {"jev", "unavailable", "deterministic", "ollama", "mlx", "hosted", "gateway", "laya", "anyjev"}:
         recorder.close()
         raise ValueError(
-            "Backend must be jev, deterministic, ollama, mlx, hosted (alias gateway), laya, or unavailable"
+            "Backend must be jev, deterministic, ollama, mlx, hosted (alias gateway), laya, anyjev, or unavailable"
         )
     if backend_name == "jev":
         # jev_url / jev_url_env / jev_key_env point the Jev client at any
@@ -200,6 +203,19 @@ def get_runtime(coordinator: Any, config: dict[str, Any], *, owner: bool = False
             api_key_env=config.get("jev_key_env"),
             label=config.get("backend_label"),
         )
+    elif backend_name == "anyjev":
+        from .anyjev_backend import AnyJevBackend, DEFAULT_URL
+
+        try:
+            level = config.get("anyjev_level", "L2")
+            if policy.mode == "active" and level == "L0":
+                raise ValueError("AnyJev L0 is uncalibrated; use shadow evaluation or fit L1/L2 first")
+            backend = AnyJevBackend(model=config.get("model"),
+                                    url=config.get("anyjev_url", DEFAULT_URL),
+                                    level=level, timeout_ms=policy.timeout_ms)
+        except Exception:
+            recorder.close()
+            raise
     elif backend_name == "mlx":
         from .local_backend import MlxBackend, mlx_base_url
 

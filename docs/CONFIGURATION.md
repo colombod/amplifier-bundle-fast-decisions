@@ -11,6 +11,12 @@ out-of-range value (see `contracts.validate_effort_routing`,
 
 ## Top-level keys
 
+Backend construction is separate from `Policy`. The optional `backend: anyjev`
+accepts `model` (required served identity), `anyjev_url` (literal loopback HTTP,
+default `http://127.0.0.1:8091`), and `anyjev_level` (`L2` by default; `L0` is
+refused in active mode). It uses `timeout_ms` and supports fixed choice/noul
+questions only; keep the read shortcut off. See [AnyJev setup](ANYJEV.md).
+
 | Key | Default | Meaning |
 |---|---|---|
 | `mode` | `"shadow"` | `"off"` / `"shadow"` / `"active"`. Only `"active"` can submit a fast-path candidate; `"shadow"` scores but always routes slow. |

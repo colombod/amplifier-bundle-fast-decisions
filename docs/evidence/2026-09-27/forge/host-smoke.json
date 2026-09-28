@@ -1,0 +1,331 @@
+{
+  "scope": "Actual Foundation CLI sessions launched through Forge; public fixture only; not a performance comparison",
+  "base_commit": "ff343cc7d923ff5ce4fd4d4afac59ee8ab880b49",
+  "runs": [
+    {
+      "case": "allowed_real_typesafe_retrieval",
+      "session_id": "a32b6be8-f793-4c39-b7e0-13e7f06d9610",
+      "exit_code": 0,
+      "wall_seconds": 24.160907584000142,
+      "temporary_credentials_removed_on_exit": true,
+      "jevgrep_hook_observed": true,
+      "jevgrep_post_count": 1,
+      "retrieval": {
+        "content": "Jevgrep: 1 relevant files.\nSymbols use name@start-end. Roles are estimates; locations-only files remain reading leads.\nAGENTS.md lookup (root and returned-file ancestors): none found.\n- \"queue.py\" \u2014 implementation, fixture, helper; source below\nEnd file list. Declaration locations follow source.\n\nSource block \"queue.py\" lines 1-13:\n```\nclass EventQueue:\n    def __init__(self):\n        self.pending = []\n\n    def record(self, event):\n        self.pending.append(event)\n\n    def flush(self, sink):\n        batch = tuple(self.pending)\n        sink.write_batch(batch)\n        self.pending.clear()\n        return len(batch)\n\n```\n\nDeclaration locations:\n- \"queue.py\"\n  EventQueue.__init__@2-3\n  EventQueue.record@5-6\n  EventQueue.flush@8-12\n\nEnd context.\n",
+        "duration_ms": 1483.36,
+        "exit_code": 0,
+        "status": "complete",
+        "truncated": false,
+        "usage": "provider calls and cost unknown; not included in router savings"
+      },
+      "final_response": "**File: `queue.py`, class `EventQueue`**\n\n- `record(event)` (lines 5-6): appends `event` to `self.pending`.\n- `flush(sink)` (lines 8-12):\n  1. Snapshots `self.pending` into a new tuple `batch`.\n  2. Calls `sink.write_batch(batch)`.\n  3. Only *after* that call returns does it clear `self.pending`.\n  4. Returns `len(batch)`.\n\n**Flush ordering:** snapshot \u2192 write \u2192 clear. The clear is not in a `finally` block and happens strictly after `write_batch` returns successfully.\n\n**If `sink.write_batch` raises:**\n- The exception propagates up out of `flush()` uncaught \u2014 there's no try/except.\n- `self.pending.clear()` is never reached, so the events are **not dropped**: they remain in `self.pending` exactly as they were before the flush attempt.\n- However, `batch` was built from a copied tuple of `self.pending` at the time of the call, so nothing was lost or duplicated \u2014 the queue is left in the same state as if `flush` had never been called, aside from whatever partial side effects `write_batch` itself performed before raising (e.g., a sink that writes some events then throws could produce duplicates on a later retry, since this code has no way to know how much of the batch was actually persisted).\n- Net effect: safe for full-batch failures (simple retry works), but not idempotent against partial-write failures inside `sink.write_batch`.",
+      "receipts": [
+        {
+          "data": {
+            "mode": "active",
+            "module": "loop-fast-decisions",
+            "package_version": "0.1.0",
+            "python": "3.12.11",
+            "source_git_sha": "ff343cc7d923ff5ce4fd4d4afac59ee8ab880b49",
+            "source_kind": "worktree",
+            "source_py_files": 41,
+            "source_tree_sha256": "6a81b45670cc0548ca70e52d35169a8a21caa1e389f257b3ed39a895bc0c158c"
+          },
+          "decision_id": null,
+          "event": "fast_decisions:source",
+          "event_id": "60951dc81d4647df83bebbc2ccde5e6e",
+          "monotonic_ns": 1896000258750,
+          "parent_session_id": null,
+          "schema_version": "1.0",
+          "seq": 1,
+          "session_id": "a32b6be8-f793-4c39-b7e0-13e7f06d9610",
+          "synthetic": false,
+          "timestamp": "2026-09-28T01:22:19.418691+00:00",
+          "turn_id": null
+        },
+        {
+          "data": {
+            "mode": "active",
+            "module": "hooks-fast-decisions",
+            "package_version": "0.1.0",
+            "python": "3.12.11",
+            "source_git_sha": "ff343cc7d923ff5ce4fd4d4afac59ee8ab880b49",
+            "source_kind": "worktree",
+            "source_py_files": 41,
+            "source_tree_sha256": "6a81b45670cc0548ca70e52d35169a8a21caa1e389f257b3ed39a895bc0c158c"
+          },
+          "decision_id": null,
+          "event": "fast_decisions:source",
+          "event_id": "a7390d4ea8d44147a0f56f828c4bf2c9",
+          "monotonic_ns": 1901275204000,
+          "parent_session_id": null,
+          "schema_version": "1.0",
+          "seq": 2,
+          "session_id": "a32b6be8-f793-4c39-b7e0-13e7f06d9610",
+          "synthetic": false,
+          "timestamp": "2026-09-28T01:22:24.693715+00:00",
+          "turn_id": null
+        },
+        {
+          "data": {
+            "backend": "jev",
+            "choice": "cheap",
+            "duration_ms": 140.95362500006559,
+            "mode": "active",
+            "probabilities": {
+              "complex": 0.39
+            },
+            "reason_code": "judge_cheap",
+            "state_chars": 256
+          },
+          "decision_id": "b572a0c60e5e4dbba95372fff55a3036",
+          "event": "fast_decisions:difficulty_judged",
+          "event_id": "5f8cab24e6f0466cae79ade0887faeb0",
+          "monotonic_ns": 1902627028541,
+          "parent_session_id": null,
+          "schema_version": "1.0",
+          "seq": 8,
+          "session_id": "a32b6be8-f793-4c39-b7e0-13e7f06d9610",
+          "synthetic": false,
+          "timestamp": "2026-09-28T01:22:26.045556+00:00",
+          "turn_id": "ae5a8292a4084859bd1b79574146fe6b"
+        },
+        {
+          "data": {
+            "cache_write_tokens": 68796,
+            "cost_usd": 0.259911,
+            "duration_ms": 3089.658666999867,
+            "finish_reason": "tool_use",
+            "host_model": "claude-sonnet-5",
+            "input_tokens": 2,
+            "latency_kind": "provider_complete_wall_time",
+            "model": "provider-default",
+            "output_tokens": 128,
+            "provider": "anthropic-primary",
+            "provider_call_id": "provider_0bdec1f736c44d4db99bc69712983eaa",
+            "status": "ok",
+            "step_kind": "tool_call",
+            "tool_calls": 1,
+            "tools": [
+              "jevgrep"
+            ],
+            "total_tokens": 130,
+            "transport_measured": "provider-complete"
+          },
+          "decision_id": "b572a0c60e5e4dbba95372fff55a3036",
+          "event": "fast_decisions:slow_end",
+          "event_id": "5d81512f405f4485b8c1e297019c6ae6",
+          "monotonic_ns": 1905726787625,
+          "parent_session_id": null,
+          "schema_version": "1.0",
+          "seq": 12,
+          "session_id": "a32b6be8-f793-4c39-b7e0-13e7f06d9610",
+          "synthetic": false,
+          "timestamp": "2026-09-28T01:22:29.145342+00:00",
+          "turn_id": "ae5a8292a4084859bd1b79574146fe6b"
+        },
+        {
+          "data": {
+            "cache_read_tokens": 68796,
+            "cache_write_tokens": 991,
+            "cost_usd": 0.03166605,
+            "duration_ms": 6706.721541999968,
+            "finish_reason": "end_turn",
+            "host_model": "claude-sonnet-5",
+            "input_tokens": 68798,
+            "latency_kind": "provider_complete_wall_time",
+            "model": "provider-default",
+            "output_tokens": 487,
+            "provider": "anthropic-primary",
+            "provider_call_id": "provider_38ff439daf7243e5ae4cbdc34251635a",
+            "status": "ok",
+            "step_kind": "final_answer",
+            "tool_calls": 0,
+            "total_tokens": 69285,
+            "transport_measured": "provider-complete"
+          },
+          "decision_id": "bd85490d45ad4abe90b570ffe87b8a90",
+          "event": "fast_decisions:slow_end",
+          "event_id": "abba240a2e6941bd939715a9abc2e218",
+          "monotonic_ns": 1914126138750,
+          "parent_session_id": null,
+          "schema_version": "1.0",
+          "seq": 22,
+          "session_id": "a32b6be8-f793-4c39-b7e0-13e7f06d9610",
+          "synthetic": false,
+          "timestamp": "2026-09-28T01:22:37.544841+00:00",
+          "turn_id": "ae5a8292a4084859bd1b79574146fe6b"
+        }
+      ]
+    },
+    {
+      "case": "native_denial_and_anyjev_unavailable_fallback",
+      "session_id": "11459cfe-d8a2-49d3-bed5-26ad987eb691",
+      "exit_code": 0,
+      "wall_seconds": 11.365757125000073,
+      "temporary_credentials_removed_on_exit": true,
+      "jevgrep_hook_observed": true,
+      "jevgrep_post_count": 0,
+      "retrieval": null,
+      "final_response": "The jevgrep call was denied by a hook (\"Public-fixture native approval denial test\"). Per your instruction, I'm respecting that denial \u2014 not retrying and not using any other tools. Retrieval was denied; I have no results to report on event flushing in this directory.",
+      "receipts": [
+        {
+          "data": {
+            "mode": "active",
+            "module": "loop-fast-decisions",
+            "package_version": "0.1.0",
+            "python": "3.12.11",
+            "source_git_sha": "ff343cc7d923ff5ce4fd4d4afac59ee8ab880b49",
+            "source_kind": "worktree",
+            "source_py_files": 41,
+            "source_tree_sha256": "6a81b45670cc0548ca70e52d35169a8a21caa1e389f257b3ed39a895bc0c158c"
+          },
+          "decision_id": null,
+          "event": "fast_decisions:source",
+          "event_id": "0409d7c1137d40ac90fbe4c2ee392b5e",
+          "monotonic_ns": 2191172794458,
+          "parent_session_id": null,
+          "schema_version": "1.0",
+          "seq": 1,
+          "session_id": "11459cfe-d8a2-49d3-bed5-26ad987eb691",
+          "synthetic": false,
+          "timestamp": "2026-09-28T01:27:14.595635+00:00",
+          "turn_id": null
+        },
+        {
+          "data": {
+            "mode": "active",
+            "module": "hooks-fast-decisions",
+            "package_version": "0.1.0",
+            "python": "3.12.11",
+            "source_git_sha": "ff343cc7d923ff5ce4fd4d4afac59ee8ab880b49",
+            "source_kind": "worktree",
+            "source_py_files": 41,
+            "source_tree_sha256": "6a81b45670cc0548ca70e52d35169a8a21caa1e389f257b3ed39a895bc0c158c"
+          },
+          "decision_id": null,
+          "event": "fast_decisions:source",
+          "event_id": "712ac4cda5954d0886107bc66b04dc45",
+          "monotonic_ns": 2194050005333,
+          "parent_session_id": null,
+          "schema_version": "1.0",
+          "seq": 2,
+          "session_id": "11459cfe-d8a2-49d3-bed5-26ad987eb691",
+          "synthetic": false,
+          "timestamp": "2026-09-28T01:27:17.472888+00:00",
+          "turn_id": null
+        },
+        {
+          "data": {
+            "backend": "anyjev-L2",
+            "choice": "cheap",
+            "duration_ms": 0.735458000235667,
+            "mode": "active",
+            "probabilities": null,
+            "reason_code": "rules_cheap",
+            "state_chars": 237
+          },
+          "decision_id": "6c78f3197e7f4762b561d6f456f661d7",
+          "event": "fast_decisions:difficulty_judged",
+          "event_id": "70257391a6ed4ea598782ee62e917bee",
+          "monotonic_ns": 2194807972500,
+          "parent_session_id": null,
+          "schema_version": "1.0",
+          "seq": 8,
+          "session_id": "11459cfe-d8a2-49d3-bed5-26ad987eb691",
+          "synthetic": false,
+          "timestamp": "2026-09-28T01:27:18.230862+00:00",
+          "turn_id": "745c54a3f1d345f0bf58a1e415ee16db"
+        },
+        {
+          "data": {
+            "cache_read_tokens": 67811,
+            "cache_write_tokens": 976,
+            "cost_usd": 0.0252993,
+            "duration_ms": 2383.321375000378,
+            "finish_reason": "tool_use",
+            "host_model": "claude-fable-5-1",
+            "input_tokens": 67813,
+            "latency_kind": "provider_complete_wall_time",
+            "model": "claude-sonnet-5",
+            "output_tokens": 86,
+            "provider": "anthropic-legacy-resume",
+            "provider_call_id": "provider_426283690b884743800a58a58a21b0fc",
+            "status": "ok",
+            "step_kind": "tool_call",
+            "tool_calls": 1,
+            "tools": [
+              "jevgrep"
+            ],
+            "total_tokens": 67899,
+            "transport_measured": "provider-complete"
+          },
+          "decision_id": "6c78f3197e7f4762b561d6f456f661d7",
+          "event": "fast_decisions:slow_end",
+          "event_id": "c477c24348dd43e0823c0332caa7abe9",
+          "monotonic_ns": 2197212310291,
+          "parent_session_id": null,
+          "schema_version": "1.0",
+          "seq": 12,
+          "session_id": "11459cfe-d8a2-49d3-bed5-26ad987eb691",
+          "synthetic": false,
+          "timestamp": "2026-09-28T01:27:20.635233+00:00",
+          "turn_id": "745c54a3f1d345f0bf58a1e415ee16db"
+        },
+        {
+          "data": {
+            "cache_read_tokens": 68787,
+            "cache_write_tokens": 540,
+            "cost_usd": 0.0239571,
+            "duration_ms": 1981.821291000415,
+            "finish_reason": "end_turn",
+            "host_model": "claude-fable-5-1",
+            "input_tokens": 68789,
+            "latency_kind": "provider_complete_wall_time",
+            "model": "claude-sonnet-5",
+            "output_tokens": 86,
+            "provider": "anthropic-legacy-resume",
+            "provider_call_id": "provider_70b0a0eb00184afc9542fc76c8af2019",
+            "status": "ok",
+            "step_kind": "final_answer",
+            "tool_calls": 0,
+            "total_tokens": 68875,
+            "transport_measured": "provider-complete"
+          },
+          "decision_id": "f193bb9b0af941548dbabe9fc1827e63",
+          "event": "fast_decisions:slow_end",
+          "event_id": "95080722c97b4e0b9e662c15008faf51",
+          "monotonic_ns": 2199468245583,
+          "parent_session_id": null,
+          "schema_version": "1.0",
+          "seq": 19,
+          "session_id": "11459cfe-d8a2-49d3-bed5-26ad987eb691",
+          "synthetic": false,
+          "timestamp": "2026-09-28T01:27:22.891200+00:00",
+          "turn_id": "745c54a3f1d345f0bf58a1e415ee16db"
+        }
+      ]
+    }
+  ],
+  "setup_corrections": [
+    "CLI local bundle required a file URI.",
+    "Initial test-only denial hook used a noncanonical package directory and did not mount. Two attempts were rejected as denial evidence; the corrected hook was observed and denied execution.",
+    "Host unittest invocation required PYTHONPATH=src:tests rather than importing tests as a package."
+  ],
+  "tests": {
+    "regression": {
+      "run": 1144,
+      "skipped": 49,
+      "failures": 0,
+      "seconds": 106.94
+    },
+    "installed_host": {
+      "run": 30,
+      "skipped": 1,
+      "failures": 0,
+      "seconds": 2.132
+    },
+    "demo": "passed"
+  },
+  "credential_handling": "Existing TypeSafe key used through jg auth stdin in temporary XDG directory, removed on exit. No key persisted in evidence or global jg configuration."
+}
