@@ -134,7 +134,8 @@ class CompleteCampaignTests(unittest.TestCase):
             (root/'manifest.json').write_text(json.dumps({'arms':{'plain-matched':{'matched':True}},
                 'run_order':['old','next']}))
             args=SimpleNamespace(root=str(root),parallel=1,max_cost_usd=100,reserve_per_run_usd=10)
-            with patch.object(s.forge_e2e,'forge_self_heal'), patch.object(s,'_run_one') as run, \
+            with patch.dict(sys.modules, {'forge': SimpleNamespace()}), \
+                 patch.object(s.forge_e2e,'forge_self_heal'), patch.object(s,'_run_one') as run, \
                  self.assertRaisesRegex(SystemExit,'Unknown prior cost'):
                 s.cmd_run(args)
             run.assert_not_called()
