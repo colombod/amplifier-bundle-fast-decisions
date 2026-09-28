@@ -9,6 +9,7 @@ import json
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace as NS
@@ -471,7 +472,11 @@ class PlannerDisabledFullByteIdenticalTests(unittest.IsolatedAsyncioTestCase):
         provider = DemoProvider(delay_ms=0)
         facade = RoutedProvider(provider, runtime, {}, demo_response)
         req = request([user()])
-        await facade.complete(req)
+        # Efficiency receipts also carry measured seconds and seconds_saved.
+        # Freeze the measured clock rather than dropping those payload fields:
+        # planner-off equality must not depend on host scheduling jitter.
+        with patch("amplifier_fast_decisions.orchestrator.time.perf_counter", return_value=123.0):
+            await facade.complete(req)
         return vars(req), _strip_nondeterministic_event_fields(events)
 
     async def test_no_planner_key_vs_planner_disabled_full_request_payload_byte_identical(self):
