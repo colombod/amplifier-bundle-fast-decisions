@@ -1,0 +1,107 @@
+{
+  "name": "orch-default-s1-holdout2-r1-answer_retry_max_attempts-amplifier-fd-a1",
+  "task": "answer_retry_max_attempts",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T13:43:50.759522+00:00",
+  "ended_at": "2026-09-25T13:44:22.287562+00:00",
+  "wall_time_ms": 31527.212207991397,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.575028,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 169822.0,
+    "output_tokens": 706.0,
+    "cache_read_tokens": 169812.0,
+    "cache_write_tokens": 39774.0,
+    "cost_usd": 0.575028
+  },
+  "num_turns": null,
+  "final_message": "In `retry.py`, `call_with_retry()` falls back to `DEFAULT_MAX_ATTEMPTS = 4` when `max_attempts` is `None`, and loops `for _ in range(attempts)` \u2014 so 4 total tries (including the first). The `RETRY_LIMIT = 5` in `decoy_backoff.py` and `MAX_RETRIES = 3` in `decoy_network.py` are never imported by `retry.py` and don't affect the result.\n\nANSWER: 4",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 18799.441000000003,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.57,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_f56d919cbba34accabac49da2ca14009",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 223,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36554
+      },
+      {
+        "provider_call_id": "provider_42de1af0e27946948efec032985d48d1",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68415,
+        "output_tokens": 314,
+        "cache_read_tokens": 68411,
+        "cache_write_tokens": 1133
+      },
+      {
+        "provider_call_id": "provider_9fa8943cb7f34523ac8422224ab5f931",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69546,
+        "output_tokens": 169,
+        "cache_read_tokens": 69544,
+        "cache_write_tokens": 2087
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.575028
+    }
+  }
+}

@@ -54,7 +54,8 @@
         "fast_decisions:difficulty_judged",
         "fast_decisions:efficiency",
         "fast_decisions:cache_refresh",
-        "fast_decisions:loop_note"
+        "fast_decisions:loop_note",
+        "fast_decisions:easy_turn_shaped"
       ]
     },
     "session_id": {

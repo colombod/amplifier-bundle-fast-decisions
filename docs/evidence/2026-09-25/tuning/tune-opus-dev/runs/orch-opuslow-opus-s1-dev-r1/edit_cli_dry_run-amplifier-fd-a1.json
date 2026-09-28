@@ -1,0 +1,107 @@
+{
+  "name": "orch-opuslow-opus-s1-dev-r1-edit_cli_dry_run-amplifier-fd-a1",
+  "task": "edit_cli_dry_run",
+  "family": "edit",
+  "split": "dev",
+  "kind": "code",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T12:16:34.218088+00:00",
+  "ended_at": "2026-09-25T12:16:57.578028+00:00",
+  "wall_time_ms": 23359.21499998949,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2309418,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 169107.0,
+    "output_tokens": 443.0,
+    "cache_read_tokens": 169099.0,
+    "cache_write_tokens": 37646.0,
+    "cost_usd": 0.2309418
+  },
+  "num_turns": null,
+  "final_message": null,
+  "quality": {
+    "checks": 4,
+    "passed": 4,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 9788.012,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.0,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_6853dd575b0142aea9cd557dd1b394a5",
+        "served_model": "claude-opus-5-5",
+        "requested_model": "claude-opus-5-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "low",
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 103,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36243
+      },
+      {
+        "provider_call_id": "provider_a985f720190046f5863010787308b944",
+        "served_model": "claude-opus-5-5",
+        "requested_model": "claude-opus-5-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "low",
+        "status": "ok",
+        "input_tokens": 68102,
+        "output_tokens": 198,
+        "cache_read_tokens": 68100,
+        "cache_write_tokens": 1042
+      },
+      {
+        "provider_call_id": "provider_709be989e2cd482080b869a04a723f7c",
+        "served_model": "claude-opus-5-5",
+        "requested_model": "claude-opus-5-5",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "low",
+        "status": "ok",
+        "input_tokens": 69144,
+        "output_tokens": 142,
+        "cache_read_tokens": 69142,
+        "cache_write_tokens": 361
+      }
+    ],
+    "served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.230942
+    }
+  }
+}

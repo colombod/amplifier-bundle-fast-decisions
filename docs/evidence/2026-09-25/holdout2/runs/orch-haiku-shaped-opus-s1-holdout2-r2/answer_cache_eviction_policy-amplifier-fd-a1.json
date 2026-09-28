@@ -1,0 +1,107 @@
+{
+  "name": "orch-haiku-shaped-opus-s1-holdout2-r2-answer_cache_eviction_policy-amplifier-fd-a1",
+  "task": "answer_cache_eviction_policy",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T14:12:14.554637+00:00",
+  "ended_at": "2026-09-25T14:12:36.319224+00:00",
+  "wall_time_ms": 21763.403707998805,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2322686,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 170128.0,
+    "output_tokens": 386.0,
+    "cache_read_tokens": 170118.0,
+    "cache_write_tokens": 38097.0,
+    "cost_usd": 0.2322686
+  },
+  "num_turns": null,
+  "final_message": "When you call `cache.make_cache()` with no `policy` argument, it uses `\"lru\"`.\n\nIn `cache.py`, `policy` defaults to `None`, and when it's `None` the function sets it to `DEFAULT_POLICY = \"lru\"`. `main6.py` calls `make_cache()` with no arguments, so it gets `\"lru\"` too.\n\nTwo other files mention a policy, but `cache.py` doesn't import either one, so they don't affect the answer:\n- `decoy_config.py` has `\"random\"`.\n- `decoy_policies.py` has `\"fifo\"`.\n\n`.amplifier/settings.local.yaml` has no cache settings.\n\nANSWER: lru",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 8661.474999999999,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.59,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_0d0ebb8502224194aad4130d819a8e63",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 97,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36569
+      },
+      {
+        "provider_call_id": "provider_a63163fcf652443cb1ffb8c3ffc8f38e",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68430,
+        "output_tokens": 61,
+        "cache_read_tokens": 68426,
+        "cache_write_tokens": 1409
+      },
+      {
+        "provider_call_id": "provider_b19d43ddfab54347adc82069f6402eb9",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69837,
+        "output_tokens": 228,
+        "cache_read_tokens": 69835,
+        "cache_write_tokens": 119
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.232269
+    }
+  }
+}

@@ -13,25 +13,45 @@ than replacing it.
 
 | Kind of work | Time | Cost | Quality |
 |---|---|---|---|
-| Everyday coding tasks, expensive default model (Claude Fable 5.1) | **0.42×** | **0.50×** | Every run passed (24 of 24 vs. 24 of 24) |
-| Everyday coding tasks, Claude Opus 5.5 as default | 1.01× (no gain) | 0.98× | Every run passed |
+| Everyday coding tasks, expensive default model (Claude Fable 5.1) | **0.52×** | **0.49×** | Every scored run passed (36 of 36 vs. 36 of 36) |
+| Everyday coding tasks, Claude Opus 5.5 as default | **0.80×** | 0.97× | Every scored run passed (36 of 36 vs. 36 of 36) |
+| Multi-turn sessions (4 requests), Fable 5.1 default · screen | 0.45× | 0.66–0.73× | 9 of 9 vs. 9 of 9 |
+| Multi-turn sessions (4 requests), Opus 5.5 default · screen | 0.89× | **1.34–1.41×** (costs more) | 9 of 9 vs. 9 of 9 |
 | Real bug fixes in large projects (SWE-bench Verified) | 1.00× | 0.98× | 13 of 20 fixed vs. 14 of 20 (same setup as standard) |
 
-Everyday rows: the current default (Jev deciding, one decision per request) on 8 tasks never used for tuning, 3 runs
-each, against standard Amplifier with the same default model. The Fable result met all 6 criteria written down before
-the run (faster on 8 of 8 tasks, sign test p = 0.008, 95% interval 0.35–0.50); the Opus result failed the time
-and sign-test criteria. On the 12 tuning tasks the default measured 0.56–0.57× / 0.46–0.48× (Fable) and 0.76–0.83× / 0.82–0.90× (Opus) in
-two batches. Ratios are geometric means of per-task ratios. Everyday setups ran back to back in the same batch, always in the same order; bug-fix
-setups ran at the same time.
+Everyday rows: the current default (Jev deciding, one decision per request) on a fresh split of 12 tasks never run
+before (`holdout2`, 4 of them longer multi-file tasks), 3 runs each, one request per fresh session, against standard
+Amplifier with the same default model. The criteria were written down and pushed 27 s before the first run, and the
+setups ran in a shuffled order per repetition. Both results are **confirmed** under the study protocol: Fable 95%
+interval 0.42–0.65, faster on 11 of 12 tasks (sign test p = 0.006); Opus 95% interval 0.67–0.92, faster on 10 of 12
+(p = 0.04). These replace the earlier unseen-task run (Fable 0.42×, Opus 1.01× "no measurable gain"), which reused
+its tasks and ran in a fixed order. Multi-turn rows: a new suite, one session with 4 requests, 3 scenarios × 3 runs,
+tuning tasks only, so a screen, not a confirmation; the cost range is two estimators (pipeline and per-task). Ratios
+are geometric means of per-task ratios. Bug-fix setups ran at the same time.
 
 **Who benefits.** Easy requests go to Claude Sonnet 5, so the gain depends on your default model. With an expensive
-default it is large. Claude Opus 5.5 was about as fast and as cheap as Sonnet on these tasks, so there was nothing to
-gain; with Opus, keep Fast Decisions for the dashboard and savings view or turn model routing off. On small tasks most
-of the gain is the faster model itself: against standard Amplifier switched to Sonnet, Fast Decisions took 0.91× the
-time (95% interval 0.77–1.08) and 1.29× the cost on the unseen tasks. The dispatcher's job is keeping hard requests and large projects on your usual model.
+default it is large, for single requests and multi-turn sessions alike. With Claude Opus 5.5 there is a confirmed
+speed gain of about 20% on single requests at about equal cost. In multi-turn sessions on Opus it is ~10% faster but
+costs 1.34–1.41× more: once a session's conversation is cached, Opus 5.5 reads it at $0.20 per million tokens, below
+Sonnet 5's $0.30, and each switch to Sonnet forces a fresh cache write. A cache- and price-aware turn planner for this
+is being developed on a follow-up branch. With Opus, route if single requests and helper sessions dominate your use
+(on the author's machine, 74% of provider calls in the last 14 days were first requests of helper sessions, 12% later
+requests of main sessions); turn model routing off if long main-session conversations dominate and cost matters more
+than speed. On small tasks much of the gain is the faster model itself: against standard Amplifier switched to
+Sonnet, Fast Decisions took 1.04× the time and 1.25× the cost (Fable default) and 0.87× the time at 1.01× the cost
+(Opus default). The dispatcher's job is keeping hard requests and large projects on your usual model.
+
+**Not recommended: easy requests on Claude Haiku 4.5.** A cost preset that sent easy requests to Haiku (with extra
+guidance and the to-do tool hidden) cost 0.45× (Opus default) and 0.30× (Fable default) on `holdout2`, but Haiku got
+`repair_roman_to_int` wrong in 4 of 6 runs where standard Amplifier got it right (its check accepted out-of-order
+numerals). That is a critical failure under the protocol, so the preset is disqualified; on the Opus default it was
+also 1.16× slower. In tuning on the Opus default, Haiku made more round trips (planning and checklist tool calls) and
+was ~1.2× slower despite faster calls; the extra guidance cut its round trips, but not enough. Lowering the easy
+tier's thinking level, or staying on Opus at a low thinking level, did not beat Sonnet (tuning screens).
 
 Full results: [report](docs/report/fast-decisions-report.html) (plain language) ·
 [RESULTS-2026-09-24.md](docs/RESULTS-2026-09-24.md) · [study protocol](evals/STUDY-DESIGN.md) §18 ·
+[holdout2 verification](docs/evidence/2026-09-25/holdout2/VERIFICATION.md) ·
 evidence with checksums: [2026-09-24](docs/evidence/2026-09-24/), [2026-09-25](docs/evidence/2026-09-25/).
 
 ## Install
@@ -71,16 +91,16 @@ Design detail: [docs/ORCHESTRATOR-PRIMARY.md](docs/ORCHESTRATOR-PRIMARY.md).
 ## Who decides
 
 Measured on 90 real issues rated by human experts (SWE-bench Verified): how often each decision-maker ranks an issue
-rated an hour or more of work above one rated under 15 minutes, and how long it takes. 50% is a coin flip. Issues in
+rated an hour or more of work above one rated under 15 minutes (AUC), and how long it takes. 0.5 is a coin flip. Issues in
 between were not included, so everyday accuracy will be lower. Re-run on 2026-09-25; figures reproduced.
 
-| Decision-maker | Picks the harder issue | Time per decision | Data leaves your machine |
+| Decision-maker | Picks the harder issue (AUC) | Time per decision | Data leaves your machine |
 |---|---|---|---|
-| **Jev** (hosted by TypeSafe) · default | 83% | ~0.14–0.16 s | The first 2,500 characters of your latest message (for helper sessions, of the helper's instructions) |
-| Built-in rule · used without a key or if Jev fails | 60% | instant | No |
-| Large local Qwen model (Ollama `qwen:latest`, 27.4B parameters, 29 GB) | 85% | ~2.2–2.5 s | No |
-| Qwen3 8B on your Mac (Ollama `qwen3:8b`) | 72% | ~0.36 s | No |
-| Qwen3.8 27B on a shared hosted server (RunPod) | 85% | median ~0.6 s; 18–25% of calls took 5–24 s | To your server |
+| **Jev** (hosted by TypeSafe) · default | 0.83 | ~0.14–0.16 s | The first 2,500 characters of your latest message (for helper sessions, of the helper's instructions) |
+| Built-in rule · used without a key or if Jev fails | 0.60 | instant | No |
+| Large local Qwen model (Ollama `qwen:latest`, 27.4B parameters, 29 GB) | 0.85 | ~2.2–2.5 s | No |
+| Qwen3 8B on your Mac (Ollama `qwen3:8b`) | 0.72 | ~0.36 s | No |
+| Qwen3.8 27B on a shared hosted server (RunPod) | 0.85 | median ~0.6 s; 18–25% of calls took 5–24 s | To your server |
 
 Switch in `~/.amplifier/settings.yaml` (no bundle edit):
 
@@ -124,7 +144,13 @@ was cheaper on a set of all-easy tasks because it kept fewer requests on the usu
   Studio uses) and the terminal app. Studio's window itself was not driven.
 - A model set before a session starts (in settings or with `--model`) looks the same as your default, so it can
   still be routed; a model picked during the session is always respected.
-- Ten bug-fix issues and eight unseen everyday tasks are small samples. See
+- **Single requests only are confirmed.** The confirmed everyday results come from one request per fresh session.
+  Multi-turn sessions are measured on tuning tasks only (3 scenarios); on the Opus default they cost more (see above).
+- **Longer everyday tasks are only partly covered.** 4 of the 12 `holdout2` tasks are longer multi-file tasks; tasks
+  with many more model calls per request are not in the suite.
+- **Shared cache.** Runs share the provider's prompt cache across setups, so order could bias time and cost. On
+  `holdout2` the order was shuffled per repetition and the per-repetition ratios show no trend with position.
+- Ten bug-fix issues and twelve unseen everyday tasks are small samples. See
   [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) before relying on this in production.
 
 ## Development

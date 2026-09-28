@@ -1,0 +1,139 @@
+[
+  {
+    "id": "plain-sonnet",
+    "experiments": [
+      "plain-sonnet-s1-dev-r1",
+      "plain-sonnet-s1-dev-r2"
+    ],
+    "seeds": [
+      20260929,
+      20260930
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "plain-opus",
+    "experiments": [
+      "plain-opus-s1-dev-r1",
+      "plain-opus-s1-dev-r2"
+    ],
+    "seeds": [
+      20260929,
+      20260930
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-default-opus",
+    "experiments": [
+      "orch-default-opus-s1-dev-r1",
+      "orch-default-opus-s1-dev-r2"
+    ],
+    "seeds": [
+      20260929,
+      20260930
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-haiku-opus",
+    "experiments": [
+      "orch-haiku-opus-s1-dev-r1",
+      "orch-haiku-opus-s1-dev-r2"
+    ],
+    "seeds": [
+      20260929,
+      20260930
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-haiku-shaped-opus",
+    "experiments": [
+      "orch-haiku-shaped-opus-s1-dev-r1",
+      "orch-haiku-shaped-opus-s1-dev-r2"
+    ],
+    "seeds": [
+      20260929,
+      20260930
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-haiku-guided-opus",
+    "experiments": [
+      "orch-haiku-guided-opus-s1-dev-r1",
+      "orch-haiku-guided-opus-s1-dev-r2"
+    ],
+    "seeds": [
+      20260929,
+      20260930
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-sonnet-shaped-opus",
+    "experiments": [
+      "orch-sonnet-shaped-opus-s1-dev-r1",
+      "orch-sonnet-shaped-opus-s1-dev-r2"
+    ],
+    "seeds": [
+      20260929,
+      20260930
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  }
+]

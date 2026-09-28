@@ -1,0 +1,57 @@
+{
+  "name": "plain-s1-holdout2-r3-answer_shipping_zone_count-amplifier-plain-a1",
+  "task": "answer_shipping_zone_count",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T14:30:35.315018+00:00",
+  "ended_at": "2026-09-25T14:30:59.480769+00:00",
+  "wall_time_ms": 24165.095583011862,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.564219,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 100264.0,
+    "output_tokens": 688.0,
+    "cache_read_tokens": 100256.0,
+    "cache_write_tokens": 40374.0,
+    "cost_usd": 0.564219
+  },
+  "num_turns": null,
+  "final_message": "`shipping.ZONES` (shipping.py:4-10) defines exactly five keys: `NA-EAST`, `NA-WEST`, `EU-CENTRAL`, `EU-NORTH`, `APAC-SE`. The other files are decoys: `LEGACY_ZONES` (4 deprecated codes), partner `REGIONS` (6 region names, not zone codes), and `WAREHOUSE_ZONE` (3 warehouse mappings whose values overlap with real codes but aren't `shipping.ZONES`). `checkout.py` and `notify.py` define no zones.\n\nANSWER: 5",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 12034.579000000002,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 2,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-fable-5-1": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.564219
+    }
+  }
+}

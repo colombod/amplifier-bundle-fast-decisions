@@ -1,0 +1,107 @@
+{
+  "name": "orch-default-opus-s1-holdout2-r1-answer_shipping_zone_count-amplifier-fd-a1",
+  "task": "answer_shipping_zone_count",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T13:53:33.152861+00:00",
+  "ended_at": "2026-09-25T13:53:55.364254+00:00",
+  "wall_time_ms": 22210.832166980254,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2358524,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 170672.0,
+    "output_tokens": 422.0,
+    "cache_read_tokens": 170662.0,
+    "cache_write_tokens": 38648.0,
+    "cost_usd": 0.2358524
+  },
+  "num_turns": null,
+  "final_message": "`shipping.ZONES` has 5 distinct keys: `NA-EAST`, `NA-WEST`, `EU-CENTRAL`, `EU-NORTH` and `APAC-SE`. Running `len(shipping.ZONES)` also returns 5.\n\nI read every file in the directory. None of the others change the count:\n- `decoy_legacy_zones.py` has 4 deprecated `ZONE-A`\u2013`ZONE-D` codes.\n- `decoy_partner_regions.py` lists 6 partner-carrier regions.\n- `decoy_warehouse_map.py` maps warehouses to 3 codes that are already in `ZONES`.\n- `checkout.py` and `notify.py` define no zones.\n\nANSWER: 5",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 8963.492,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.58,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_9ed3afbbcf1143eab37ad1e7639ac811",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 83,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36591
+      },
+      {
+        "provider_call_id": "provider_b783e59c5a5744a7ba713ef284f2abf9",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68452,
+        "output_tokens": 87,
+        "cache_read_tokens": 68448,
+        "cache_write_tokens": 1909
+      },
+      {
+        "provider_call_id": "provider_0ce889d9b04d4d50917354aa72375e93",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 70359,
+        "output_tokens": 252,
+        "cache_read_tokens": 70357,
+        "cache_write_tokens": 148
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.235852
+    }
+  }
+}

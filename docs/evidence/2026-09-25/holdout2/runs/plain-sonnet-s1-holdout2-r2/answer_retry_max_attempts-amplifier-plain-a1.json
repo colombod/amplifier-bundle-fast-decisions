@@ -1,0 +1,57 @@
+{
+  "name": "plain-sonnet-s1-holdout2-r2-answer_retry_max_attempts-amplifier-plain-a1",
+  "task": "answer_retry_max_attempts",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T14:05:05.586664+00:00",
+  "ended_at": "2026-09-25T14:05:32.684789+00:00",
+  "wall_time_ms": 27096.745709015522,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.3409908,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 208964.0,
+    "output_tokens": 656.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": 71584.0,
+    "cost_usd": 0.3409908
+  },
+  "num_turns": null,
+  "final_message": "Not relevant to the question (session config), and .git is version control metadata \u2014 neither affects the answer. The relevant code is in `retry.py`: `DEFAULT_MAX_ATTEMPTS = 4`, used when `max_attempts` is `None`, giving 4 iterations of the loop (i.e., 4 total attempts including the first try). The `decoy_*.py` files define unrelated constants (`RETRY_LIMIT = 5`, `MAX_RETRIES = 3`) that are never imported by `retry.py`.\n\nANSWER: 4",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 12983.273000000001,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 4,
+  "concurrency_at_launch": 2,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 4
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.340991
+    }
+  }
+}

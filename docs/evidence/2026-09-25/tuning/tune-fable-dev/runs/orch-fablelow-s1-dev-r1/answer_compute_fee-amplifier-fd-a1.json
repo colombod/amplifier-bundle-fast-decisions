@@ -1,0 +1,107 @@
+{
+  "name": "orch-fablelow-s1-dev-r1-answer_compute_fee-amplifier-fd-a1",
+  "task": "answer_compute_fee",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T12:33:12.184615+00:00",
+  "ended_at": "2026-09-25T12:33:44.275939+00:00",
+  "wall_time_ms": 32090.42304099421,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.584465,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 169870.0,
+    "output_tokens": 768.0,
+    "cache_read_tokens": 169860.0,
+    "cache_write_tokens": 40280.0,
+    "cost_usd": 0.584465
+  },
+  "num_turns": null,
+  "final_message": "Tracing `service2.compute_fee(1000, \"gold\")`:\n\n1. `pricing.base_fee(1000)` = `500 + 1000 // 10` = `500 + 100` = **600**\n2. `discounts.apply_discount(600, \"gold\")`: `pct = 20`, so `[REDACTED:PII] * 20) // 100` = `[REDACTED:PII]` = **480**\n\n`decoy_shipping.py` and `decoy_tax.py` are not imported by `service2.py`, so they don't affect the result.\n\nANSWER: 480",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 19877.036,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.56,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_f9e35c153c40449f83e83ccf29722c06",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 224,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36551
+      },
+      {
+        "provider_call_id": "provider_7f7ff4fdb18346d7ba765dd23dbef294",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68412,
+        "output_tokens": 366,
+        "cache_read_tokens": 68408,
+        "cache_write_tokens": 1187
+      },
+      {
+        "provider_call_id": "provider_68e3af3d38594c6aa05616fcd2fb8358",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69597,
+        "output_tokens": 178,
+        "cache_read_tokens": 69595,
+        "cache_write_tokens": 2542
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.584465
+    }
+  }
+}

@@ -6,6 +6,7 @@ It never patches a class, a global provider dictionary or amplifier-core.
 """
 from __future__ import annotations
 import asyncio
+import copy
 import os
 from pathlib import Path
 import re
@@ -99,6 +100,122 @@ _TEST_FAILURE_PATTERNS = (
     re.compile(r"(?m)^Error:"),
     re.compile(r"\b\d+\s+failed\b"),
 )
+
+
+# HC12 ("easy-turn shaping", opt-in): when a turn is judged "cheap" (the
+# turn-start difficulty router, above), a cheap model can still burn extra
+# provider round trips on ceremony -- one checklist-tool call, one
+# `python_check` call, one tool per response -- where the host model batches independent
+# tool calls into one response and verifies once. Both knobs live under
+# model_routing so the feature only exists where turn tiering already
+# exists; None/empty means fully inert -- request.messages and
+# request.tools are never read for this feature and no
+# fast_decisions:easy_turn_shaped event is emitted. See docs/ARCHITECTURE.md
+# and docs/EVENTS.md.
+def _copy_with_updates(obj: Any, updates: dict[str, Any]) -> Any:
+    """A shallow copy of ``obj`` with ``updates`` applied, never mutating
+    ``obj`` itself. Works uniformly across a dict-shaped request/message and
+    an attribute-bearing one (SimpleNamespace, a pydantic BaseModel, or any
+    other object supporting ``copy.copy``/``setattr``)."""
+    if isinstance(obj, dict):
+        return {**obj, **updates}
+    new_obj = copy.copy(obj)
+    for key, value in updates.items():
+        setattr(new_obj, key, value)
+    return new_obj
+
+
+def _append_guidance_to_system_message(messages: Any, guidance: str) -> tuple[Any, bool]:
+    """Return a NEW messages list with ``guidance`` appended to the END of
+    the last system message's text content -- the least cache-disruptive
+    place to add it, since it stays a fixed suffix of a prefix (the system
+    message) that is otherwise identical on every call of the turn, while
+    the conversation messages that follow keep growing normally.
+
+    Returns ``(messages, False)`` unchanged when there is no system message,
+    or its content shape isn't recognized (a plain string, or a list with at
+    least one ``type: "text"`` block) -- fail closed rather than invent a
+    system message or a content shape a real provider wasn't sent before.
+    Never mutates the original messages list, message, or content block.
+    """
+    system_idx = None
+    for i, message in enumerate(messages):
+        if field_value(message, "role") == "system":
+            system_idx = i
+    if system_idx is None:
+        return messages, False
+    message = messages[system_idx]
+    content = field_value(message, "content")
+    if isinstance(content, str):
+        new_content: Any = content + "\n\n" + guidance
+    elif isinstance(content, list):
+        new_blocks = list(content)
+        last_text_idx = None
+        for i, block in enumerate(new_blocks):
+            if field_value(block, "type") == "text":
+                last_text_idx = i
+        if last_text_idx is None:
+            return messages, False  # no text block to append to -- fail closed
+        block = new_blocks[last_text_idx]
+        new_text = (field_value(block, "text", "") or "") + "\n\n" + guidance
+        new_blocks[last_text_idx] = _copy_with_updates(block, {"text": new_text})
+        new_content = new_blocks
+    else:
+        return messages, False  # unrecognized content shape -- fail closed
+    new_messages = list(messages)
+    new_messages[system_idx] = _copy_with_updates(message, {"content": new_content})
+    return new_messages, True
+
+
+def _drop_hidden_tools(tools: Any, hide_tools: Any) -> tuple[Any, list[str]]:
+    """Return a NEW tools list with any tool named in ``hide_tools`` removed,
+    and the list of names actually hidden (empty when none matched). Never
+    mutates the original tools list. A tool hidden here still exists in the
+    session -- if the model calls it anyway (from training knowledge or a
+    prior turn's memory), nothing special happens; only THIS request's
+    advertised tool list is affected.
+    """
+    if not tools or not hide_tools:
+        return tools, []
+    hide_set = set(hide_tools)
+    kept = []
+    hidden: list[str] = []
+    for tool in tools:
+        name = field_value(tool, "name")
+        if name in hide_set:
+            hidden.append(name)
+        else:
+            kept.append(tool)
+    return kept, hidden
+
+
+def _shape_easy_turn_request(
+    request: Any, guidance: str | None, hide_tools: Any
+) -> tuple[Any, bool, list[str]]:
+    """Build a shaped COPY of ``request`` for one easy-turn provider call.
+
+    Returns ``(call_request, guidance_applied, hidden_tool_names)``. The
+    original ``request``, its ``messages``, and every message/content object
+    it references are left untouched -- only new objects are returned.
+    ``call_request is request`` when neither guidance nor hide_tools changed
+    anything (nothing to shape this call).
+    """
+    guidance_applied = False
+    hidden: list[str] = []
+    updates: dict[str, Any] = {}
+    if guidance:
+        messages = field_value(request, "messages") or []
+        new_messages, guidance_applied = _append_guidance_to_system_message(messages, guidance)
+        if guidance_applied:
+            updates["messages"] = new_messages
+    if hide_tools:
+        tools = field_value(request, "tools")
+        new_tools, hidden = _drop_hidden_tools(tools, hide_tools)
+        if hidden:
+            updates["tools"] = new_tools
+    if not updates:
+        return request, guidance_applied, hidden
+    return _copy_with_updates(request, updates), guidance_applied, hidden
 
 
 def _is_test_tool(tool_key: str) -> bool:
@@ -1054,6 +1171,27 @@ docs/UPSTREAM_CONTRACT.md.
             # receipts below -- otherwise they'd keep showing the
             # pre-routing value even though a different model was requested.
             model = field_value(request, "model") or model
+        # HC12 ("easy-turn shaping", opt-in): applies to every slow call of
+        # an easy (start_tier == "cheap") turn while it runs on the cheap
+        # model; once the turn escalates to the host it is no longer shaped
+        # (the host was called in because the work needed care). A shaped COPY is
+        # built (call_request); `request` itself, and every message/content
+        # object it references, are left untouched. See _shape_easy_turn_request.
+        call_request = request
+        if model_routing and turn.start_tier == "cheap" and not turn.escalated:
+            easy_turn_guidance = model_routing.get("easy_turn_guidance")
+            easy_turn_hide_tools = model_routing.get("easy_turn_hide_tools") or ()
+            if easy_turn_guidance or easy_turn_hide_tools:
+                call_request, guidance_applied, hidden_tools = _shape_easy_turn_request(
+                    request, easy_turn_guidance, easy_turn_hide_tools
+                )
+                if (guidance_applied or hidden_tools) and not turn.easy_turn_shaped:
+                    turn.easy_turn_shaped = True
+                    await service.emit("easy_turn_shaped", {
+                        "guidance_chars": len(easy_turn_guidance) if guidance_applied and easy_turn_guidance else 0,
+                        "hidden_tools": hidden_tools,
+                        "provider_call_id": provider_call_id, "mode": service.policy.mode,
+                    }, decision_id)
         await service.emit("slow_start", {"provider": self._provider_key, "model": model,
             "provider_call_id": provider_call_id,
             "route": "slow", "destination": self._provider_key, "status": "running",
@@ -1066,7 +1204,7 @@ docs/UPSTREAM_CONTRACT.md.
         mono_start = time.monotonic()
         try:
             # Preserve the actual request, model override, kwargs, and response identity.
-            response = await self._provider.complete(request, **kwargs)
+            response = await self._provider.complete(call_request, **kwargs)
         except asyncio.CancelledError:
             await service.emit("slow_end", {"provider": self._provider_key, "model": model, **self._host_model_field(),
                 "provider_call_id": provider_call_id,

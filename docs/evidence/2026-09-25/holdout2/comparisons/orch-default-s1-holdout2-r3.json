@@ -1,0 +1,425 @@
+{
+  "per_harness": {
+    "amplifier-fd": {
+      "n": 12,
+      "success_rate": 1.0,
+      "deadline_failures": 0,
+      "mean_penalized_ms": 12213.604166666666,
+      "median_penalized_ms": 10567.173999999999,
+      "mean_exec_ms": 12213.604166666666,
+      "median_exec_ms": 10567.173999999999,
+      "mean_wall_ms": 27664.6302463317,
+      "median_wall_ms": 26495.781165984226,
+      "mean_cost_known_usd": 0.31031426666666667,
+      "unknown_cost_count": 0,
+      "cost_per_success_usd": 0.31031426666666667,
+      "tokens": {
+        "input_tokens": 2467487.0,
+        "output_tokens": 9674.0,
+        "cache_read_tokens": 2467391.0,
+        "cache_write_tokens": 469024.0,
+        "cost_usd": 3.7237712000000003
+      }
+    }
+  },
+  "per_task": {
+    "answer_cache_eviction_policy": {
+      "task": "answer_cache_eviction_policy",
+      "amplifier-fd": {
+        "penalized_ms": 12654.071,
+        "outcome_passed": true,
+        "cost_usd": 0.53820775
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "answer_retry_max_attempts": {
+      "task": "answer_retry_max_attempts",
+      "amplifier-fd": {
+        "penalized_ms": 10312.894,
+        "outcome_passed": true,
+        "cost_usd": 0.54240575
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "answer_shipping_zone_count": {
+      "task": "answer_shipping_zone_count",
+      "amplifier-fd": {
+        "penalized_ms": 12650.921,
+        "outcome_passed": true,
+        "cost_usd": 0.5579495
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "bugfix_dedupe_keep_order": {
+      "task": "bugfix_dedupe_keep_order",
+      "amplifier-fd": {
+        "penalized_ms": 9798.265000000001,
+        "outcome_passed": true,
+        "cost_usd": 0.22296645000000004
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "bugfix_invoice_tax_unit_mismatch": {
+      "task": "bugfix_invoice_tax_unit_mismatch",
+      "amplifier-fd": {
+        "penalized_ms": 10458.921999999999,
+        "outcome_passed": true,
+        "cost_usd": 0.2276289
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "bugfix_rate_limiter_off_by_one": {
+      "task": "bugfix_rate_limiter_off_by_one",
+      "amplifier-fd": {
+        "penalized_ms": 8640.607,
+        "outcome_passed": true,
+        "cost_usd": 0.22362299999999996
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "edit_cart_apply_coupon": {
+      "task": "edit_cart_apply_coupon",
+      "amplifier-fd": {
+        "penalized_ms": 13814.306,
+        "outcome_passed": true,
+        "cost_usd": 0.2537424
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "edit_slugify_max_length": {
+      "task": "edit_slugify_max_length",
+      "amplifier-fd": {
+        "penalized_ms": 8193.237,
+        "outcome_passed": true,
+        "cost_usd": 0.19732065000000001
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "edit_temp_round_fahrenheit": {
+      "task": "edit_temp_round_fahrenheit",
+      "amplifier-fd": {
+        "penalized_ms": 6205.888,
+        "outcome_passed": true,
+        "cost_usd": 0.19518809999999998
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "repair_flatten_ints": {
+      "task": "repair_flatten_ints",
+      "amplifier-fd": {
+        "penalized_ms": 10567.173999999999,
+        "outcome_passed": true,
+        "cost_usd": 0.23078565000000004
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "repair_reorder_point": {
+      "task": "repair_reorder_point",
+      "amplifier-fd": {
+        "penalized_ms": 28963.358,
+        "outcome_passed": true,
+        "cost_usd": 0.277602
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "repair_roman_to_int": {
+      "task": "repair_roman_to_int",
+      "amplifier-fd": {
+        "penalized_ms": 14303.607,
+        "outcome_passed": true,
+        "cost_usd": 0.25635104999999997
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    }
+  },
+  "per_family": {
+    "answer": {
+      "amplifier-fd": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          12654.071,
+          10312.894,
+          12650.921
+        ]
+      }
+    },
+    "bugfix": {
+      "amplifier-fd": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          9798.265000000001,
+          10458.921999999999,
+          8640.607
+        ]
+      }
+    },
+    "edit": {
+      "amplifier-fd": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          13814.306,
+          8193.237,
+          6205.888
+        ]
+      }
+    },
+    "repair": {
+      "amplifier-fd": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          10567.173999999999,
+          28963.358,
+          14303.607
+        ]
+      }
+    }
+  },
+  "amplifier_fd_vs_plain": null,
+  "cross": {
+    "baseline_root": "~/dev/afast-ev/holdout2",
+    "baseline_experiment": "plain-s1-holdout2-r3",
+    "common_tasks": [
+      "answer_cache_eviction_policy",
+      "answer_retry_max_attempts",
+      "answer_shipping_zone_count",
+      "bugfix_dedupe_keep_order",
+      "bugfix_invoice_tax_unit_mismatch",
+      "bugfix_rate_limiter_off_by_one",
+      "edit_cart_apply_coupon",
+      "edit_slugify_max_length",
+      "edit_temp_round_fahrenheit",
+      "repair_flatten_ints",
+      "repair_reorder_point",
+      "repair_roman_to_int"
+    ],
+    "baselines": {
+      "amplifier-plain": {
+        "geomean_ratio": 0.5767659831882304,
+        "wins": 10,
+        "losses": 2,
+        "sign_test_p_value": 0.03857421875,
+        "n_common_pass_pairs": 12,
+        "candidate_successes": 12,
+        "baseline_successes": 12,
+        "n_common_tasks": 12,
+        "per_task": {
+          "answer_cache_eviction_policy": {
+            "task": "answer_cache_eviction_policy",
+            "family": "answer",
+            "candidate_exec_s": 12.654071,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 17.921909,
+            "amplifier-plain_passed": true
+          },
+          "answer_retry_max_attempts": {
+            "task": "answer_retry_max_attempts",
+            "family": "answer",
+            "candidate_exec_s": 10.312894,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 9.431652,
+            "amplifier-plain_passed": true
+          },
+          "answer_shipping_zone_count": {
+            "task": "answer_shipping_zone_count",
+            "family": "answer",
+            "candidate_exec_s": 12.650921,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 12.034579,
+            "amplifier-plain_passed": true
+          },
+          "bugfix_dedupe_keep_order": {
+            "task": "bugfix_dedupe_keep_order",
+            "family": "bugfix",
+            "candidate_exec_s": 9.798265,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 19.358069,
+            "amplifier-plain_passed": true
+          },
+          "bugfix_invoice_tax_unit_mismatch": {
+            "task": "bugfix_invoice_tax_unit_mismatch",
+            "family": "bugfix",
+            "candidate_exec_s": 10.458922,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 21.659206,
+            "amplifier-plain_passed": true
+          },
+          "bugfix_rate_limiter_off_by_one": {
+            "task": "bugfix_rate_limiter_off_by_one",
+            "family": "bugfix",
+            "candidate_exec_s": 8.640607,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 20.872141,
+            "amplifier-plain_passed": true
+          },
+          "edit_cart_apply_coupon": {
+            "task": "edit_cart_apply_coupon",
+            "family": "edit",
+            "candidate_exec_s": 13.814306,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 26.001012,
+            "amplifier-plain_passed": true
+          },
+          "edit_slugify_max_length": {
+            "task": "edit_slugify_max_length",
+            "family": "edit",
+            "candidate_exec_s": 8.193237,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 22.267302,
+            "amplifier-plain_passed": true
+          },
+          "edit_temp_round_fahrenheit": {
+            "task": "edit_temp_round_fahrenheit",
+            "family": "edit",
+            "candidate_exec_s": 6.205888,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 9.930675,
+            "amplifier-plain_passed": true
+          },
+          "repair_flatten_ints": {
+            "task": "repair_flatten_ints",
+            "family": "repair",
+            "candidate_exec_s": 10.567174,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 22.636937,
+            "amplifier-plain_passed": true
+          },
+          "repair_reorder_point": {
+            "task": "repair_reorder_point",
+            "family": "repair",
+            "candidate_exec_s": 28.963358,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 45.182199,
+            "amplifier-plain_passed": true
+          },
+          "repair_roman_to_int": {
+            "task": "repair_roman_to_int",
+            "family": "repair",
+            "candidate_exec_s": 14.303607,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 31.685705,
+            "amplifier-plain_passed": true
+          }
+        }
+      }
+    },
+    "rank": {
+      "answer_cache_eviction_policy": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "answer_retry_max_attempts": {
+        "rank": 2,
+        "field_size": 2
+      },
+      "answer_shipping_zone_count": {
+        "rank": 2,
+        "field_size": 2
+      },
+      "bugfix_dedupe_keep_order": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "bugfix_invoice_tax_unit_mismatch": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "bugfix_rate_limiter_off_by_one": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "edit_cart_apply_coupon": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "edit_slugify_max_length": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "edit_temp_round_fahrenheit": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "repair_flatten_ints": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "repair_reorder_point": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "repair_roman_to_int": {
+        "rank": 1,
+        "field_size": 2
+      }
+    },
+    "evidence_limits": [
+      "single_repetition_per_task_per_harness",
+      "non_contemporaneous_runs_across_campaigns",
+      "external_harness_exec_time_may_still_include_its_own_startup",
+      "models_not_necessarily_matched_across_campaigns_or_harnesses"
+    ]
+  },
+  "dev": {},
+  "holdout": {},
+  "mechanism": {
+    "runs_evaluated": 12,
+    "configured_backend": "jev",
+    "difficulty_judged": {
+      "judge_strong": 3,
+      "judge_cheap": 9
+    },
+    "model_routing_configured": true,
+    "model_routing_start_model": "claude-sonnet-5",
+    "scored_by_backend": {},
+    "fallback_count": 0,
+    "routed_by_route": {
+      "slow": 42
+    },
+    "effort_routed_by_phase_effort": {
+      "orient:None": 3,
+      "explore:None": 3,
+      "orient:medium": 9,
+      "explore:medium": 10,
+      "implement:medium": 17
+    },
+    "model_routed_requested_models": {
+      "null": 6,
+      "claude-sonnet-5": 36
+    },
+    "model_routed_escalations_by_reason": {},
+    "decision_latency_ms_by_backend": {
+      "jev": {
+        "n": 12,
+        "p50": 150.09458400891162,
+        "p95": 192.51929098390974
+      }
+    },
+    "decision_latency_ms_p50": 150.09458400891162,
+    "decision_latency_ms_p95": 192.51929098390974,
+    "decision_latency_budget_ms": 500,
+    "latency_within_budget": true,
+    "decision_latency_reason": null,
+    "mechanism_engaged": true,
+    "mechanism_reason": null,
+    "escalation_judged_by_backend": {},
+    "escalation_judged_by_decided": {},
+    "phase_judged_by_backend": {},
+    "phase_judged_agreement": {},
+    "judged_engaged": null,
+    "judged_reason": null,
+    "served_model_counts": {
+      "provider-default": 6,
+      "claude-sonnet-5": 36
+    }
+  },
+  "amplifier_fd_series_label": "amplifier-fd [judge=jev; effort orient->medium, explore->low, implement->high; model routing: on; bundle=foundation]",
+  "evidence_limits": [
+    "n_tasks=12",
+    "single_repetition_per_task_per_harness",
+    "models_not_necessarily_matched_across_harnesses"
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "per_harness": {
+    "amplifier-fd": {
+      "n": 3,
+      "success_rate": 1.0,
+      "deadline_failures": 0,
+      "mean_penalized_ms": 43650.97,
+      "median_penalized_ms": 44165.015,
+      "mean_exec_ms": 43650.97,
+      "median_exec_ms": 44165.015,
+      "mean_wall_ms": 82654.42166701541,
+      "median_wall_ms": 80597.17404303956,
+      "mean_cost_known_usd": 0.7245877166666667,
+      "unknown_cost_count": 0,
+      "cost_per_success_usd": 0.7245877166666667,
+      "tokens": {
+        "input_tokens": 3262629.0,
+        "output_tokens": 8405.0,
+        "cost_usd": 2.17376315
+      }
+    }
+  },
+  "per_task": {
+    "scn_dev_1": {
+      "task": "scn_dev_1",
+      "amplifier-fd": {
+        "penalized_ms": 44165.015,
+        "outcome_passed": true,
+        "cost_usd": 0.5562543
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "scn_dev_2": {
+      "task": "scn_dev_2",
+      "amplifier-fd": {
+        "penalized_ms": 51141.359,
+        "outcome_passed": true,
+        "cost_usd": 1.1069034000000002
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    },
+    "scn_dev_3": {
+      "task": "scn_dev_3",
+      "amplifier-fd": {
+        "penalized_ms": 35646.53600000001,
+        "outcome_passed": true,
+        "cost_usd": 0.51060545
+      },
+      "fastest_passing_harness": "amplifier-fd"
+    }
+  },
+  "per_family": {
+    "scenario": {
+      "amplifier-fd": {
+        "n": 3,
+        "successes": 3,
+        "penalized_ms": [
+          44165.015,
+          51141.359,
+          35646.53600000001
+        ]
+      }
+    }
+  },
+  "amplifier_fd_vs_plain": null,
+  "cross": {
+    "baseline_root": "~/dev/afast-ev/mt-dev",
+    "baseline_experiment": "plain-s1m-m-dev-r3",
+    "common_tasks": [
+      "scn_dev_1",
+      "scn_dev_2",
+      "scn_dev_3"
+    ],
+    "baselines": {
+      "amplifier-plain": {
+        "geomean_ratio": 0.4488031662289493,
+        "wins": 3,
+        "losses": 0,
+        "sign_test_p_value": 0.25,
+        "n_common_pass_pairs": 3,
+        "candidate_successes": 3,
+        "baseline_successes": 3,
+        "n_common_tasks": 3,
+        "per_task": {
+          "scn_dev_1": {
+            "task": "scn_dev_1",
+            "family": "scenario",
+            "candidate_exec_s": 44.165015,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 101.11713999999998,
+            "amplifier-plain_passed": true
+          },
+          "scn_dev_2": {
+            "task": "scn_dev_2",
+            "family": "scenario",
+            "candidate_exec_s": 51.141358999999994,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 83.79831,
+            "amplifier-plain_passed": true
+          },
+          "scn_dev_3": {
+            "task": "scn_dev_3",
+            "family": "scenario",
+            "candidate_exec_s": 35.646536000000005,
+            "candidate_passed": true,
+            "amplifier-plain_exec_s": 105.10907300000001,
+            "amplifier-plain_passed": true
+          }
+        }
+      }
+    },
+    "rank": {
+      "scn_dev_1": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "scn_dev_2": {
+        "rank": 1,
+        "field_size": 2
+      },
+      "scn_dev_3": {
+        "rank": 1,
+        "field_size": 2
+      }
+    },
+    "evidence_limits": [
+      "single_repetition_per_task_per_harness",
+      "non_contemporaneous_runs_across_campaigns",
+      "external_harness_exec_time_may_still_include_its_own_startup",
+      "models_not_necessarily_matched_across_campaigns_or_harnesses"
+    ]
+  },
+  "dev": {},
+  "holdout": {},
+  "mechanism": {
+    "runs_evaluated": 3,
+    "configured_backend": "jev",
+    "difficulty_judged": {
+      "judge_cheap": 11,
+      "judge_strong": 1
+    },
+    "model_routing_configured": true,
+    "model_routing_start_model": "claude-sonnet-5",
+    "scored_by_backend": {},
+    "fallback_count": 0,
+    "routed_by_route": {
+      "slow": 46
+    },
+    "effort_routed_by_phase_effort": {
+      "orient:medium": 11,
+      "explore:medium": 14,
+      "implement:medium": 19,
+      "orient:None": 1,
+      "implement:None": 1
+    },
+    "model_routed_requested_models": {
+      "claude-sonnet-5": 44,
+      "null": 2
+    },
+    "model_routed_escalations_by_reason": {},
+    "decision_latency_ms_by_backend": {
+      "jev": {
+        "n": 12,
+        "p50": 145.78104199608788,
+        "p95": 205.6483750056941
+      }
+    },
+    "decision_latency_ms_p50": 145.78104199608788,
+    "decision_latency_ms_p95": 205.6483750056941,
+    "decision_latency_budget_ms": 500,
+    "latency_within_budget": true,
+    "decision_latency_reason": null,
+    "mechanism_engaged": true,
+    "mechanism_reason": null,
+    "escalation_judged_by_backend": {},
+    "escalation_judged_by_decided": {},
+    "phase_judged_by_backend": {},
+    "phase_judged_agreement": {},
+    "judged_engaged": null,
+    "judged_reason": null,
+    "served_model_counts": {
+      "claude-sonnet-5": 44,
+      "provider-default": 2
+    }
+  },
+  "amplifier_fd_series_label": "amplifier-fd [judge=jev; effort orient->medium, explore->low, implement->high; model routing: on; bundle=foundation]",
+  "evidence_limits": [
+    "n_tasks=3",
+    "single_repetition_per_task_per_harness",
+    "models_not_necessarily_matched_across_harnesses"
+  ]
+}

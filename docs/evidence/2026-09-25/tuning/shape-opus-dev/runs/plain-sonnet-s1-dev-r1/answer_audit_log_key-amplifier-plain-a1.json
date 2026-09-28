@@ -1,0 +1,57 @@
+{
+  "name": "plain-sonnet-s1-dev-r1-answer_audit_log_key-amplifier-plain-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T13:09:57.463226+00:00",
+  "ended_at": "2026-09-25T13:10:55.432527+00:00",
+  "wall_time_ms": 57968.24454198941,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.38290155000000003,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 537632.0,
+    "output_tokens": 3806.0,
+    "cache_read_tokens": 537616.0,
+    "cache_write_tokens": 43861.0,
+    "cost_usd": 0.38290155000000003
+  },
+  "num_turns": null,
+  "final_message": "I read all files: README.md (the question), config.py (`AUDIT_PREFIX = \"AUD\"`), audit.py (the sole audit-log writer, defining `_format_key(kind, ident) -> f\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"` and calling it to build `key` before `log[key] = True`), decoy_cache.py and decoy_metrics.py (red herrings using `METRICS_PREFIX = \"MET\"`, never touching the audit log), and service.py (`checkout(order_id)` calls `write_audit(\"order\", order_id)`).\n\nTracing the only real audit-log write path: `service.checkout(\"7781\")` \u2192 `write_audit(\"order\", \"7781\")` \u2192 `key = [REDACTED:SECRET]\"order\", \"7781\")` = `f\"{AUDIT_PREFIX}-{\"order\".upper()}-{\"7781\"}\"` = `\"AUD-ORDER-7781\"`.\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 45347.171,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 8,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 8
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.382902
+    }
+  }
+}

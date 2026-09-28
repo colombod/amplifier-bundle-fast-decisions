@@ -68,6 +68,9 @@ EVENT_NAMES = tuple(
         # loop-stop notes (pattern kind and tool name only). See levers.py.
         "cache_refresh",
         "loop_note",
+        # HC12 ("easy-turn shaping", opt-in): guidance appended / tools
+        # hidden on a turn judged easy. See orchestrator.py and docs/EVENTS.md.
+        "easy_turn_shaped",
     )
 )
 
@@ -187,6 +190,15 @@ MODEL_ROUTING_KEYS = frozenset(
         # (escalation did not recover a misdirected start); such turns start
         # strong whatever the judge says. None = no gate.
         "cheap_max_workspace_files",
+        # HC12 ("easy-turn shaping", opt-in): a cheap model can burn extra
+        # provider round trips on ceremony (one tool call per response, a
+        # checklist tool before and after real work) where the host
+        # model would batch independent tool calls in one response. Both
+        # knobs apply only while turn.start_tier == "cheap"; None/empty
+        # means fully inert -- no request field is read or written. See
+        # orchestrator.py and docs/ARCHITECTURE.md.
+        "easy_turn_guidance",
+        "easy_turn_hide_tools",
     }
 )
 
@@ -268,6 +280,15 @@ def validate_model_routing(model_routing: Any) -> None:
         value = model_routing.get(key)
         if value is not None and not isinstance(value, bool):
             raise ValueError(f"model_routing.{key} must be a bool")
+    easy_turn_guidance = model_routing.get("easy_turn_guidance")
+    if easy_turn_guidance is not None and not isinstance(easy_turn_guidance, str):
+        raise ValueError("model_routing.easy_turn_guidance must be a string")
+    easy_turn_hide_tools = model_routing.get("easy_turn_hide_tools")
+    if easy_turn_hide_tools is not None and (
+        not isinstance(easy_turn_hide_tools, (list, tuple))
+        or not all(isinstance(name, str) for name in easy_turn_hide_tools)
+    ):
+        raise ValueError("model_routing.easy_turn_hide_tools must be a list of strings")
     escalation_judge = model_routing.get("escalation_judge")
     if escalation_judge is not None and escalation_judge not in ESCALATION_JUDGE_MODES:
         raise ValueError(
@@ -852,6 +873,10 @@ class TurnState:
     # and how long the judge took, for efficiency receipts.
     start_mechanism: str | None = None
     judge_seconds: float = 0.0
+    # HC12 ("easy-turn shaping", opt-in): whether the once-per-turn
+    # fast_decisions:easy_turn_shaped receipt has already been emitted this
+    # turn. Reset with the rest of TurnState at turn start.
+    easy_turn_shaped: bool = False
 
 
 def candidate_read_identity(

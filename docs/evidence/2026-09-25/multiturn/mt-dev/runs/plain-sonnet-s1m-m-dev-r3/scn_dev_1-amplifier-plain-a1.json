@@ -1,0 +1,177 @@
+{
+  "name": "plain-sonnet-s1m-m-dev-r3-scn_dev_1-amplifier-plain-a1",
+  "task": "scn_dev_1",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T15:24:48.798213+00:00",
+  "ended_at": "2026-09-25T15:26:17.744304+00:00",
+  "wall_time_ms": 88940.92633397668,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.6214656499999999,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1241108.0,
+    "output_tokens": 3871.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.6214656499999999
+  },
+  "num_turns": null,
+  "final_message": "DONE: Fixed the off-by-one in `t4-bugfix_paginate_off_by_one/paginate.py` by computing `start = (page - 1) * page_size` instead of `page * page_size`; verified with `python3 -m unittest -v test_public.py` (1 passed).",
+  "quality": {
+    "checks": 47,
+    "passed": 47,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_parse_duration/README.md": true,
+    "t1-repair_parse_duration/test_public.py": true,
+    "t2-answer_audit_log_key/README.md": true,
+    "t3-edit_cli_dry_run/README.md": true,
+    "t4-bugfix_paginate_off_by_one/README.md": true,
+    "t4-bugfix_paginate_off_by_one/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_parse_duration",
+      "started_at": "2026-09-25T15:24:48.798213+00:00",
+      "ended_at": "2026-09-25T15:25:18.457951+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 29658.991332980804,
+      "final_message": "Both public tests pass.\n\nDONE: Rewrote `parse_duration` in `t1-repair_parse_duration/solution.py` to validate the `[h][m][s]` component order via regex, reject invalid/non-string input with ValueError/TypeError, and sum seconds correctly; verified with `python3 -m unittest -v test_public.py` (2 passed).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 32,
+        "passed": 32,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 14154.102,
+      "provider_requests": 5,
+      "cost_usd": 0.25535445,
+      "model_counts": {
+        "claude-sonnet-5": 5
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_audit_log_key",
+      "started_at": "2026-09-25T15:25:18.460604+00:00",
+      "ended_at": "2026-09-25T15:25:39.670774+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 21209.91670899093,
+      "final_message": "ANSWER: AUD-ORDER-7781",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 13485.78,
+      "provider_requests": 4,
+      "cost_usd": 0.12591064999999999,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T15:25:37.611169+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_cli_dry_run",
+      "started_at": "2026-09-25T15:25:39.671356+00:00",
+      "ended_at": "2026-09-25T15:26:00.745628+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 21074.02029199875,
+      "final_message": "Verified: dry-run prints the expected message and performs no filesystem action; normal mode still creates/deletes and prints the original `DONE:` message.\n\nDONE: Added a `--dry-run` flag to `t3-edit_cli_dry_run/cli_tool.py` that prints `DRY RUN: would {action} {path}` and skips file create/delete, leaving non-dry-run behavior unchanged.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 4,
+        "passed": 4,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 15179.498000000001,
+      "provider_requests": 4,
+      "cost_usd": 0.12353565000000001,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_paginate_off_by_one",
+      "started_at": "2026-09-25T15:26:00.746102+00:00",
+      "ended_at": "2026-09-25T15:26:17.744304+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 16997.99800000619,
+      "final_message": "DONE: Fixed the off-by-one in `t4-bugfix_paginate_off_by_one/paginate.py` by computing `start = (page - 1) * page_size` instead of `page * page_size`; verified with `python3 -m unittest -v test_public.py` (1 passed).",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 10,
+        "passed": 10,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 11129.445,
+      "provider_requests": 4,
+      "cost_usd": 0.1166649,
+      "model_counts": {
+        "claude-sonnet-5": 4
+      },
+      "background_calls": []
+    }
+  ],
+  "exec_time_ms": 53948.825000000004,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 17,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 17,
+      "claude-haiku-4-5-20251001": 1
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.61673,
+      "claude-haiku-4-5-20251001": 0.004736
+    }
+  }
+}

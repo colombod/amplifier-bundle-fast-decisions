@@ -256,6 +256,16 @@ def _task_kind(task):
     return getattr(entry, 'kind', 'code') if entry is not None else 'code'
 
 
+# A response whose data.purpose is one of these is an out-of-band background
+# call the running session makes on its own (e.g. the session-naming hook's
+# haiku call during cleanup, AFTER the turn's real answer) -- never the
+# user-facing final message. Mirrors battery.py's BACKGROUND_CALL_PURPOSES
+# (same real-world evidence: 2026-09-25 mt-smoke campaign). Kept as a
+# separate constant (not imported from battery.py) because forge_e2e must
+# not depend on battery.py -- battery.py already imports forge_e2e.
+_BACKGROUND_CALL_PURPOSES = {'session-naming'}
+
+
 def _extract_final_message(session_dir, workspace):
     """Best-effort extraction of the assistant's final response text.
 
@@ -275,7 +285,10 @@ def _extract_final_message(session_dir, workspace):
                     continue
                 if e.get('event') != 'llm:response':
                     continue
-                raw = (e.get('data') or {}).get('raw') or {}
+                data = e.get('data') or {}
+                if data.get('purpose') in _BACKGROUND_CALL_PURPOSES:
+                    continue
+                raw = data.get('raw') or {}
                 content = raw.get('content')
                 if not isinstance(content, list):
                     continue
@@ -291,6 +304,290 @@ def _extract_final_message(session_dir, workspace):
         if lines:
             return lines[-1]
     return None
+
+
+def _parse_iso_ts(value):
+    """Parse an event's ``ts`` field (ISO-8601) into an aware datetime, or None."""
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+    except ValueError:
+        return None
+
+
+def _extract_final_message_window(session_dir, start_iso, end_iso):
+    """Like `_extract_final_message`, but only considers `llm:response` events
+    whose `ts` falls within [start_iso, end_iso] -- used to attribute one
+    turn's final message within a multi-turn (--resume) scenario session,
+    whose events.jsonl otherwise mixes every turn together. Also excludes any
+    response tagged with a _BACKGROUND_CALL_PURPOSES purpose (e.g. the
+    session-naming hook's own response, which can land inside a turn's window
+    AFTER the turn's real answer -- see BACKGROUND_CALL_PURPOSES in
+    battery.py for the real-world evidence). Returns None if no in-window,
+    non-background text is found (callers may fall back to the whole-session
+    extractor for the last turn, or to a stdout-captured response -- see
+    _parse_amplifier_stdout_response, the preferred source when available).
+    """
+    if session_dir is None:
+        return None
+    events_path = Path(session_dir)/'events.jsonl'
+    if not events_path.exists():
+        return None
+    start = _parse_iso_ts(start_iso)
+    end = _parse_iso_ts(end_iso)
+    last_text = None
+    for line in events_path.read_text().splitlines():
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        if e.get('event') != 'llm:response':
+            continue
+        data = e.get('data') or {}
+        if data.get('purpose') in _BACKGROUND_CALL_PURPOSES:
+            continue
+        ts = _parse_iso_ts(e.get('ts'))
+        if ts is not None:
+            if start is not None and ts < start:
+                continue
+            if end is not None and ts > end:
+                continue
+        raw = data.get('raw') or {}
+        content = raw.get('content')
+        if not isinstance(content, list):
+            continue
+        texts = [b.get('text') for b in content
+                 if isinstance(b, dict) and b.get('type') == 'text' and b.get('text')]
+        if texts:
+            last_text = '\n'.join(texts)
+    return last_text
+
+
+def _parse_amplifier_stdout_response(text):
+    """Best-effort extraction of `--output-format json`'s clean stdout blob's
+    `response` field. Amplifier redirects ALL diagnostic/progress console
+    output to stderr whenever output_format is 'json' (see
+    amplifier_app_cli.main.execute_single), so real stdout should be exactly
+    one JSON object shaped like {"status": "success", "response": "...",
+    "session_id": ..., ...} -- untouched by anything that happens after the
+    turn's real response (e.g. the session-naming background call, which
+    runs during cleanup and never touches this value). Returns None if
+    `text` is empty, unparseable, or has no usable string 'response' field
+    (e.g. an error-shaped JSON object, or the turn crashed/timed out before
+    ever writing to stdout) -- callers fall back to events-window scanning.
+    """
+    if not text or not text.strip():
+        return None
+    try:
+        parsed = json.loads(text)
+    except ValueError:
+        # Defensive: the CLI should never print more than one JSON value to
+        # stdout in json mode, but if extra bytes ever land here, the last
+        # line that parses as JSON is still the best available signal.
+        parsed = None
+        for line in reversed(text.splitlines()):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                parsed = json.loads(line)
+            except ValueError:
+                continue
+            break
+    if not isinstance(parsed, dict):
+        return None
+    response = parsed.get('response')
+    return response if isinstance(response, str) else None
+
+
+def _run_scenario_turns(root, name, manifest, item, task, workspace, sessions, env, run):
+    """Launch every turn of a multi-turn scenario task, resuming the same
+    Amplifier session for turns 2..N. Returns (turns, sid) where `turns` is
+    a list of per-turn result dicts (see `worker`'s scenario branch) in turn
+    order, and `sid` is the discovered session id (None if turn 1 never
+    produced one).
+
+    On a turn failure (nonzero/None exit code, or a timeout, or -- turn 1
+    only -- no session discovered), stops launching further turns and marks
+    every remaining turn 'skipped' rather than guessing at their outcome.
+    """
+    import battery_tasks
+    turn_prompts = battery_tasks.scenario_turn_prompts(task.subtasks)
+    expected_prompt = battery_tasks.SCENARIO_TURN_SEPARATOR.join(turn_prompts)
+    if expected_prompt != item.get('prompt'):
+        raise SystemExit('worker: scenario turn prompts do not reconstruct the preregistered '
+                          'scenario prompt; refusing to launch amplifier')
+    deadline_seconds = item.get('deadline_seconds') or manifest['limits']['timeout_seconds']
+    turn_gap_seconds = manifest.get('turn_gap_seconds') or 0
+    bundle_uri = (run/'profile.md').as_uri()
+    sid = None
+    turns = []
+    failed = False
+    for i, subtask_name in enumerate(task.subtasks, start=1):
+        if failed:
+            turns.append({'index': i, 'subtask': subtask_name, 'started_at': None, 'ended_at': None,
+                           'exit_code': None, 'timed_out': False, 'final_message': None, 'skipped': True})
+            continue
+        if i > 1 and turn_gap_seconds:
+            time.sleep(turn_gap_seconds)
+        command = ['amplifier', 'run', '--bundle', bundle_uri, '--mode', 'single',
+                   '--provider', manifest['provider'], '--model', manifest['model'],
+                   '--output-format', 'json']
+        if i > 1:
+            if sid is None:
+                raise SystemExit(f'worker: cannot --resume turn {i} of scenario {name!r} -- no session id')
+            command += ['--resume', sid]
+        command += [turn_prompts[i-1]]
+        before = set(sessions.iterdir()) if sessions.exists() else set()
+        started_at = datetime.now(timezone.utc).isoformat()
+        started = time.perf_counter()
+        # `--output-format json` redirects Amplifier's OWN diagnostic/progress
+        # output to stderr, so stdout is exactly one JSON object with a clean
+        # 'response' field -- capture it to a per-turn file (never a pipe:
+        # avoids any risk of a full-buffer deadlock across a long-running,
+        # possibly-terminated-and-killed turn). This is the only reliable way
+        # to get THIS turn's real answer: on a --resume'd turn, events.jsonl
+        # also contains the session-naming background call's own llm:response
+        # (fires during cleanup, AFTER the real answer), which can land after
+        # the real response within the turn's own [started_at, ended_at]
+        # window and get mistaken for the final message by window scanning.
+        stdout_path = run/f'turn{i}-stdout.txt'
+        with stdout_path.open('w') as stdout_fh:
+            process = subprocess.Popen(command, cwd=workspace, env=env, stdout=stdout_fh)
+            dump(run/'running.json', {'started_at': started_at, 'name': name, 'controller_pid': os.getpid(),
+                                       'pid': process.pid, 'attempt': item.get('attempt', 1),
+                                       'deadline_seconds': deadline_seconds, 'turn': i, 'tty': sys.stdout.isatty()})
+            print('FORGE_E2E_STARTED '+name, flush=True)
+            timed_out = False
+            try:
+                code = process.wait(timeout=deadline_seconds)
+            except subprocess.TimeoutExpired:
+                timed_out = True
+                process.terminate()
+                try:
+                    code = process.wait(timeout=15)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    code = process.wait()
+        elapsed_ms = (time.perf_counter()-started)*1000
+        ended_at = datetime.now(timezone.utc).isoformat()
+        if i == 1:
+            found = [p for p in sessions.iterdir() if p not in before and (p/'events.jsonl').exists()] if sessions.exists() else []
+            sid = found[0].name if len(found) == 1 else None
+        session_dir = (sessions/sid) if sid else None
+        try:
+            stdout_text = stdout_path.read_text()
+        except OSError:
+            stdout_text = ''
+        final_message = _parse_amplifier_stdout_response(stdout_text)
+        final_message_source = 'stdout_response' if final_message is not None else None
+        if final_message is None:
+            final_message = _extract_final_message_window(session_dir, started_at, ended_at)
+            final_message_source = 'events_window' if final_message is not None else None
+        if final_message is None and i == len(task.subtasks):
+            final_message = _extract_final_message(session_dir, workspace)
+            final_message_source = 'events_whole_session' if final_message is not None else None
+        turn_ok = (code == 0) and not timed_out and (sid is not None)
+        turns.append({'index': i, 'subtask': subtask_name, 'started_at': started_at, 'ended_at': ended_at,
+                       'exit_code': code, 'timed_out': timed_out, 'elapsed_ms': elapsed_ms,
+                       'final_message': final_message[:4000] if isinstance(final_message, str) else final_message,
+                       'final_message_source': final_message_source, 'skipped': False})
+        if not turn_ok:
+            failed = True
+    return turns, sid
+
+
+def _worker_scenario(root, name, manifest, item, workspace, source_root, run):
+    """worker()'s multi-turn path: launch every scenario turn (see
+    `_run_scenario_turns`), fold per-turn grading, and write result.json in
+    the same shape single-turn runs use, plus a `turns` breakdown.
+    """
+    import battery_tasks
+    task = battery_tasks.TASKS[item['task']]
+    warm = urllib.request.Request(
+        'http://127.0.0.1:11434/api/generate',
+        data=json.dumps({'model': 'qwen3:0.6b', 'stream': False, 'keep_alive': '20m',
+                          'options': {'num_ctx': 4096}}).encode(),
+        headers={'Content-Type': 'application/json'})
+    with urllib.request.urlopen(warm, timeout=60) as response:
+        json.load(response)
+    slug = str(workspace.resolve()).replace('/', '-').replace('\\', '-').replace(':', '')
+    sessions = Path.home()/'.amplifier/projects'/slug/'sessions'
+    env = dict(os.environ, AFAST_OBSERVATORY='off')
+    env['PYTHONPATH'] = str(source_root/'src')
+    _assert_bundle_uri_safe(run/'profile.md')
+
+    turns, sid = _run_scenario_turns(root, name, manifest, item, task, workspace, sessions, env, run)
+
+    native = native_summary(sessions/sid) if sid else None
+    effort = effort_summary(sessions/sid) if sid else []
+    events_dir = run/'events' if (run/'events').is_dir() else Path(manifest.get('events_dir', str(EVENTS)))
+    measured = extract_receipts(source_root, events_dir, sid, run) if sid else None
+
+    quality_parts = []
+    for t in turns:
+        subtask_name = t['subtask']
+        turn_label = battery_tasks.scenario_turn_dir(t['index'], subtask_name)
+        if t.get('skipped'):
+            quality_parts.append((turn_label, {'checks': 1, 'passed': 0, 'failed': 1,
+                                                 'failure_labels': ['turn_skipped_after_earlier_failure']}))
+            continue
+        turn_workspace = workspace/turn_label
+        try:
+            q = battery_tasks.evaluate_scenario_turn(subtask_name, turn_workspace, t.get('final_message'))
+        except Exception as exc:  # noqa: BLE001 -- a turn evaluator must never crash the worker
+            q = {'checks': 1, 'passed': 0, 'failed': 1, 'failure_labels': [f'turn_evaluate_error:{exc}']}
+        quality_parts.append((turn_label, q))
+        t['quality'] = q
+        t['turn_passed'] = (not t['timed_out']) and t['exit_code'] == 0 and q['failed'] == 0
+    quality = battery_tasks.fold_scenario_qualities(quality_parts)
+
+    protected = _task_protected(item['task'])
+    files = _task_files(item['task'])
+    unchanged = {f: (workspace/f).exists() and (workspace/f).read_text() == files.get(f, '') for f in protected}
+    source_observed = _source_observed(run)
+    source_expected = {'git_sha': manifest['sides'][item['side']]['source_git_sha'],
+                        'tree_sha256': manifest['sides'][item['side']]['source_tree_sha256']}
+    source_match = None if source_observed is None else (
+        source_observed.get('source_git_sha') == source_expected['git_sha']
+        and source_observed.get('source_tree_sha256') == source_expected['tree_sha256'])
+    mode_observed = _mode_observed(run)
+    side = manifest['sides'][item['side']]
+    mode_match = None if mode_observed is None else (
+        (mode_observed == {'active'}) if side['mode'] == 'active' else mode_observed <= {'off'})
+    infrastructure_failure = sid is None
+    harness = 'amplifier-fd' if side['mode'] == 'active' else 'amplifier-plain'
+    model = next((e['model'] for e in effort if e.get('model')), None)
+    wall_time_ms = sum(t.get('elapsed_ms') or 0 for t in turns)
+    started_at = next((t['started_at'] for t in turns if t.get('started_at')), None)
+    ended_at = next((t['ended_at'] for t in reversed(turns) if t.get('ended_at')), None)
+    any_timed_out = any(t['timed_out'] for t in turns)
+    last_real_turn = next((t for t in reversed(turns) if not t.get('skipped')), None)
+    exit_code = last_real_turn['exit_code'] if last_real_turn else None
+    final_message = last_real_turn['final_message'] if last_real_turn else None
+    result = {'name': name, 'task': item['task'], 'side': item['side'], 'session_id': sid,
+              'exit_code': exit_code, 'timed_out': any_timed_out, 'wall_time_ms': wall_time_ms,
+              'native': native, 'measurements': measured, 'quality': quality, 'public_tests_passed': None,
+              'workspace_tests_passed': None, 'workspace_tests_runner': None,
+              'protected_files_unchanged': unchanged, 'final_solution_sha256': None,
+              'attempt': item.get('attempt', 1), 'deadline_seconds': item.get('deadline_seconds')
+              or manifest['limits']['timeout_seconds'], 'started_at': started_at, 'ended_at': ended_at,
+              'source_expected': source_expected, 'source_observed': source_observed, 'source_match': source_match,
+              'mode_expected': side['mode'], 'mode_observed': sorted(mode_observed) if mode_observed is not None else None,
+              'mode_match': mode_match, 'retry_count': native['provider_retries'] if native else None,
+              'effort_receipts': effort, 'new_session_dirs': 1 if sid else 0,
+              'infrastructure_failure': infrastructure_failure, 'harness': harness, 'model': model,
+              'final_message': final_message, 'turns': turns}
+    outcome_passed = (not infrastructure_failure and not any_timed_out and quality['failed'] == 0
+                       and all(unchanged.values()) and all(t.get('turn_passed', False) for t in turns))
+    result['outcome_passed'] = outcome_passed
+    dump(run/'result.json', result)
+    _unregister_benchmark_bundle()
+    print('FORGE_E2E_FINISHED '+json.dumps({'name': name, 'outcome': result['outcome_passed'],
+                                             'wall_ms': round(wall_time_ms), 'checks': quality,
+                                             'session_id': sid}), flush=True)
+    return 0 if result['outcome_passed'] else 1
 
 
 def _default_config():
@@ -532,6 +829,7 @@ def prepare(root, config=None):
               'sides': sides, 'upstream_loop_source': config.get('upstream_loop_source', UPSTREAM_LOOP_SOURCE),
               'events_dir': config.get('events_dir', str(EVENTS)), 'host_python': config.get('host_python', str(HOST_PYTHON)),
               'forge_py': config.get('forge_py', str(FORGE)), 'task_source': config.get('task_source'),
+              'turn_gap_seconds': config.get('turn_gap_seconds', 0),
               'run_order':[],'runs':{},'limits':config.get('limits', {'max_iterations':30,'extended_thinking':True,'timeout_seconds':480})}
     for run_spec in config['runs']:
         manifest['runs'][run_spec['name']] = _build_run(root, run_spec, config, sides)
@@ -781,6 +1079,12 @@ def worker(root,name):
             raise SystemExit(f'worker: run {name!r} prompt does not match the preregistered '
                               f'prompt_sha256 (expected {expected_prompt_sha256}, got '
                               f'{actual_prompt_sha256}); refusing to launch amplifier')
+    if _task_kind(task) == 'scenario':
+        # Multi-turn scenario: entirely separate execution path (per-turn
+        # --resume, per-turn grading fold). See _worker_scenario. The
+        # single-turn path below (deadline/warm/slug/... through the rest
+        # of this function) is never reached for a scenario task.
+        return _worker_scenario(root, name, manifest, item, workspace, source_root, run)
     deadline_seconds = item.get('deadline_seconds') or manifest['limits']['timeout_seconds']
     warm=urllib.request.Request('http://127.0.0.1:11434/api/generate',data=json.dumps({'model':'qwen3:0.6b','stream':False,'keep_alive':'20m','options':{'num_ctx':4096}}).encode(),headers={'Content-Type':'application/json'})
     with urllib.request.urlopen(warm,timeout=60) as response:json.load(response)

@@ -1,0 +1,134 @@
+{
+  "name": "orch-haiku-opus-s1-dev-r1-bugfix_session_ttl_naive_tz-amplifier-fd-a1",
+  "task": "bugfix_session_ttl_naive_tz",
+  "family": "bugfix",
+  "split": "dev",
+  "kind": "code",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-haiku-4-5-20251001",
+  "started_at": "2026-09-25T12:09:41.373835+00:00",
+  "ended_at": "2026-09-25T12:10:14.422825+00:00",
+  "wall_time_ms": 33048.05591699551,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.0668769,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 219866.0,
+    "output_tokens": 1300.0,
+    "cache_read_tokens": 219824.0,
+    "cache_write_tokens": 30682.0,
+    "cost_usd": 0.0668769
+  },
+  "num_turns": null,
+  "final_message": null,
+  "quality": {
+    "checks": 8,
+    "passed": 8,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true,
+    "test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 16726.336,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 5,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.020000000000000018,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_55ad86dc77f34527a07a7d8e0ac1f677",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 22877,
+        "output_tokens": 273,
+        "cache_read_tokens": 22867,
+        "cache_write_tokens": 25386
+      },
+      {
+        "provider_call_id": "provider_acfd825192254642906bd48f1c88e525",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 48260,
+        "output_tokens": 353,
+        "cache_read_tokens": 48253,
+        "cache_write_tokens": 1422
+      },
+      {
+        "provider_call_id": "provider_d974c0c70d184463a16b738da61fe06f",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 49680,
+        "output_tokens": 239,
+        "cache_read_tokens": 49675,
+        "cache_write_tokens": 799
+      },
+      {
+        "provider_call_id": "provider_c0cf5ec2bc6d4f1780b0a442a06360e2",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 48263,
+        "output_tokens": 194,
+        "cache_read_tokens": 48253,
+        "cache_write_tokens": 2523
+      },
+      {
+        "provider_call_id": "provider_9bc0760082a945b18a3cfd75aa2e8b9a",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50786,
+        "output_tokens": 241,
+        "cache_read_tokens": 50776,
+        "cache_write_tokens": 552
+      }
+    ],
+    "served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_cost_usd_by_model": {
+      "claude-haiku-4-5-20251001": 0.066877
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "name": "plain-sonnet-s1-holdout2-r1-repair_roman_to_int-amplifier-plain-a1",
+  "task": "repair_roman_to_int",
+  "family": "repair",
+  "split": "holdout2",
+  "kind": "code",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T13:57:25.764796+00:00",
+  "ended_at": "2026-09-25T13:58:04.600495+00:00",
+  "wall_time_ms": 38834.57741700113,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2973612,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 385546.0,
+    "output_tokens": 1980.0,
+    "cache_read_tokens": 385534.0,
+    "cache_write_tokens": 40524.0,
+    "cost_usd": 0.2973612
+  },
+  "num_turns": null,
+  "final_message": null,
+  "quality": {
+    "checks": 34,
+    "passed": 34,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true,
+    "test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 24688.821999999996,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 6,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 6
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.297361
+    }
+  }
+}

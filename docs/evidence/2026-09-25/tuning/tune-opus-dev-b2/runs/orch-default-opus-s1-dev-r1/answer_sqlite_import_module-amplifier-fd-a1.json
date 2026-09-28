@@ -1,0 +1,107 @@
+{
+  "name": "orch-default-opus-s1-dev-r1-answer_sqlite_import_module-amplifier-fd-a1",
+  "task": "answer_sqlite_import_module",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T12:25:10.979363+00:00",
+  "ended_at": "2026-09-25T12:25:34.036204+00:00",
+  "wall_time_ms": 23056.04233399208,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.23064880000000001,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 169979.0,
+    "output_tokens": 336.0,
+    "cache_read_tokens": 169969.0,
+    "cache_write_tokens": 37979.0,
+    "cost_usd": 0.23064880000000001
+  },
+  "num_turns": null,
+  "final_message": "The answer is `storage`. It's the only module with `import sqlite3`, and it uses it in `connect()`.\n\nNone of the other modules import it:\n- **`decoy_db_helpers.py`** only says \"sqlite\" in its docstring and in a string (`\"sqlite-like\"`).\n- **`cache.py`, `network.py` and `utils.py`** have no imports at all.\n\nANSWER: storage",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 8732.834,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.54,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_2fd25cf597ca435984ce67014df1940b",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 104,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36576
+      },
+      {
+        "provider_call_id": "provider_ed9b1c4b6cab4c6898e77e9a25531fb2",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68437,
+        "output_tokens": 99,
+        "cache_read_tokens": 68433,
+        "cache_write_tokens": 1246
+      },
+      {
+        "provider_call_id": "provider_a18664d4526342a1a9fa82061d89b43a",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69681,
+        "output_tokens": 133,
+        "cache_read_tokens": 69679,
+        "cache_write_tokens": 157
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.230649
+    }
+  }
+}

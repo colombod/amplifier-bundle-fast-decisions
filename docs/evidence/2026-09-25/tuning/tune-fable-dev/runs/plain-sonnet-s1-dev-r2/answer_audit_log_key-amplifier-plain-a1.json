@@ -1,0 +1,57 @@
+{
+  "name": "plain-sonnet-s1-dev-r2-answer_audit_log_key-amplifier-plain-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T12:44:39.788558+00:00",
+  "ended_at": "2026-09-25T12:45:20.027688+00:00",
+  "wall_time_ms": 40238.14462500741,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.34703745,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 533560.0,
+    "output_tokens": 1871.0,
+    "cache_read_tokens": 533544.0,
+    "cache_write_tokens": 42363.0,
+    "cost_usd": 0.34703745
+  },
+  "num_turns": null,
+  "final_message": "Traced the flow: `service.checkout(\"7781\")` calls `write_audit(\"order\", \"7781\")`, which computes `key = [REDACTED:SECRET]\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"` with `AUDIT_PREFIX = \"AUD\"` from config.py. Verified by executing `audit.write_audit('order', '7781')`, which produced `{'AUD-ORDER-7781': True}`. The decoy files (decoy_cache.py, decoy_metrics.py) are unrelated and not on the call path.\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 27960.817,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 8,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 8
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.347037
+    }
+  }
+}

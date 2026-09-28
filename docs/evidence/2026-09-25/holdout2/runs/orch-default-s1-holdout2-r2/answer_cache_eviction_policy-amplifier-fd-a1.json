@@ -1,0 +1,107 @@
+{
+  "name": "orch-default-s1-holdout2-r2-answer_cache_eviction_policy-amplifier-fd-a1",
+  "task": "answer_cache_eviction_policy",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T14:07:48.005260+00:00",
+  "ended_at": "2026-09-25T14:08:18.017755+00:00",
+  "wall_time_ms": 30011.55270898016,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.5759569999999999,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 171538.0,
+    "output_tokens": 744.0,
+    "cache_read_tokens": 171528.0,
+    "cache_write_tokens": 39662.0,
+    "cost_usd": 0.5759569999999999
+  },
+  "num_turns": null,
+  "final_message": "I read every file in the directory. The relevant logic is in `cache.py:3-8`:\n\n```python\nDEFAULT_POLICY = \"lru\"\n\ndef make_cache(policy=None):\n    if policy is None:\n        policy = DEFAULT_POLICY\n```\n\nWhen `policy` is omitted, `make_cache()` falls back to `DEFAULT_POLICY`, which is `\"lru\"`. `main6.py` calls `make_cache()` with no argument, so it gets this default.\n\nThe other two files are decoys and are not imported by `cache.py`:\n- `decoy_config.py` returns `\"random\"` from `load_defaults()` (unrelated config)\n- `decoy_policies.py` defines `DEFAULT_EVICTION = \"fifo\"` (different subsystem)\n\nNeither affects `make_cache()`.\n\nANSWER: lru",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 16553.560999999998,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.57,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_144cc0141a6e474dbb953ca693e5a860",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 402,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36547
+      },
+      {
+        "provider_call_id": "provider_ad311f2ed75443769e0bfad4e4aa9dcf",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68408,
+        "output_tokens": 62,
+        "cache_read_tokens": 68404,
+        "cache_write_tokens": 2863
+      },
+      {
+        "provider_call_id": "provider_65e6493d02124455b6ca47e9cffab299",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 71269,
+        "output_tokens": 280,
+        "cache_read_tokens": 71267,
+        "cache_write_tokens": 252
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.575957
+    }
+  }
+}

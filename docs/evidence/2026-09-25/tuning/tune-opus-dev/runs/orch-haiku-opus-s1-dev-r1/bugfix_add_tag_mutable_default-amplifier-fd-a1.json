@@ -1,0 +1,133 @@
+{
+  "name": "orch-haiku-opus-s1-dev-r1-bugfix_add_tag_mutable_default-amplifier-fd-a1",
+  "task": "bugfix_add_tag_mutable_default",
+  "family": "bugfix",
+  "split": "dev",
+  "kind": "code",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-haiku-4-5-20251001",
+  "started_at": "2026-09-25T12:09:11.427327+00:00",
+  "ended_at": "2026-09-25T12:09:47.605233+00:00",
+  "wall_time_ms": 36176.6245829931,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.0884328,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 198190.0,
+    "output_tokens": 1049.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": 50672.0,
+    "cost_usd": 0.0884328
+  },
+  "num_turns": null,
+  "final_message": null,
+  "quality": {
+    "checks": 5,
+    "passed": 5,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true,
+    "test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 15308.377999999999,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 5,
+  "concurrency_at_launch": 1,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.030000000000000027,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_23ac322cc43841c7817eb23a575b867c",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 10,
+        "output_tokens": 388,
+        "cache_write_tokens": 48251
+      },
+      {
+        "provider_call_id": "provider_e050be237b624495ab9c16cc77a1b14a",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 48258,
+        "output_tokens": 381,
+        "cache_read_tokens": 48251,
+        "cache_write_tokens": 1291
+      },
+      {
+        "provider_call_id": "provider_08fb6be525314eacab9bd2f251c13267",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 49547,
+        "output_tokens": 158,
+        "cache_read_tokens": 49542,
+        "cache_write_tokens": 517
+      },
+      {
+        "provider_call_id": "provider_e1cccf571d5749cc9b9475fd6cacc545",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50064,
+        "output_tokens": 74,
+        "cache_read_tokens": 50059,
+        "cache_write_tokens": 247
+      },
+      {
+        "provider_call_id": "provider_c6464976186e46238901e744a2082727",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50311,
+        "output_tokens": 48,
+        "cache_read_tokens": 50306,
+        "cache_write_tokens": 366
+      }
+    ],
+    "served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_cost_usd_by_model": {
+      "claude-haiku-4-5-20251001": 0.088433
+    }
+  }
+}

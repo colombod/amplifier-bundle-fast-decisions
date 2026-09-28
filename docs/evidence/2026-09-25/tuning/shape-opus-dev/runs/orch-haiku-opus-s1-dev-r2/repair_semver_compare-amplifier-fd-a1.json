@@ -1,0 +1,134 @@
+{
+  "name": "orch-haiku-opus-s1-dev-r2-repair_semver_compare-amplifier-fd-a1",
+  "task": "repair_semver_compare",
+  "family": "repair",
+  "split": "dev",
+  "kind": "code",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-haiku-4-5-20251001",
+  "started_at": "2026-09-25T13:20:24.173694+00:00",
+  "ended_at": "2026-09-25T13:21:04.729976+00:00",
+  "wall_time_ms": 40555.498209025245,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.07152055,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 222558.0,
+    "output_tokens": 2704.0,
+    "cache_read_tokens": 222518.0,
+    "cache_write_tokens": 28567.0,
+    "cost_usd": 0.07152055
+  },
+  "num_turns": null,
+  "final_message": null,
+  "quality": {
+    "checks": 31,
+    "passed": 31,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true,
+    "test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 26255.44,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 5,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.040000000000000036,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_c3d85f3cff9842ebb0b1edd52df98ef2",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 22877,
+        "output_tokens": 295,
+        "cache_read_tokens": 22867,
+        "cache_write_tokens": 25586
+      },
+      {
+        "provider_call_id": "provider_598249dfa28b41108052261f16de9ad0",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 48463,
+        "output_tokens": 1603,
+        "cache_read_tokens": 48453,
+        "cache_write_tokens": 1382
+      },
+      {
+        "provider_call_id": "provider_e64a10b7e0f04c0b8f23c3f3d380c5b7",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 49845,
+        "output_tokens": 191,
+        "cache_read_tokens": 49835,
+        "cache_write_tokens": 697
+      },
+      {
+        "provider_call_id": "provider_f8e4730ec8934f3aa7a85c3a07416100",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50537,
+        "output_tokens": 472,
+        "cache_read_tokens": 50532,
+        "cache_write_tokens": 299
+      },
+      {
+        "provider_call_id": "provider_0010f5c7b75b47f4a1ece4c8f4356cec",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50836,
+        "output_tokens": 143,
+        "cache_read_tokens": 50831,
+        "cache_write_tokens": 603
+      }
+    ],
+    "served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_cost_usd_by_model": {
+      "claude-haiku-4-5-20251001": 0.071521
+    }
+  }
+}

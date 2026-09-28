@@ -1,0 +1,107 @@
+{
+  "name": "orch-opuslow-opus-s1-dev-r1-answer_compute_fee-amplifier-fd-a1",
+  "task": "answer_compute_fee",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T12:16:56.132202+00:00",
+  "ended_at": "2026-09-25T12:17:22.279614+00:00",
+  "wall_time_ms": 26146.35912500671,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2345236,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 170153.0,
+    "output_tokens": 467.0,
+    "cache_read_tokens": 170143.0,
+    "cache_write_tokens": 38223.0,
+    "cost_usd": 0.2345236
+  },
+  "num_turns": null,
+  "final_message": "`service2.compute_fee(1000, \"gold\")` returns **480**. I worked it out by hand and running the function gave the same number.\n\n1. **Base fee:** `pricing.base_fee(1000)` is `500 + 1000 // 10`, which is 600.\n2. **Discount:** `discounts.apply_discount(600, \"gold\")` takes off 20%: `[REDACTED:PII] * 20) // 100`, which is 480.\n\n`service2` only imports `pricing` and `discounts`. `decoy_tax.py` also has a gold tier (25%), but nothing imports it, so it has no effect. `decoy_shipping.py` isn't used either.\n\nANSWER: 480",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 10137.765,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.56,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_6b9df6587f8a402b90b8f492412f04a8",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 83,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36570
+      },
+      {
+        "provider_call_id": "provider_15e64d10889f406b8226e3df5650fd44",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68431,
+        "output_tokens": 160,
+        "cache_read_tokens": 68427,
+        "cache_write_tokens": 1432
+      },
+      {
+        "provider_call_id": "provider_65a139a71c7e4d479bb018d444365bd9",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69861,
+        "output_tokens": 224,
+        "cache_read_tokens": 69859,
+        "cache_write_tokens": 221
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.234524
+    }
+  }
+}

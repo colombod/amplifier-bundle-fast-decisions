@@ -1,0 +1,152 @@
+[
+  {
+    "id": "plain",
+    "experiments": [
+      "plain-s1m-m-dev-r1",
+      "plain-s1m-m-dev-r2",
+      "plain-s1m-m-dev-r3"
+    ],
+    "seeds": [
+      20261002,
+      20261003,
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "plain-sonnet",
+    "experiments": [
+      "plain-sonnet-s1m-m-dev-r1",
+      "plain-sonnet-s1m-m-dev-r2",
+      "plain-sonnet-s1m-m-dev-r3"
+    ],
+    "seeds": [
+      20261002,
+      20261003,
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-default",
+    "experiments": [
+      "orch-default-s1m-m-dev-r1",
+      "orch-default-s1m-m-dev-r2",
+      "orch-default-s1m-m-dev-r3"
+    ],
+    "seeds": [
+      20261002,
+      20261003,
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "plain-opus",
+    "experiments": [
+      "plain-opus-s1m-m-dev-r1",
+      "plain-opus-s1m-m-dev-r2",
+      "plain-opus-s1m-m-dev-r3"
+    ],
+    "seeds": [
+      20261002,
+      20261003,
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-default-opus",
+    "experiments": [
+      "orch-default-opus-s1m-m-dev-r1",
+      "orch-default-opus-s1m-m-dev-r2",
+      "orch-default-opus-s1m-m-dev-r3"
+    ],
+    "seeds": [
+      20261002,
+      20261003,
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-haiku-shaped-opus",
+    "experiments": [
+      "orch-haiku-shaped-opus-s1m-m-dev-r1",
+      "orch-haiku-shaped-opus-s1m-m-dev-r2",
+      "orch-haiku-shaped-opus-s1m-m-dev-r3"
+    ],
+    "seeds": [
+      20261002,
+      20261003,
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-haiku-shaped-fable",
+    "experiments": [
+      "orch-haiku-shaped-fable-s1m-m-dev-r1",
+      "orch-haiku-shaped-fable-s1m-m-dev-r2",
+      "orch-haiku-shaped-fable-s1m-m-dev-r3"
+    ],
+    "seeds": [
+      20261002,
+      20261003,
+      20261004
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  }
+]

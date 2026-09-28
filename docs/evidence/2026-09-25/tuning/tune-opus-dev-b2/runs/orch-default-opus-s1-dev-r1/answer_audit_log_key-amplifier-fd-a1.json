@@ -1,0 +1,107 @@
+{
+  "name": "orch-default-opus-s1-dev-r1-answer_audit_log_key-amplifier-fd-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T12:25:07.343129+00:00",
+  "ended_at": "2026-09-25T12:25:36.479402+00:00",
+  "wall_time_ms": 29135.59366700065,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.23586539999999998,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 170262.0,
+    "output_tokens": 501.0,
+    "cache_read_tokens": 170252.0,
+    "cache_write_tokens": 38351.0,
+    "cost_usd": 0.23586539999999998
+  },
+  "num_turns": null,
+  "final_message": "`service.checkout(\"7781\")` calls `write_audit(\"order\", \"7781\")` in `audit.py`. That sets `key = [REDACTED:SECRET]\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"`. `config.py` sets `AUDIT_PREFIX = \"AUD\"`, so the key is `AUD-ORDER-7781`. I ran `write_audit` directly and it returned `{'AUD-ORDER-7781': True}`, which matches.\n\n`decoy_metrics.py` looks similar but uses the `MET` prefix and writes to a metrics dict, not the audit log. `decoy_cache.py` never touches the audit log either.\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 13711.27,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.54,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_0daa5a57b9e84990868761d2ddbc8187",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 95,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36576
+      },
+      {
+        "provider_call_id": "provider_ca40513f46ef4d8e8a910db936ea0f07",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68437,
+        "output_tokens": 148,
+        "cache_read_tokens": 68433,
+        "cache_write_tokens": 1529
+      },
+      {
+        "provider_call_id": "provider_54c482dc8c8540e9afcf676697ff1228",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69964,
+        "output_tokens": 258,
+        "cache_read_tokens": 69962,
+        "cache_write_tokens": 246
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.235865
+    }
+  }
+}

@@ -375,6 +375,48 @@ KEYS (never values) reach the backend. A future deny/ask mode built on
 these receipts would require its own preregistered evaluation against
 labeled outcomes; none exists yet.
 
+## Easy-turn shaping (HC12, opt-in)
+
+`model_routing.easy_turn_guidance` (a string, default `None`) and
+`model_routing.easy_turn_hide_tools` (a list of tool names, default `[]`)
+address a specific benchmark finding: on turns the difficulty router (HC04,
+above) judges `"cheap"`, a cheap model can still take several more provider
+round trips than the host model would for the same turn, because it issues
+one tool call per response and reaches for planning/checklist tools (e.g.
+`todo`) before and after real work, where the host model batches independent
+tool calls into a single response and verifies once. Each round trip costs
+wall-clock time dominated by cached-prompt prefill, so the cheap model can
+end up slower despite lower per-call latency. Both knobs apply only while
+`turn.start_tier == "cheap"` -- decided once at turn start and never
+re-evaluated mid-turn, so this is inert on every strong turn, stops once an easy turn escalates to the host, and everywhere
+`model_routing` itself is not configured.
+
+`RoutedProvider.complete` builds a shaped COPY of the request
+(`_shape_easy_turn_request`) immediately before every slow provider call of
+an easy turn: the guidance text is appended to the END of the last system
+message's text content -- a fixed suffix of an otherwise-identical prefix,
+so every call of the turn sends byte-identical system-prompt text, the
+least cache-disruptive place to add it -- and/or any tool named in
+`easy_turn_hide_tools` is removed from `request.tools` for that one call.
+The original `request` object, its `messages` list, and every message/
+content object it references are left untouched: only new objects are
+returned, so a request reused by reference across calls (or turns, if the
+host does that) is never corrupted. A hidden tool still exists in the
+session; if the model calls it anyway nothing special happens, only that
+call's advertised list was smaller. Fails closed (a no-op, `call_request is
+request`) when there is no system message, or its content shape isn't a
+plain string or a list with a `type: "text"` block to append to -- it never
+invents a system message or a content shape a real provider was never sent
+before.
+
+The `fast_decisions:easy_turn_shaped` receipt fires at most once per turn,
+on the first call where shaping actually changed something, carrying
+`guidance_chars` (the length of the guidance text actually applied, never
+the text itself) and `hidden_tools` (the tool names actually removed).
+Shipped default in `behaviors/fast-decisions.yaml`: both knobs commented
+out, so this feature is off until a benchmark demonstrates it helps. See
+docs/EVENTS.md.
+
 ## Deadlines, budgets and failures
 
 ## Deadlines, budgets and failures

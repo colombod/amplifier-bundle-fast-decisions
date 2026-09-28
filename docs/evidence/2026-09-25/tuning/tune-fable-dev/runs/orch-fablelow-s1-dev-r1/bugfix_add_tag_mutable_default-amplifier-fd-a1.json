@@ -1,0 +1,121 @@
+{
+  "name": "orch-fablelow-s1-dev-r1-bugfix_add_tag_mutable_default-amplifier-fd-a1",
+  "task": "bugfix_add_tag_mutable_default",
+  "family": "bugfix",
+  "split": "dev",
+  "kind": "code",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T12:33:04.387518+00:00",
+  "ended_at": "2026-09-25T12:33:49.235640+00:00",
+  "wall_time_ms": 44846.748457988724,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.5677645,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 239118.0,
+    "output_tokens": 625.0,
+    "cache_read_tokens": 239108.0,
+    "cache_write_tokens": 38131.0,
+    "cost_usd": 0.5677645
+  },
+  "num_turns": null,
+  "final_message": null,
+  "quality": {
+    "checks": 5,
+    "passed": 5,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true,
+    "test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 31365.326,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 4,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.030000000000000027,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_d976d07dd2be400c94662064e46385aa",
+        "served_model": "claude-fable-5-1",
+        "requested_model": "claude-fable-5-1",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "low",
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 152,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36277
+      },
+      {
+        "provider_call_id": "provider_0d06e9e11bbe45258d6be16d7a153fcf",
+        "served_model": "claude-fable-5-1",
+        "requested_model": "claude-fable-5-1",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "low",
+        "status": "ok",
+        "input_tokens": 68136,
+        "output_tokens": 178,
+        "cache_read_tokens": 68134,
+        "cache_write_tokens": 1255
+      },
+      {
+        "provider_call_id": "provider_6a2f964b7beb440e94fabab3d15baaa9",
+        "served_model": "claude-fable-5-1",
+        "requested_model": "claude-fable-5-1",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "low",
+        "status": "ok",
+        "input_tokens": 69391,
+        "output_tokens": 182,
+        "cache_read_tokens": 69389,
+        "cache_write_tokens": 339
+      },
+      {
+        "provider_call_id": "provider_7fd4381eadc64d86b18ec3cbe6148cc1",
+        "served_model": "claude-fable-5-1",
+        "requested_model": "claude-fable-5-1",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "low",
+        "status": "ok",
+        "input_tokens": 69730,
+        "output_tokens": 113,
+        "cache_read_tokens": 69728,
+        "cache_write_tokens": 260
+      }
+    ],
+    "served_model_counts": {
+      "claude-fable-5-1": 4
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 4
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.567765
+    }
+  }
+}

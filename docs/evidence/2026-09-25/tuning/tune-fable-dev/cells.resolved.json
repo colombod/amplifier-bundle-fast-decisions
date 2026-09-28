@@ -1,0 +1,97 @@
+[
+  {
+    "id": "plain",
+    "experiments": [
+      "plain-s1-dev-r1",
+      "plain-s1-dev-r2"
+    ],
+    "seeds": [
+      20260928,
+      20260929
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "plain-sonnet",
+    "experiments": [
+      "plain-sonnet-s1-dev-r1",
+      "plain-sonnet-s1-dev-r2"
+    ],
+    "seeds": [
+      20260928,
+      20260929
+    ],
+    "gate": {
+      "passed": true,
+      "flags": []
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-default",
+    "experiments": [
+      "orch-default-s1-dev-r1",
+      "orch-default-s1-dev-r2"
+    ],
+    "seeds": [
+      20260928,
+      20260929
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-haiku-fable",
+    "experiments": [
+      "orch-haiku-fable-s1-dev-r1",
+      "orch-haiku-fable-s1-dev-r2"
+    ],
+    "seeds": [
+      20260928,
+      20260929
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  },
+  {
+    "id": "orch-fablelow",
+    "experiments": [
+      "orch-fablelow-s1-dev-r1",
+      "orch-fablelow-s1-dev-r2"
+    ],
+    "seeds": [
+      20260928,
+      20260929
+    ],
+    "gate": {
+      "passed": true,
+      "flags": [],
+      "latency_within_budget_by_rep": [
+        true,
+        true
+      ],
+      "latency_within_budget": true
+    },
+    "excluded_from_claims": false
+  }
+]

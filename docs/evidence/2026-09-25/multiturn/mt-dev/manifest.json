@@ -1,0 +1,362 @@
+{
+  "schema": "fast-decisions-evals/manifest/v1",
+  "created_at_utc": "2026-09-25T15:27:56Z",
+  "invocation": {
+    "argv": [
+      "--suite",
+      "s1m",
+      "--split",
+      "m-dev",
+      "--cells",
+      "plain,plain-opus,plain-sonnet,orch-default,orch-default-opus,orch-haiku-shaped-opus,orch-haiku-shaped-fable",
+      "--reps",
+      "3",
+      "--candidate-sha",
+      "4460d90",
+      "--baseline-source",
+      "~/dev/afast-orch-primary-20260924/baseline-main",
+      "--installed-cache",
+      "~/dev/afast-orch-primary-20260924/baseline-main",
+      "--history-index",
+      "~/dev/afast-orch-primary-20260924/history-index.json",
+      "--host-python",
+      "~/.local/share/uv/tools/amplifier/bin/python",
+      "--events-dir",
+      "~/.amplifier/fast-decisions/events",
+      "--allow-external-state",
+      "--parallel",
+      "3",
+      "--base-seed",
+      "20261001",
+      "--out",
+      "~/dev/afast-orch-primary-20260924/mt-dev"
+    ],
+    "suite": "s1m",
+    "split": "m-dev",
+    "reps": 3,
+    "cell_order": {
+      "mode": "shuffle",
+      "per_rep": {
+        "1": [
+          "plain-sonnet",
+          "orch-haiku-shaped-opus",
+          "orch-default-opus",
+          "orch-default",
+          "orch-haiku-shaped-fable",
+          "plain-opus",
+          "plain"
+        ],
+        "2": [
+          "plain",
+          "plain-opus",
+          "orch-default-opus",
+          "orch-haiku-shaped-opus",
+          "plain-sonnet",
+          "orch-haiku-shaped-fable",
+          "orch-default"
+        ],
+        "3": [
+          "plain-opus",
+          "orch-haiku-shaped-fable",
+          "orch-default",
+          "plain",
+          "orch-haiku-shaped-opus",
+          "plain-sonnet",
+          "orch-default-opus"
+        ]
+      }
+    }
+  },
+  "suite": {
+    "label": "S1M multi-turn scenarios (3 scenarios, 4 turns each, built from S1 dev tasks)",
+    "task_source": "battery",
+    "deadline_seconds": 600,
+    "splits": {
+      "m-dev": {
+        "tasks_flag": "m-dev",
+        "expected_task_count": 3
+      }
+    },
+    "required_toolchains": [
+      "python3"
+    ]
+  },
+  "candidate": {
+    "source": "~/dev/fd-multiturn",
+    "requested_sha": "4460d90"
+  },
+  "baseline": {
+    "source": "~/dev/afast-orch-primary-20260924/baseline-main"
+  },
+  "cells": [
+    {
+      "id": "plain",
+      "experiments": [
+        "plain-s1m-m-dev-r1",
+        "plain-s1m-m-dev-r2",
+        "plain-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261002,
+        20261003,
+        20261004
+      ],
+      "gate": {
+        "passed": true,
+        "flags": []
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "plain-sonnet",
+      "experiments": [
+        "plain-sonnet-s1m-m-dev-r1",
+        "plain-sonnet-s1m-m-dev-r2",
+        "plain-sonnet-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261002,
+        20261003,
+        20261004
+      ],
+      "gate": {
+        "passed": true,
+        "flags": []
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-default",
+      "experiments": [
+        "orch-default-s1m-m-dev-r1",
+        "orch-default-s1m-m-dev-r2",
+        "orch-default-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261002,
+        20261003,
+        20261004
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "plain-opus",
+      "experiments": [
+        "plain-opus-s1m-m-dev-r1",
+        "plain-opus-s1m-m-dev-r2",
+        "plain-opus-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261002,
+        20261003,
+        20261004
+      ],
+      "gate": {
+        "passed": true,
+        "flags": []
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-default-opus",
+      "experiments": [
+        "orch-default-opus-s1m-m-dev-r1",
+        "orch-default-opus-s1m-m-dev-r2",
+        "orch-default-opus-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261002,
+        20261003,
+        20261004
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-haiku-shaped-opus",
+      "experiments": [
+        "orch-haiku-shaped-opus-s1m-m-dev-r1",
+        "orch-haiku-shaped-opus-s1m-m-dev-r2",
+        "orch-haiku-shaped-opus-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261002,
+        20261003,
+        20261004
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    },
+    {
+      "id": "orch-haiku-shaped-fable",
+      "experiments": [
+        "orch-haiku-shaped-fable-s1m-m-dev-r1",
+        "orch-haiku-shaped-fable-s1m-m-dev-r2",
+        "orch-haiku-shaped-fable-s1m-m-dev-r3"
+      ],
+      "seeds": [
+        20261002,
+        20261003,
+        20261004
+      ],
+      "gate": {
+        "passed": true,
+        "flags": [],
+        "latency_within_budget_by_rep": [
+          true,
+          true,
+          true
+        ],
+        "latency_within_budget": true
+      },
+      "excluded_from_claims": false
+    }
+  ],
+  "budget": {
+    "per_launch_usd": 12.0,
+    "estimated_total_usd": 1800.0,
+    "max_benchmark_worker_launches": 2400,
+    "max_infrastructure_retries_per_run": 1,
+    "max_parallel_timed_runs": 3,
+    "wall_hours": 24
+  },
+  "verification": {
+    "prompt_hashes": "prompt-verification.json",
+    "preflight": "preflight.json"
+  },
+  "tool_shas": {
+    "battery.py": "a0aa4373d98097901ce0a42c8eabe17fc49074709664ebdde18a1823bd87b1e9",
+    "battery_tasks.py": "1ea68d1cd9538bf30d2c455a018322412282d8668705e60a97318ceb321a70df",
+    "polyglot_tasks.py": "62ac12eae2747d97a33b0546981764e7797175b84749b17f103b9283e1a61271",
+    "battery_report.py": "0cdbbcb41703f9aa564db1db88a08837de7835077a8a814e919de8fe3aaf92e0",
+    "forge_workloads.py": "f5111afe10286634edde75a3539425ed0ea7206c5c11aebe33003c974fcf08a2"
+  },
+  "timing": {
+    "plain": {
+      "1": {
+        "started_at": "2026-09-25T14:57:50.617462Z",
+        "ended_at": "2026-09-25T15:00:16.077773Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T15:00:16.666028Z",
+        "ended_at": "2026-09-25T15:03:02.334084Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T15:20:20.715608Z",
+        "ended_at": "2026-09-25T15:22:44.830163Z"
+      }
+    },
+    "plain-sonnet": {
+      "1": {
+        "started_at": "2026-09-25T14:47:23.000496Z",
+        "ended_at": "2026-09-25T14:49:22.825603Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T15:08:18.566447Z",
+        "ended_at": "2026-09-25T15:10:14.091447Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T15:24:42.756561Z",
+        "ended_at": "2026-09-25T15:26:20.110664Z"
+      }
+    },
+    "orch-default": {
+      "1": {
+        "started_at": "2026-09-25T14:52:48.058869Z",
+        "ended_at": "2026-09-25T14:54:23.471275Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T15:13:18.102331Z",
+        "ended_at": "2026-09-25T15:14:45.390222Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T15:18:43.299857Z",
+        "ended_at": "2026-09-25T15:20:20.715560Z"
+      }
+    },
+    "plain-opus": {
+      "1": {
+        "started_at": "2026-09-25T14:56:17.125325Z",
+        "ended_at": "2026-09-25T14:57:50.617395Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T15:03:02.334129Z",
+        "ended_at": "2026-09-25T15:04:39.616825Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T15:14:46.102039Z",
+        "ended_at": "2026-09-25T15:16:25.408618Z"
+      }
+    },
+    "orch-default-opus": {
+      "1": {
+        "started_at": "2026-09-25T14:51:14.337434Z",
+        "ended_at": "2026-09-25T14:52:48.058828Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T15:04:39.616866Z",
+        "ended_at": "2026-09-25T15:06:14.953549Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T15:26:20.110713Z",
+        "ended_at": "2026-09-25T15:27:54.016049Z"
+      }
+    },
+    "orch-haiku-shaped-opus": {
+      "1": {
+        "started_at": "2026-09-25T14:49:22.825658Z",
+        "ended_at": "2026-09-25T14:51:14.337389Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T15:06:14.953601Z",
+        "ended_at": "2026-09-25T15:08:18.566403Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T15:22:44.830211Z",
+        "ended_at": "2026-09-25T15:24:42.756518Z"
+      }
+    },
+    "orch-haiku-shaped-fable": {
+      "1": {
+        "started_at": "2026-09-25T14:54:23.471325Z",
+        "ended_at": "2026-09-25T14:56:17.125276Z"
+      },
+      "2": {
+        "started_at": "2026-09-25T15:10:14.091493Z",
+        "ended_at": "2026-09-25T15:13:18.102282Z"
+      },
+      "3": {
+        "started_at": "2026-09-25T15:16:25.408666Z",
+        "ended_at": "2026-09-25T15:18:43.299804Z"
+      }
+    }
+  }
+}

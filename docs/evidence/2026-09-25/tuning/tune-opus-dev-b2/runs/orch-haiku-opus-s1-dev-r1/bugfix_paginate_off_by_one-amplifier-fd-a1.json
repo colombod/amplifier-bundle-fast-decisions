@@ -1,0 +1,134 @@
+{
+  "name": "orch-haiku-opus-s1-dev-r1-bugfix_paginate_off_by_one-amplifier-fd-a1",
+  "task": "bugfix_paginate_off_by_one",
+  "family": "bugfix",
+  "split": "dev",
+  "kind": "code",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-haiku-4-5-20251001",
+  "started_at": "2026-09-25T12:26:40.862842+00:00",
+  "ended_at": "2026-09-25T12:27:09.389720+00:00",
+  "wall_time_ms": 28526.084832992638,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.0629224,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 222061.0,
+    "output_tokens": 1013.0,
+    "cache_read_tokens": 222029.0,
+    "cache_write_tokens": 28498.0,
+    "cost_usd": 0.0629224
+  },
+  "num_turns": null,
+  "final_message": null,
+  "quality": {
+    "checks": 10,
+    "passed": 10,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true,
+    "test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 13857.284,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 5,
+  "concurrency_at_launch": 2,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.020000000000000018,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_bdbc458cd5384fc280b8263320971fc4",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 22877,
+        "output_tokens": 393,
+        "cache_read_tokens": 22867,
+        "cache_write_tokens": 25393
+      },
+      {
+        "provider_call_id": "provider_2181952f23694a169180eb53f1b19ac5",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 48267,
+        "output_tokens": 322,
+        "cache_read_tokens": 48260,
+        "cache_write_tokens": 1650
+      },
+      {
+        "provider_call_id": "provider_775f5e1017fd4f22a459f59bbc9da0b7",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 49915,
+        "output_tokens": 161,
+        "cache_read_tokens": 49910,
+        "cache_write_tokens": 461
+      },
+      {
+        "provider_call_id": "provider_1107dd214a164ec3b9edfb5e10f59215",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50376,
+        "output_tokens": 71,
+        "cache_read_tokens": 50371,
+        "cache_write_tokens": 250
+      },
+      {
+        "provider_call_id": "provider_709dce42af344393ab2fb5eb79466589",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50626,
+        "output_tokens": 66,
+        "cache_read_tokens": 50621,
+        "cache_write_tokens": 744
+      }
+    ],
+    "served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_cost_usd_by_model": {
+      "claude-haiku-4-5-20251001": 0.062922
+    }
+  }
+}

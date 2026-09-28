@@ -1,0 +1,57 @@
+{
+  "name": "plain-opus-s1-dev-r1-answer_audit_log_key-amplifier-plain-a1",
+  "task": "answer_audit_log_key",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T12:04:55.209730+00:00",
+  "ended_at": "2026-09-25T12:05:28.873383+00:00",
+  "wall_time_ms": 33662.65125000791,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2376896,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 170158.0,
+    "output_tokens": 590.0,
+    "cache_read_tokens": 170148.0,
+    "cache_write_tokens": 38364.0,
+    "cost_usd": 0.2376896
+  },
+  "num_turns": null,
+  "final_message": "I read every file in the directory. The key is `AUD-ORDER-7781`, and running the code gives the same result: `{'AUD-ORDER-7781': True}`.\n\nHow the key is built:\n1. `service.checkout(\"7781\")` calls `write_audit(\"order\", \"7781\")` in `audit.py`.\n2. `write_audit` sets `key = [REDACTED:SECRET]\n3. `_format_key` returns `f\"{AUDIT_PREFIX}-{kind.upper()}-{ident}\"`, and `AUDIT_PREFIX` is `\"AUD\"` in `config.py`. That makes the key `AUD-ORDER-7781`.\n\n`decoy_metrics.py` builds a similar key with the `MET` prefix, but it writes to a metrics dict, not the audit log. `decoy_cache.py` never touches the audit log either.\n\nANSWER: AUD-ORDER-7781",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 12115.115,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.23769
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "name": "orch-haiku-fable-s1-dev-r1-bugfix_session_ttl_naive_tz-amplifier-fd-a1",
+  "task": "bugfix_session_ttl_naive_tz",
+  "family": "bugfix",
+  "split": "dev",
+  "kind": "code",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-haiku-4-5-20251001",
+  "started_at": "2026-09-25T12:23:58.794556+00:00",
+  "ended_at": "2026-09-25T12:24:28.751837+00:00",
+  "wall_time_ms": 29956.248874994344,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.0649996,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 220218.0,
+    "output_tokens": 1118.0,
+    "cache_read_tokens": 220176.0,
+    "cache_write_tokens": 29880.0,
+    "cost_usd": 0.0649996
+  },
+  "num_turns": null,
+  "final_message": null,
+  "quality": {
+    "checks": 8,
+    "passed": 8,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true,
+    "test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 15205.329000000002,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 5,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.030000000000000027,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_497dc86b7a6f403aad8946f3a9f97718",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 22877,
+        "output_tokens": 326,
+        "cache_read_tokens": 22867,
+        "cache_write_tokens": 25394
+      },
+      {
+        "provider_call_id": "provider_c4cb6f5a591a488dab69beacdabbad6c",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 48268,
+        "output_tokens": 361,
+        "cache_read_tokens": 48261,
+        "cache_write_tokens": 1484
+      },
+      {
+        "provider_call_id": "provider_3d3a476616da4d7d8b791e695e39465e",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 48271,
+        "output_tokens": 191,
+        "cache_read_tokens": 48261,
+        "cache_write_tokens": 1857
+      },
+      {
+        "provider_call_id": "provider_57d27b6b94b44d7fa4269bdaf5b58bca",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50128,
+        "output_tokens": 91,
+        "cache_read_tokens": 50118,
+        "cache_write_tokens": 551
+      },
+      {
+        "provider_call_id": "provider_49b43ce5e3bf4bcdb3d77370d27e5f44",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50674,
+        "output_tokens": 149,
+        "cache_read_tokens": 50669,
+        "cache_write_tokens": 594
+      }
+    ],
+    "served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_served_model_counts": {
+      "claude-haiku-4-5-20251001": 5
+    },
+    "native_cost_usd_by_model": {
+      "claude-haiku-4-5-20251001": 0.065
+    }
+  }
+}

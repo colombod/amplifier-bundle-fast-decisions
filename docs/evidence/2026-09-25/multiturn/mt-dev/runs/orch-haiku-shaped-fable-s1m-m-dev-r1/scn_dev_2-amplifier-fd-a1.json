@@ -1,0 +1,451 @@
+{
+  "name": "orch-haiku-shaped-fable-s1m-m-dev-r1-scn_dev_2-amplifier-fd-a1",
+  "task": "scn_dev_2",
+  "family": "scenario",
+  "split": "m-dev",
+  "kind": "scenario",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-haiku-4-5-20251001",
+  "started_at": "2026-09-25T14:54:27.580877+00:00",
+  "ended_at": "2026-09-25T14:56:13.909636+00:00",
+  "wall_time_ms": 106323.9169579756,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.8496906000000001,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 1002180.0,
+    "output_tokens": 5017.0,
+    "cache_read_tokens": null,
+    "cache_write_tokens": null,
+    "cost_usd": 0.8496906000000001
+  },
+  "num_turns": null,
+  "final_message": "DONE: Fixed asymmetric timezone handling by adding `.replace(tzinfo=None)` to `created` so both timestamps are converted to naive datetimes before subtraction.",
+  "quality": {
+    "checks": 45,
+    "passed": 45,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "t1-repair_merge_intervals/README.md": true,
+    "t1-repair_merge_intervals/test_public.py": true,
+    "t2-answer_compute_fee/README.md": true,
+    "t3-edit_dequeue_validation/README.md": true,
+    "t4-bugfix_session_ttl_naive_tz/README.md": true,
+    "t4-bugfix_session_ttl_naive_tz/test_public.py": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "turns": [
+    {
+      "index": 1,
+      "subtask": "repair_merge_intervals",
+      "started_at": "2026-09-25T14:54:27.580877+00:00",
+      "ended_at": "2026-09-25T14:55:13.157583+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 45575.81424998352,
+      "final_message": "Perfect! Both tests pass. The two linting warnings are style suggestions (TRY004 prefers TypeError for type validation), but the README explicitly requires ValueError for non-int values and bool values, so those warnings are correct to keep as is.\n\nDONE: Implemented `merge_intervals()` to sort intervals by start, merge overlapping/touching ones, validate input types and constraints, and return merged list with all tests passing.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 33,
+        "passed": 33,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 32121.983999999997,
+      "provider_requests": 5,
+      "cost_usd": 0.0729301,
+      "model_counts": {
+        "claude-haiku-4-5-20251001": 5
+      },
+      "background_calls": []
+    },
+    {
+      "index": 2,
+      "subtask": "answer_compute_fee",
+      "started_at": "2026-09-25T14:55:13.159094+00:00",
+      "ended_at": "2026-09-25T14:55:38.007316+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 24847.991624992574,
+      "final_message": "ANSWER: 480",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 1,
+        "passed": 1,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 16604.298,
+      "provider_requests": 4,
+      "cost_usd": 0.702671,
+      "model_counts": {
+        "claude-fable-5-1": 4
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T14:55:36.159214+00:00"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "subtask": "edit_dequeue_validation",
+      "started_at": "2026-09-25T14:55:38.007852+00:00",
+      "ended_at": "2026-09-25T14:55:53.377079+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 15369.080415985081,
+      "final_message": "DONE: Added empty-queue validation to `dequeue()` that raises `ValueError('queue is empty')` when called with an empty list; non-empty behavior unchanged.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 3,
+        "passed": 3,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 9280.614,
+      "provider_requests": 4,
+      "cost_usd": 0.03305585,
+      "model_counts": {
+        "claude-haiku-4-5-20251001": 4
+      },
+      "background_calls": []
+    },
+    {
+      "index": 4,
+      "subtask": "bugfix_session_ttl_naive_tz",
+      "started_at": "2026-09-25T14:55:53.378405+00:00",
+      "ended_at": "2026-09-25T14:56:13.909636+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_ms": 20531.03066701442,
+      "final_message": "DONE: Fixed asymmetric timezone handling by adding `.replace(tzinfo=None)` to `created` so both timestamps are converted to naive datetimes before subtraction.",
+      "final_message_source": "stdout_response",
+      "skipped": false,
+      "quality": {
+        "checks": 8,
+        "passed": 8,
+        "failed": 0,
+        "failure_labels": []
+      },
+      "turn_passed": true,
+      "exec_time_ms": 12900.267,
+      "provider_requests": 5,
+      "cost_usd": 0.041033650000000005,
+      "model_counts": {
+        "claude-haiku-4-5-20251001": 5
+      },
+      "background_calls": [
+        {
+          "purpose": "session-naming",
+          "model": "claude-haiku-4-5-20251001",
+          "origin_module": "hooks-session-naming",
+          "ts": "2026-09-25T14:56:12.766980+00:00"
+        }
+      ]
+    }
+  ],
+  "exec_time_ms": 70907.163,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 18,
+  "concurrency_at_launch": 1,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.040000000000000036,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      },
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.050000000000000044,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      },
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.53,
+        "tier": "strong",
+        "reason": "judge_strong"
+      },
+      {
+        "decision": "cheap",
+        "backend": "jev",
+        "p_complex": 0.0,
+        "tier": "cheap",
+        "reason": "judge_cheap"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_cbf5cb80cf724e4f888fcd8889707d93",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 56247,
+        "output_tokens": 295,
+        "cache_read_tokens": 56237,
+        "cache_write_tokens": 374
+      },
+      {
+        "provider_call_id": "provider_78b65ad8cc284a49bbd5153676576649",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 56618,
+        "output_tokens": 300,
+        "cache_read_tokens": 56611,
+        "cache_write_tokens": 1504
+      },
+      {
+        "provider_call_id": "provider_ad7bcce6680f4d1784d24ff171584914",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 56621,
+        "output_tokens": 117,
+        "cache_read_tokens": 56611,
+        "cache_write_tokens": 1928
+      },
+      {
+        "provider_call_id": "provider_e9451ec1f3db4b5496dee37f1eca8208",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 58544,
+        "output_tokens": 86,
+        "cache_read_tokens": 58539,
+        "cache_write_tokens": 222
+      },
+      {
+        "provider_call_id": "provider_6827942a6c054a4d9c67231ef43c6ee3",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 58766,
+        "output_tokens": 41,
+        "cache_read_tokens": 58761,
+        "cache_write_tokens": 171
+      },
+      {
+        "provider_call_id": "provider_efb2c12b546f43a38c29657410b209e7",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 22515,
+        "output_tokens": 300,
+        "cache_read_tokens": 22505,
+        "cache_write_tokens": 25687
+      },
+      {
+        "provider_call_id": "provider_9e45dfde6d6b40b3882dc0ed77e33d39",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 48202,
+        "output_tokens": 1659,
+        "cache_read_tokens": 48192,
+        "cache_write_tokens": 1456
+      },
+      {
+        "provider_call_id": "provider_f149dce6ff684542b0fa7ef4a5f4696d",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 49658,
+        "output_tokens": 663,
+        "cache_read_tokens": 49648,
+        "cache_write_tokens": 911
+      },
+      {
+        "provider_call_id": "provider_8be7b78e4f1b4894913545597877df3f",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50564,
+        "output_tokens": 79,
+        "cache_read_tokens": 50559,
+        "cache_write_tokens": 1088
+      },
+      {
+        "provider_call_id": "provider_28aa5dd7a44642fb999c7a98f892fd9c",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 51652,
+        "output_tokens": 95,
+        "cache_read_tokens": 51647,
+        "cache_write_tokens": 182
+      },
+      {
+        "provider_call_id": "provider_6584f44c82ac4fc79e4f923b88eb02c6",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 63,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 44091
+      },
+      {
+        "provider_call_id": "provider_0e14e0759d534d79ad8ed1bf2ca2e605",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 75950,
+        "output_tokens": 379,
+        "cache_read_tokens": 75948,
+        "cache_write_tokens": 443
+      },
+      {
+        "provider_call_id": "provider_b075d736cb034721a044feba30f81c90",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 76393,
+        "output_tokens": 247,
+        "cache_read_tokens": 76391,
+        "cache_write_tokens": 2499
+      },
+      {
+        "provider_call_id": "provider_ee0a2b04adc348fb8594fd15af13e7b2",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 78892,
+        "output_tokens": 10,
+        "cache_read_tokens": 78890,
+        "cache_write_tokens": 294
+      },
+      {
+        "provider_call_id": "provider_bc86a738e3f341f78f05df51875b98bb",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 50569,
+        "output_tokens": 257,
+        "cache_read_tokens": 50559,
+        "cache_write_tokens": 4556
+      },
+      {
+        "provider_call_id": "provider_021b927a9379459880c1848d490f9990",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 55122,
+        "output_tokens": 169,
+        "cache_read_tokens": 55115,
+        "cache_write_tokens": 825
+      },
+      {
+        "provider_call_id": "provider_fd4bbc665110452bac5caff96110ef88",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 55125,
+        "output_tokens": 117,
+        "cache_read_tokens": 55115,
+        "cache_write_tokens": 1122
+      },
+      {
+        "provider_call_id": "provider_580154ec88ba4dc4b4a17b8486d6401b",
+        "served_model": "claude-haiku-4-5-20251001",
+        "requested_model": "claude-haiku-4-5-20251001",
+        "reason_code": "start_model",
+        "escalated": false,
+        "effort": "medium",
+        "status": "ok",
+        "input_tokens": 56242,
+        "output_tokens": 40,
+        "cache_read_tokens": 56237,
+        "cache_write_tokens": 222
+      }
+    ],
+    "served_model_counts": {
+      "claude-haiku-4-5-20251001": 14,
+      "provider-default": 4
+    },
+    "native_served_model_counts": {
+      "claude-haiku-4-5-20251001": 16,
+      "claude-fable-5-1": 4
+    },
+    "native_cost_usd_by_model": {
+      "claude-haiku-4-5-20251001": 0.157282,
+      "claude-fable-5-1": 0.692409
+    }
+  }
+}

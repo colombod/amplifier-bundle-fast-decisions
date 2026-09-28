@@ -1,0 +1,94 @@
+{
+  "name": "orch-haiku-shaped-fable-s1-holdout2-r2-answer_cache_eviction_policy-amplifier-fd-a1",
+  "task": "answer_cache_eviction_policy",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T14:15:20.384391+00:00",
+  "ended_at": "2026-09-25T14:15:45.449668+00:00",
+  "wall_time_ms": 25064.288666995708,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.534174,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 100284.0,
+    "output_tokens": 469.0,
+    "cache_read_tokens": 100276.0,
+    "cache_write_tokens": 38846.0,
+    "cost_usd": 0.534174
+  },
+  "num_turns": null,
+  "final_message": "`cache.make_cache()` falls back to `DEFAULT_POLICY` when `policy` is `None` (cache.py:3, cache.py:7-8). That constant is `\"lru\"`.\n\nThe other files are decoys: `decoy_config.py` (`\"random\"`) and `decoy_policies.py` (`\"fifo\"`) are never imported by `cache.py`, and `main6.py` just calls `make_cache()` with no argument.\n\nANSWER: lru",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 11350.088,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 2,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.57,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_41568566d1614f0fba1bbd0416ed6f3c",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 315,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36562
+      },
+      {
+        "provider_call_id": "provider_3729c244d74641ed8218d24aaf0ac13d",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68423,
+        "output_tokens": 154,
+        "cache_read_tokens": 68419,
+        "cache_write_tokens": 2284
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 2
+    },
+    "native_served_model_counts": {
+      "claude-fable-5-1": 2
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.534174
+    }
+  }
+}

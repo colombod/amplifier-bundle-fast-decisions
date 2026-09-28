@@ -1886,6 +1886,140 @@ class ComputeExecTimeTests(unittest.TestCase):
 
 
 # --------------------------------------------------------------------------
+# Scenario (multi-turn) exec-time windowing -- sums each turn's own
+# first-request -> last-response window instead of one whole-session window,
+# so the inter-turn gap (including any --turn-gap-seconds pause) is excluded.
+# --------------------------------------------------------------------------
+
+class ScenarioExecMetricsTests(unittest.TestCase):
+    def _make_session(self, tmp, events):
+        fake_home = Path(tmp)/'home'
+        run_dir = Path(tmp)/'run'
+        workspace = run_dir/'workspace'
+        workspace.mkdir(parents=True)
+        (run_dir/'worker-result.json').write_text(json.dumps({'session_id': 'sess-1'}))
+        slug = str(workspace.resolve()).replace('\\', '-').replace('/', '-').replace(':', '')
+        sessions_dir = fake_home/'.amplifier/projects'/slug/'sessions'/'sess-1'
+        sessions_dir.mkdir(parents=True)
+        (sessions_dir/'events.jsonl').write_text('\n'.join(json.dumps(e) for e in events)+'\n')
+        return fake_home, run_dir
+
+    def test_sums_per_turn_windows_excluding_the_gap_between_them(self):
+        # Turn 1: request@0s -> response@2s (2000ms). Idle gap 2s-100s (a
+        # --turn-gap-seconds pause). Turn 2: request@100s -> response@103s (3000ms).
+        # A whole-session window would report ~103000ms; the correct answer is 5000ms.
+        events = [
+            {'event': 'llm:request', 'ts': '2026-01-01T00:00:00+00:00', 'data': {'model': 'model-a'}},
+            {'event': 'llm:response', 'ts': '2026-01-01T00:00:02+00:00', 'data': {'usage': {'cost_usd': 0.02}}},
+            {'event': 'llm:request', 'ts': '2026-01-01T00:01:40+00:00', 'data': {'model': 'model-b'}},
+            {'event': 'llm:response', 'ts': '2026-01-01T00:01:43+00:00', 'data': {'usage': {'cost_usd': 0.03}}},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_home, run_dir = self._make_session(tmp, events)
+            result = {
+                'harness': 'amplifier-fd', 'wall_time_ms': 999999.0,
+                'turns': [
+                    {'index': 1, 'subtask': 'a', 'started_at': '2026-01-01T00:00:00+00:00',
+                     'ended_at': '2026-01-01T00:00:02+00:00', 'skipped': False},
+                    {'index': 2, 'subtask': 'b', 'started_at': '2026-01-01T00:01:40+00:00',
+                     'ended_at': '2026-01-01T00:01:43+00:00', 'skipped': False},
+                ],
+            }
+            with patch('battery.Path.home', return_value=fake_home):
+                ms, requests = battery._amplifier_exec_metrics(result, run_dir)
+                annotated = battery._with_exec_time(result, run_dir)
+        self.assertAlmostEqual(ms, 5000.0)
+        self.assertEqual(requests, 2)
+        self.assertEqual(annotated['exec_time_ms'], 5000.0)
+        turn1, turn2 = annotated['turns']
+        self.assertAlmostEqual(turn1['exec_time_ms'], 2000.0)
+        self.assertAlmostEqual(turn2['exec_time_ms'], 3000.0)
+        self.assertAlmostEqual(turn1['cost_usd'], 0.02)
+        self.assertAlmostEqual(turn2['cost_usd'], 0.03)
+        self.assertEqual(turn1['model_counts'], {'model-a': 1})
+        self.assertEqual(turn2['model_counts'], {'model-b': 1})
+
+    def test_skipped_turns_are_excluded_from_the_sum_and_left_unannotated(self):
+        events = [
+            {'event': 'llm:request', 'ts': '2026-01-01T00:00:00+00:00', 'data': {'model': 'model-a'}},
+            {'event': 'llm:response', 'ts': '2026-01-01T00:00:01+00:00', 'data': {'usage': {'cost_usd': 0.01}}},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_home, run_dir = self._make_session(tmp, events)
+            result = {
+                'harness': 'amplifier-fd', 'wall_time_ms': 999999.0,
+                'turns': [
+                    {'index': 1, 'subtask': 'a', 'started_at': '2026-01-01T00:00:00+00:00',
+                     'ended_at': '2026-01-01T00:00:01+00:00', 'skipped': False},
+                    {'index': 2, 'subtask': 'b', 'started_at': None, 'ended_at': None, 'skipped': True},
+                ],
+            }
+            with patch('battery.Path.home', return_value=fake_home):
+                ms, requests = battery._amplifier_exec_metrics(result, run_dir)
+                annotated = battery._with_exec_time(result, run_dir)
+        self.assertAlmostEqual(ms, 1000.0)
+        self.assertEqual(requests, 1)
+        turn1, turn2 = annotated['turns']
+        self.assertAlmostEqual(turn1['exec_time_ms'], 1000.0)
+        self.assertIsNone(turn2['exec_time_ms'])
+        self.assertEqual(turn2['model_counts'], {})
+
+    def test_background_naming_call_excluded_from_exec_time_but_cost_kept(self):
+        """Reproduces the real 2026-09-25 mt-smoke shape: turn 2's real
+        response finishes, then a background session-naming call (haiku,
+        purpose='session-naming') fires and finishes just before ended_at.
+        Its cost must still be added to cost_usd; its time must not inflate
+        exec_time_ms/provider_requests, and its model must not appear in
+        model_counts -- it gets its own background_calls entry instead."""
+        events = [
+            {'event': 'llm:request', 'ts': '2026-01-01T00:00:00+00:00', 'data': {'model': 'model-a'}},
+            {'event': 'llm:response', 'ts': '2026-01-01T00:00:05+00:00', 'data': {'usage': {'cost_usd': 0.05}}},
+            {'event': 'llm:request', 'ts': '2026-01-01T00:00:06+00:00',
+             'data': {'model': 'claude-haiku-4-5-20251001', 'purpose': 'session-naming',
+                      'origin_module': 'hooks-session-naming'}},
+            {'event': 'llm:response', 'ts': '2026-01-01T00:00:07+00:00',
+             'data': {'purpose': 'session-naming', 'origin_module': 'hooks-session-naming',
+                      'usage': {'cost_usd': 0.003}}},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_home, run_dir = self._make_session(tmp, events)
+            result = {
+                'harness': 'amplifier-fd', 'wall_time_ms': 99999.0,
+                'turns': [{'index': 1, 'subtask': 'a', 'started_at': '2026-01-01T00:00:00+00:00',
+                           'ended_at': '2026-01-01T00:00:08+00:00', 'skipped': False}],
+            }
+            with patch('battery.Path.home', return_value=fake_home):
+                annotated = battery._with_exec_time(result, run_dir)
+        turn = annotated['turns'][0]
+        # exec_time_ms is the REAL response window (0s -> 5s), not stretched to 7s by the background call.
+        self.assertAlmostEqual(turn['exec_time_ms'], 5000.0)
+        self.assertEqual(turn['provider_requests'], 1)
+        self.assertEqual(turn['model_counts'], {'model-a': 1})
+        # Cost of the background call is still counted -- the user paid for it.
+        self.assertAlmostEqual(turn['cost_usd'], 0.053)
+        self.assertEqual(len(turn['background_calls']), 1)
+        bg = turn['background_calls'][0]
+        self.assertEqual(bg['purpose'], 'session-naming')
+        self.assertEqual(bg['model'], 'claude-haiku-4-5-20251001')
+        self.assertEqual(bg['origin_module'], 'hooks-session-naming')
+
+    def test_single_turn_result_is_unaffected_by_the_scenario_branch(self):
+        """A result with no 'turns' key must take the exact pre-existing
+        whole-session-window code path (byte-identical single-turn behavior)."""
+        events = [
+            {'type': 'llm:request', 'ts': '2026-01-01T00:00:00+00:00'},
+            {'type': 'llm:response', 'ts': '2026-01-01T00:00:01+00:00'},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_home, run_dir = self._make_session(tmp, events)
+            result = {'harness': 'amplifier-fd', 'wall_time_ms': 99999.0}
+            with patch('battery.Path.home', return_value=fake_home):
+                ms, requests = battery._amplifier_exec_metrics(result, run_dir)
+        self.assertAlmostEqual(ms, 1000.0)
+        self.assertEqual(requests, 1)
+
+
+# --------------------------------------------------------------------------
 # backfill-exec: fills exec_time_ms/exec_time_source on existing results,
 # in place, idempotently
 # --------------------------------------------------------------------------
@@ -2024,6 +2158,267 @@ class CrossCampaignEvaluateTests(unittest.TestCase):
             })
             comparison = battery.cmd_evaluate(SimpleNamespace(root=str(candidate_root), experiment='cand1'))
             self.assertIsNone(comparison['cross'])
+
+
+# --------------------------------------------------------------------------
+# routing/served-model recording on result.json (task #2): per-provider-call
+# served vs requested model, effort/reason/escalation and token usage, plus
+# per-turn judge decisions -- derived from receipts.jsonl for a routed
+# (amplifier-fd) run, and from native events.jsonl alone for a plain run.
+# --------------------------------------------------------------------------
+
+class RoutingFromReceiptsTests(unittest.TestCase):
+    """`_routing_from_receipts`: a routed run's receipts.jsonl -> turn_decisions
+    (difficulty_judged) + provider_calls (slow_start/effort_routed/model_routed/
+    slow_end correlated by provider_call_id) + served_model_counts."""
+
+    def test_none_when_receipts_missing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)/'run'
+            run_dir.mkdir()
+            self.assertIsNone(battery._routing_from_receipts(run_dir))
+
+    def test_none_when_receipts_empty(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)/'run'
+            _write_receipts(run_dir, [])
+            self.assertIsNone(battery._routing_from_receipts(run_dir))
+
+    def test_provider_call_correlates_routing_and_usage_by_provider_call_id(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)/'run'
+            events = [
+                {'event': 'fast_decisions:difficulty_judged',
+                 'data': {'backend': 'ollama', 'choice': 'strong', 'probabilities': {'complex': 0.83},
+                          'reason_code': 'judge_strong'}},
+                {'event': 'fast_decisions:effort_routed',
+                 'data': {'phase': 'implement', 'requested_effort': 'high', 'provider_call_id': 'pc-1'}},
+                {'event': 'fast_decisions:model_routed',
+                 'data': {'requested_model': 'claude-cheap-1', 'reason_code': 'start_model',
+                          'escalated': False, 'escalation_reason': None, 'provider_call_id': 'pc-1'}},
+                {'event': 'fast_decisions:slow_start',
+                 'data': {'provider': 'anthropic', 'model': 'claude-cheap-1', 'provider_call_id': 'pc-1'}},
+                {'event': 'fast_decisions:slow_end',
+                 'data': {'provider': 'anthropic', 'model': 'claude-cheap-1', 'provider_call_id': 'pc-1',
+                          'status': 'ok', 'served_model': 'claude-cheap-1-20260101', 'input_tokens': 180,
+                          'output_tokens': 65, 'cache_read_tokens': 40}},
+                # a second provider call, escalated -- no effort_routed receipt this time
+                {'event': 'fast_decisions:model_routed',
+                 'data': {'requested_model': None, 'reason_code': 'escalated_max_requests',
+                          'escalated': True, 'escalation_reason': 'max_requests', 'provider_call_id': 'pc-2'}},
+                {'event': 'fast_decisions:slow_start',
+                 'data': {'provider': 'anthropic', 'model': 'claude-strong-1', 'provider_call_id': 'pc-2'}},
+                {'event': 'fast_decisions:slow_end',
+                 'data': {'provider': 'anthropic', 'model': 'claude-strong-1', 'provider_call_id': 'pc-2',
+                          'status': 'ok', 'served_model': 'claude-strong-1-20260101', 'input_tokens': 400,
+                          'output_tokens': 120}},
+            ]
+            _write_receipts(run_dir, events)
+
+            routing = battery._routing_from_receipts(run_dir)
+            self.assertEqual(len(routing['turn_decisions']), 1)
+            decision = routing['turn_decisions'][0]
+            self.assertEqual(decision['decision'], 'strong')
+            self.assertEqual(decision['tier'], 'strong')
+            self.assertEqual(decision['backend'], 'ollama')
+            self.assertAlmostEqual(decision['p_complex'], 0.83)
+            self.assertEqual(decision['reason'], 'judge_strong')
+
+            calls = {c['provider_call_id']: c for c in routing['provider_calls']}
+            self.assertEqual(len(calls), 2)
+            pc1 = calls['pc-1']
+            self.assertEqual(pc1['requested_model'], 'claude-cheap-1')
+            self.assertEqual(pc1['served_model'], 'claude-cheap-1-20260101')
+            self.assertEqual(pc1['reason_code'], 'start_model')
+            self.assertFalse(pc1['escalated'])
+            self.assertEqual(pc1['effort'], 'high')
+            self.assertEqual(pc1['input_tokens'], 180)
+            self.assertEqual(pc1['output_tokens'], 65)
+            self.assertEqual(pc1['cache_read_tokens'], 40)
+            self.assertNotIn('cache_write_tokens', pc1)
+
+            pc2 = calls['pc-2']
+            # model_routed's requested_model was None (no override this call) --
+            # falls back to slow_start's actual model, never left blank.
+            self.assertEqual(pc2['requested_model'], 'claude-strong-1')
+            self.assertEqual(pc2['served_model'], 'claude-strong-1-20260101')
+            self.assertTrue(pc2['escalated'])
+            self.assertEqual(pc2['reason_code'], 'escalated_max_requests')
+            self.assertIsNone(pc2['effort'])  # no effort_routed receipt for this call
+
+            self.assertEqual(routing['served_model_counts'],
+                              {'claude-cheap-1-20260101': 1, 'claude-strong-1-20260101': 1})
+
+    def test_served_model_falls_back_to_requested_when_provider_never_reports_one(self):
+        """Some providers don't echo a model back on the response -- served_model
+        must still be populated, from slow_end's own 'model' or the requested
+        model, never left blank when a call clearly happened."""
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)/'run'
+            events = [
+                {'event': 'fast_decisions:model_routed',
+                 'data': {'requested_model': 'claude-cheap-1', 'reason_code': 'start_model',
+                          'escalated': False, 'provider_call_id': 'pc-1'}},
+                {'event': 'fast_decisions:slow_start',
+                 'data': {'provider': 'anthropic', 'model': 'claude-cheap-1', 'provider_call_id': 'pc-1'}},
+                {'event': 'fast_decisions:slow_end',
+                 'data': {'provider': 'anthropic', 'model': 'claude-cheap-1', 'provider_call_id': 'pc-1',
+                          'status': 'ok'}},  # no served_model, no 'model' override at slow_end either
+            ]
+            _write_receipts(run_dir, events)
+            routing = battery._routing_from_receipts(run_dir)
+            call = routing['provider_calls'][0]
+            self.assertEqual(call['served_model'], 'claude-cheap-1')  # falls back to slow_end's 'model'
+            self.assertEqual(routing['served_model_counts'], {'claude-cheap-1': 1})
+
+    def test_duplicate_slow_end_for_same_provider_call_id_is_not_double_counted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)/'run'
+            events = [
+                {'event': 'fast_decisions:slow_start', 'data': {'model': 'm1', 'provider_call_id': 'pc-1'}},
+                {'event': 'fast_decisions:slow_end',
+                 'data': {'model': 'm1', 'served_model': 'm1', 'provider_call_id': 'pc-1'}},
+                {'event': 'fast_decisions:slow_end',  # e.g. a retried emit -- must not double-count
+                 'data': {'model': 'm1', 'served_model': 'm1', 'provider_call_id': 'pc-1'}},
+            ]
+            _write_receipts(run_dir, events)
+            routing = battery._routing_from_receipts(run_dir)
+            self.assertEqual(len(routing['provider_calls']), 1)
+            self.assertEqual(routing['served_model_counts'], {'m1': 1})
+
+
+class ProviderCallsFromNativeEventsTests(unittest.TestCase):
+    """`_provider_calls_from_native_events`: the plain-harness fallback -- no
+    fast-decisions receipts exist, so provider_calls (and served_model_counts)
+    are derived from the native session's own llm:response events instead."""
+
+    def _fake_session(self, tmp, events):
+        fake_home = Path(tmp)/'home'
+        run_dir = Path(tmp)/'run'
+        workspace = run_dir/'workspace'
+        workspace.mkdir(parents=True)
+        (run_dir/'worker-result.json').write_text(json.dumps({'session_id': 'sess-1'}))
+        slug = str(workspace.resolve()).replace('\\', '-').replace('/', '-').replace(':', '')
+        sessions_dir = fake_home/'.amplifier/projects'/slug/'sessions'/'sess-1'
+        sessions_dir.mkdir(parents=True)
+        (sessions_dir/'events.jsonl').write_text('\n'.join(json.dumps(e) for e in events)+'\n')
+        return fake_home, run_dir
+
+    def test_plain_run_derives_served_model_counts_from_llm_response_events(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            events = [
+                {'event': 'llm:request', 'data': {'model': 'claude-fable-5-1'}},
+                {'event': 'llm:response', 'data': {'model': 'claude-fable-5-1',
+                                                    'usage': {'input_tokens': 500, 'output_tokens': 80}}},
+                {'event': 'llm:request', 'data': {'model': 'claude-fable-5-1'}},
+                {'event': 'llm:response', 'data': {'model': 'claude-fable-5-1',
+                                                    'usage': {'input_tokens': 700, 'output_tokens': 120}}},
+            ]
+            fake_home, run_dir = self._fake_session(tmp, events)
+            result = {'harness': 'amplifier-plain'}
+            with patch('battery.Path.home', return_value=fake_home):
+                calls = battery._provider_calls_from_native_events(result, run_dir)
+            self.assertEqual(len(calls), 2)
+            for call in calls:
+                self.assertEqual(call['served_model'], 'claude-fable-5-1')
+                self.assertEqual(call['requested_model'], 'claude-fable-5-1')
+                self.assertIsNone(call['reason_code'])
+                self.assertIsNone(call['escalated'])
+            self.assertEqual(calls[0]['input_tokens'], 500)
+            self.assertEqual(calls[1]['output_tokens'], 120)
+
+    def test_empty_when_no_session_resolvable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)/'run'
+            (run_dir/'workspace').mkdir(parents=True)
+            with patch('battery.Path.home', return_value=Path(tmp)/'nohome'):
+                calls = battery._provider_calls_from_native_events({'harness': 'amplifier-plain'}, run_dir)
+            self.assertEqual(calls, [])
+
+
+class RoutingSummaryTests(unittest.TestCase):
+    """`_routing_summary`: prefers receipts.jsonl, falls back to native events,
+    and degrades to {'available': False, 'reason': ...} rather than raising --
+    this is what `_settle_and_record` attaches to every result.json."""
+
+    def test_routed_run_uses_receipts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)/'run'
+            events = [
+                {'event': 'fast_decisions:model_routed',
+                 'data': {'requested_model': 'claude-cheap-1', 'reason_code': 'start_model',
+                          'escalated': False, 'provider_call_id': 'pc-1'}},
+                {'event': 'fast_decisions:slow_start', 'data': {'model': 'claude-cheap-1', 'provider_call_id': 'pc-1'}},
+                {'event': 'fast_decisions:slow_end',
+                 'data': {'model': 'claude-cheap-1', 'served_model': 'claude-cheap-1-20260101',
+                          'provider_call_id': 'pc-1', 'status': 'ok'}},
+            ]
+            _write_receipts(run_dir, events)
+            routing = battery._routing_summary({'harness': 'amplifier-fd'}, run_dir)
+            self.assertTrue(routing['available'])
+            self.assertEqual(routing['served_model_counts'], {'claude-cheap-1-20260101': 1})
+            self.assertEqual(len(routing['provider_calls']), 1)
+
+    def test_plain_run_falls_back_to_native_events(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_home = Path(tmp)/'home'
+            run_dir = Path(tmp)/'run'
+            workspace = run_dir/'workspace'
+            workspace.mkdir(parents=True)
+            (run_dir/'worker-result.json').write_text(json.dumps({'session_id': 'sess-1'}))
+            slug = str(workspace.resolve()).replace('\\', '-').replace('/', '-').replace(':', '')
+            sessions_dir = fake_home/'.amplifier/projects'/slug/'sessions'/'sess-1'
+            sessions_dir.mkdir(parents=True)
+            events = [{'event': 'llm:response', 'data': {'model': 'claude-fable-5-1', 'usage': {}}}]
+            (sessions_dir/'events.jsonl').write_text('\n'.join(json.dumps(e) for e in events)+'\n')
+            with patch('battery.Path.home', return_value=fake_home):
+                routing = battery._routing_summary({'harness': 'amplifier-plain'}, run_dir)
+            self.assertTrue(routing['available'])
+            self.assertEqual(routing['turn_decisions'], [])
+            self.assertEqual(routing['served_model_counts'], {'claude-fable-5-1': 1})
+
+    def test_unavailable_when_neither_source_has_anything(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)/'run'
+            (run_dir/'workspace').mkdir(parents=True)
+            with patch('battery.Path.home', return_value=Path(tmp)/'nohome'):
+                routing = battery._routing_summary({'harness': 'amplifier-plain'}, run_dir)
+            self.assertFalse(routing['available'])
+            self.assertIn('reason', routing)
+
+    def test_never_raises_even_when_receipts_parsing_blows_up(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)/'run'
+            run_dir.mkdir()
+            orig = battery._routing_from_receipts
+            battery._routing_from_receipts = lambda _run_dir: (_ for _ in ()).throw(RuntimeError('boom'))
+            try:
+                routing = battery._routing_summary({'harness': 'amplifier-fd'}, run_dir)
+            finally:
+                battery._routing_from_receipts = orig
+            self.assertFalse(routing['available'])
+            self.assertIn('routing_summary_error', routing['reason'])
+
+
+class MechanismReportServedModelCountsTests(unittest.TestCase):
+    """`_run_mechanism_counts`/`_mechanism_report` aggregate served_model_counts
+    across an experiment's amplifier-fd runs -- cheap to expose since the
+    receipts are already parsed for the mechanism gate."""
+
+    def test_served_model_counts_aggregated_across_runs_in_comparison_mechanism(self):
+        with tempfile.TemporaryDirectory() as tmp, _patched_battery_tasks():
+            root = Path(tmp)/'campaign'
+            loop_config = {'backend': 'ollama', 'model': 'qwen3:0.6b'}
+            events = [
+                {'event': 'fast_decisions:scored', 'data': {'backend': 'ollama'}},
+                {'event': 'fast_decisions:slow_end', 'data': {'served_model': 'claude-cheap-1-20260101'}},
+                {'event': 'fast_decisions:slow_end', 'data': {'served_model': 'claude-cheap-1-20260101'}},
+            ]
+            _one_amplifier_fd_experiment(root, 'sm1', loop_config, events)
+            comparison = battery.cmd_evaluate(SimpleNamespace(root=str(root), experiment='sm1'))
+            mechanism = comparison['mechanism']
+            self.assertEqual(mechanism['served_model_counts'], {'claude-cheap-1-20260101': 2})
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -79,6 +79,21 @@ session:
         max_requests_before_escalation: null
         escalate_on_test_failure: false
         escalate_on_provider_error: true
+        # HC12 ("easy-turn shaping", opt-in, disabled by default): on a turn
+        # judged easy, a cheap model can still burn extra provider round
+        # trips on ceremony (one `todo` call, one `python_check` call, one
+        # tool per response) where the host model batches independent tool
+        # calls into one response and verifies once. Appending guidance to
+        # the END of the system prompt keeps every call of the turn
+        # byte-identical (cache-friendly); hiding tools by name removes them
+        # from just that call's advertised tool list. Left commented out
+        # until a benchmark shows it helps -- uncomment to enable:
+        # easy_turn_guidance: >-
+        #   This request was judged small. Work directly: read what you need
+        #   in one step, make independent tool calls together in a single
+        #   response, skip planning and checklist tools, verify once, then
+        #   give a short answer.
+        # easy_turn_hide_tools: [todo]
       # Cache keep-alive (levers.py): while a tool or helper runs past 270 s
       # since the prompt cache was last used, re-send the last request
       # unchanged with a 1-token output cap so the next call reads the cache

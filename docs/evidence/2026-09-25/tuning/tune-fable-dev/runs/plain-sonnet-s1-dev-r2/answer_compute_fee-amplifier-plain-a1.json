@@ -1,0 +1,57 @@
+{
+  "name": "plain-sonnet-s1-dev-r2-answer_compute_fee-amplifier-plain-a1",
+  "task": "answer_compute_fee",
+  "family": "answer",
+  "split": "dev",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-sonnet-5",
+  "started_at": "2026-09-25T12:44:35.199279+00:00",
+  "ended_at": "2026-09-25T12:44:57.195229+00:00",
+  "wall_time_ms": 21995.23458298063,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.21300675,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 171531.0,
+    "output_tokens": 642.0,
+    "cache_read_tokens": 171525.0,
+    "cache_write_tokens": 40507.0,
+    "cost_usd": 0.21300675
+  },
+  "num_turns": null,
+  "final_message": "All files reviewed. `service2.compute_fee` imports only `pricing.base_fee` and `discounts.apply_discount` (the two decoy modules, tax and shipping, are unused).\n\nTrace for `compute_fee(1000, \"gold\")`:\n- `base_fee(1000)` = 500 + 1000//10 = 500 + 100 = 600\n- `apply_discount(600, \"gold\")`: pct = 20 \u2192 [REDACTED:PII]*20)//100 = [REDACTED:PII] = 480\n\nANSWER: 480",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 9908.258,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-sonnet-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-sonnet-5": 0.213007
+    }
+  }
+}

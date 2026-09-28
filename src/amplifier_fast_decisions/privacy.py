@@ -234,6 +234,13 @@ SAFE_FIELDS = {
     "destructive",
     "touches_production",
     "latency_ms",
+    # HC12 ("easy-turn shaping", opt-in): the LENGTH of the guidance text
+    # actually appended (never the guidance text itself) and the list of
+    # tool NAMES actually hidden from one call's advertised tool list --
+    # never tool arguments/outputs or message content. `provider_call_id`,
+    # `mode` (already listed above) are reused verbatim.
+    "guidance_chars",
+    "hidden_tools",
 }
 
 

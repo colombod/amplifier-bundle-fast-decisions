@@ -1,0 +1,107 @@
+{
+  "name": "orch-haiku-shaped-opus-s1-holdout2-r2-answer_retry_max_attempts-amplifier-fd-a1",
+  "task": "answer_retry_max_attempts",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-fd",
+  "attempt": 1,
+  "model": "claude-opus-5-5",
+  "started_at": "2026-09-25T14:11:48.603981+00:00",
+  "ended_at": "2026-09-25T14:12:13.421828+00:00",
+  "wall_time_ms": 24816.92466599634,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.2351218,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 170244.0,
+    "output_tokens": 489.0,
+    "cache_read_tokens": 170234.0,
+    "cache_write_tokens": 38251.0,
+    "cost_usd": 0.2351218
+  },
+  "num_turns": null,
+  "final_message": "If you call `retry.call_with_retry()` without passing `max_attempts`, it makes at most 4 attempts, and that count includes the first try.\n\n- In `retry.py`, `DEFAULT_MAX_ATTEMPTS = 4`. When `max_attempts` is `None`, the loop `for _ in range(attempts)` runs that many times.\n- Each pass calls `fn()` and returns as soon as one succeeds. If all 4 fail, it raises the last exception it caught.\n- `main7.py` calls it with no `max_attempts`, so it uses this default.\n- `retry.py` doesn't import `decoy_network.MAX_RETRIES = 3` or `decoy_backoff.RETRY_LIMIT = 5`, so neither affects the answer.\n- `.amplifier/settings.local.yaml` has nothing to do with retries.\n\nANSWER: 4",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 10877.532000000001,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 2,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [
+      {
+        "decision": "strong",
+        "backend": "jev",
+        "p_complex": 0.57,
+        "tier": "strong",
+        "reason": "judge_strong"
+      }
+    ],
+    "provider_calls": [
+      {
+        "provider_call_id": "provider_fb71d142d22e4f01a7c894e0ed2839d4",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 31861,
+        "output_tokens": 90,
+        "cache_read_tokens": 31857,
+        "cache_write_tokens": 36574
+      },
+      {
+        "provider_call_id": "provider_9feb9e104d8449bdbc35f1f18f780556",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 68435,
+        "output_tokens": 104,
+        "cache_read_tokens": 68431,
+        "cache_write_tokens": 1515
+      },
+      {
+        "provider_call_id": "provider_7014c8057fd646119bcd7cc0e9d7240c",
+        "served_model": "provider-default",
+        "requested_model": "provider-default",
+        "reason_code": "start_strong",
+        "escalated": false,
+        "effort": null,
+        "status": "ok",
+        "input_tokens": 69948,
+        "output_tokens": 295,
+        "cache_read_tokens": 69946,
+        "cache_write_tokens": 162
+      }
+    ],
+    "served_model_counts": {
+      "provider-default": 3
+    },
+    "native_served_model_counts": {
+      "claude-opus-5-5": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-opus-5-5": 0.235122
+    }
+  }
+}

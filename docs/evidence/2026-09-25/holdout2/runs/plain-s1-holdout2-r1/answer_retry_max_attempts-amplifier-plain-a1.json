@@ -1,0 +1,57 @@
+{
+  "name": "plain-s1-holdout2-r1-answer_retry_max_attempts-amplifier-plain-a1",
+  "task": "answer_retry_max_attempts",
+  "family": "answer",
+  "split": "holdout2",
+  "kind": "answer",
+  "harness": "amplifier-plain",
+  "attempt": 1,
+  "model": "claude-fable-5-1",
+  "started_at": "2026-09-25T13:48:42.311428+00:00",
+  "ended_at": "2026-09-25T13:49:11.906583+00:00",
+  "wall_time_ms": 29592.98974997364,
+  "harness_duration_ms": null,
+  "exit_code": 0,
+  "timed_out": false,
+  "cost_usd": 0.5826685,
+  "cost_source": "harness_reported",
+  "cost_billable": true,
+  "tokens": {
+    "input_tokens": 169784.0,
+    "output_tokens": 870.0,
+    "cache_read_tokens": 169774.0,
+    "cache_write_tokens": 39730.0,
+    "cost_usd": 0.5826685
+  },
+  "num_turns": null,
+  "final_message": "I've read every file in the directory.\n\n**Analysis:**\n\n- `retry.py:3` defines `DEFAULT_MAX_ATTEMPTS = 4`.\n- `retry.py:7` uses it when `max_attempts` is `None`: `attempts = max_attempts if max_attempts is not None else DEFAULT_MAX_ATTEMPTS`.\n- `retry.py:9` loops `for _ in range(attempts)`, so each iteration is one call to `fn()` \u2014 the first try plus 3 retries, for a total of 4 attempts before `raise last_exc`.\n- `decoy_backoff.py` (`RETRY_LIMIT = 5`) and `decoy_network.py` (`MAX_RETRIES = 3`) are explicitly unrelated and never imported by `retry.py`, so they don't affect the answer. `main7.py` calls `call_with_retry(lambda: 1)` without `max_attempts`, confirming the default path is what matters.\n\nANSWER: 4",
+  "quality": {
+    "checks": 1,
+    "passed": 1,
+    "failed": 0,
+    "failure_labels": []
+  },
+  "protected_files_unchanged": {
+    "README.md": true
+  },
+  "outcome_passed": true,
+  "infrastructure_failure": false,
+  "notes": [],
+  "exec_time_ms": 16600.792999999998,
+  "exec_time_source": "native_events_first_request_to_last_response",
+  "provider_requests": 3,
+  "concurrency_at_launch": 3,
+  "concurrency_max": 3,
+  "routing": {
+    "available": true,
+    "turn_decisions": [],
+    "provider_calls": [],
+    "served_model_counts": {},
+    "native_served_model_counts": {
+      "claude-fable-5-1": 3
+    },
+    "native_cost_usd_by_model": {
+      "claude-fable-5-1": 0.582669
+    }
+  }
+}

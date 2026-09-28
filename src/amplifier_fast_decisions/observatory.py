@@ -30,6 +30,7 @@ from typing import Any
 __all__ = [
     "ensure_viewer",
     "open_page",
+    "pid_looks_like_viewer",
     "read_state",
     "remove_state",
     "viewer_is_alive",
@@ -88,6 +89,42 @@ def _pid_alive(pid: int) -> bool:
     except OSError:
         return False
     return True
+
+
+def pid_looks_like_viewer(pid: int) -> bool:
+    """Best-effort identity check before signalling a recorded pid.
+
+    A viewer's state file can outlive the process it names -- if the viewer
+    died and the OS recycled the pid for an unrelated process before someone
+    runs ``afast serve --stop``, blindly signalling that pid would kill the
+    wrong thing. This guards the common case by checking the pid's own
+    command line (via ``ps``, no new dependency) for this package's module
+    name, which every ``afast serve`` invocation carries
+    (``python -m amplifier_fast_decisions serve`` or the installed console
+    script, whose argv still resolves through this package).
+
+    Returns ``True`` (i.e. "go ahead and signal it") whenever the check
+    itself can't be performed -- missing ``ps``, permission denied, pid
+    already gone, timeout -- so this stays a guard against an *identifiable*
+    mismatch, not a hard gate that could leave a real viewer un-stoppable
+    when ``ps`` is unavailable.
+    """
+    try:
+        result = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "command="],
+            capture_output=True,
+            text=True,
+            timeout=1,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return True
+    if result.returncode != 0:
+        return True
+    cmdline = result.stdout.strip()
+    if not cmdline:
+        return True
+    return "amplifier_fast_decisions" in cmdline
 
 
 def viewer_is_alive(state: dict[str, Any], *, timeout: float = 0.5) -> bool:
