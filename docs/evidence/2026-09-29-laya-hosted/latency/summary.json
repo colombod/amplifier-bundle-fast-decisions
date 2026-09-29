@@ -1,0 +1,755 @@
+{
+  "groups": {
+    "local|first_observed|fresh|1": {
+      "n": 1,
+      "ok": 1,
+      "errors": 0,
+      "successful_requests_per_active_second": null,
+      "expected_matches": 1,
+      "status_counts": {
+        "200": 1
+      },
+      "p50_ms": 81.962708,
+      "p95_ms": 81.962708,
+      "p99_ms": 81.962708,
+      "mean_ms": 81.962708,
+      "max_ms": 81.962708,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": null,
+      "non_server_p50_ms": null
+    },
+    "hosted|first_observed|fresh|1": {
+      "n": 1,
+      "ok": 1,
+      "errors": 0,
+      "successful_requests_per_active_second": null,
+      "expected_matches": 1,
+      "status_counts": {
+        "200": 1
+      },
+      "p50_ms": 234.039792,
+      "p95_ms": 234.039792,
+      "p99_ms": 234.039792,
+      "mean_ms": 234.039792,
+      "max_ms": 234.039792,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": 47.91,
+      "non_server_p50_ms": 186.129792
+    },
+    "local|warmup|fresh|1": {
+      "n": 12,
+      "ok": 12,
+      "errors": 0,
+      "successful_requests_per_active_second": null,
+      "expected_matches": 12,
+      "status_counts": {
+        "200": 12
+      },
+      "p50_ms": 44.05597950000001,
+      "p95_ms": 53.2560455,
+      "p99_ms": 54.0670755,
+      "mean_ms": 43.501941,
+      "max_ms": 54.269833,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": null,
+      "non_server_p50_ms": null
+    },
+    "hosted|warmup|fresh|1": {
+      "n": 12,
+      "ok": 12,
+      "errors": 0,
+      "successful_requests_per_active_second": null,
+      "expected_matches": 12,
+      "status_counts": {
+        "200": 12
+      },
+      "p50_ms": 132.323146,
+      "p95_ms": 240.15207879999997,
+      "p99_ms": 262.40841576,
+      "mean_ms": 152.24451383333334,
+      "max_ms": 267.9725,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": 26.835,
+      "non_server_p50_ms": 104.71377100000001
+    },
+    "local|serial|fresh|1": {
+      "n": 144,
+      "ok": 144,
+      "errors": 0,
+      "successful_requests_per_active_second": null,
+      "expected_matches": 144,
+      "status_counts": {
+        "200": 144
+      },
+      "p50_ms": 37.214,
+      "p95_ms": 51.0657456,
+      "p99_ms": 57.035110689999996,
+      "mean_ms": 36.96340567361111,
+      "max_ms": 60.085917,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": null,
+      "non_server_p50_ms": null
+    },
+    "hosted|serial|fresh|1": {
+      "n": 144,
+      "ok": 144,
+      "errors": 0,
+      "successful_requests_per_active_second": null,
+      "expected_matches": 144,
+      "status_counts": {
+        "200": 144
+      },
+      "p50_ms": 113.36541600000001,
+      "p95_ms": 172.22339819999996,
+      "p99_ms": 210.22825037999996,
+      "mean_ms": 121.89973638888888,
+      "max_ms": 213.905041,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": 26.48,
+      "non_server_p50_ms": 88.877021
+    },
+    "local|serial|pooled|1": {
+      "n": 144,
+      "ok": 144,
+      "errors": 0,
+      "successful_requests_per_active_second": null,
+      "expected_matches": 144,
+      "status_counts": {
+        "200": 144
+      },
+      "p50_ms": 32.7944995,
+      "p95_ms": 46.5751348,
+      "p99_ms": 49.19009480999999,
+      "mean_ms": 32.50555642361111,
+      "max_ms": 55.695125,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": null,
+      "non_server_p50_ms": null
+    },
+    "hosted|serial|pooled|1": {
+      "n": 144,
+      "ok": 144,
+      "errors": 0,
+      "successful_requests_per_active_second": null,
+      "expected_matches": 144,
+      "status_counts": {
+        "200": 144
+      },
+      "p50_ms": 67.9956455,
+      "p95_ms": 83.39709824999998,
+      "p99_ms": 133.77230661999997,
+      "mean_ms": 70.57586429166666,
+      "max_ms": 150.631833,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": 19.82,
+      "non_server_p50_ms": 47.5459375
+    },
+    "local|concurrent|pooled|2": {
+      "n": 16,
+      "ok": 16,
+      "errors": 0,
+      "successful_requests_per_active_second": 36.34174533357632,
+      "expected_matches": 16,
+      "status_counts": {
+        "200": 16
+      },
+      "p50_ms": 39.6377705,
+      "p95_ms": 67.50868750000001,
+      "p99_ms": 73.2973375,
+      "mean_ms": 42.144773375,
+      "max_ms": 74.7445,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": null,
+      "non_server_p50_ms": null
+    },
+    "hosted|concurrent|pooled|2": {
+      "n": 16,
+      "ok": 16,
+      "errors": 0,
+      "successful_requests_per_active_second": 16.324034783945283,
+      "expected_matches": 16,
+      "status_counts": {
+        "200": 16
+      },
+      "p50_ms": 82.4299795,
+      "p95_ms": 176.5456875,
+      "p99_ms": 199.7100375,
+      "mean_ms": 98.8114845,
+      "max_ms": 205.501125,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": 30.09,
+      "non_server_p50_ms": 49.45725
+    },
+    "local|concurrent|pooled|4": {
+      "n": 32,
+      "ok": 32,
+      "errors": 0,
+      "successful_requests_per_active_second": 34.23884368159011,
+      "expected_matches": 32,
+      "status_counts": {
+        "200": 32
+      },
+      "p50_ms": 70.3346665,
+      "p95_ms": 136.77941249999998,
+      "p99_ms": 151.37757375,
+      "mean_ms": 74.24707421875,
+      "max_ms": 154.140875,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": null,
+      "non_server_p50_ms": null
+    },
+    "hosted|concurrent|pooled|4": {
+      "n": 32,
+      "ok": 32,
+      "errors": 0,
+      "successful_requests_per_active_second": 32.716949682417045,
+      "expected_matches": 32,
+      "status_counts": {
+        "200": 32
+      },
+      "p50_ms": 93.483604,
+      "p95_ms": 131.60447675,
+      "p99_ms": 142.57991175000004,
+      "mean_ms": 95.702066375,
+      "max_ms": 147.498333,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": 31.93,
+      "non_server_p50_ms": 52.186499999999995
+    },
+    "local|concurrent|pooled|8": {
+      "n": 64,
+      "ok": 64,
+      "errors": 0,
+      "successful_requests_per_active_second": 27.2773506635821,
+      "expected_matches": 64,
+      "status_counts": {
+        "200": 64
+      },
+      "p50_ms": 145.74043799999998,
+      "p95_ms": 333.3050061999999,
+      "p99_ms": 359.4389792899999,
+      "mean_ms": 161.086488265625,
+      "max_ms": 377.376917,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": null,
+      "non_server_p50_ms": null
+    },
+    "hosted|concurrent|pooled|8": {
+      "n": 64,
+      "ok": 46,
+      "errors": 18,
+      "successful_requests_per_active_second": 35.0111885259569,
+      "expected_matches": 46,
+      "status_counts": {
+        "200": 46,
+        "503": 18
+      },
+      "p50_ms": 107.52920850000001,
+      "p95_ms": 168.24104175,
+      "p99_ms": 272.88826904999996,
+      "mean_ms": 114.92166586956522,
+      "max_ms": 280.763625,
+      "over_500ms": 0,
+      "over_3000ms": 0,
+      "server_p50_ms": 44.57,
+      "non_server_p50_ms": 51.590770500000005
+    }
+  },
+  "paired": {
+    "fresh": {
+      "matched_pairs": 144,
+      "hosted_minus_local_p50_ms": 77.90085450000001,
+      "paired_median_difference_bootstrap_95_ms": [
+        75.1976455,
+        83.3871394375
+      ],
+      "hosted_faster_pairs": 0,
+      "answer_agreement": 1.0
+    },
+    "pooled": {
+      "matched_pairs": 144,
+      "hosted_minus_local_p50_ms": 35.7657705,
+      "paired_median_difference_bootstrap_95_ms": [
+        34.194750500000005,
+        38.265375500000005
+      ],
+      "hosted_faster_pairs": 0,
+      "answer_agreement": 1.0
+    }
+  },
+  "per_fixture_fresh": {
+    "local": {
+      "cua-1500": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 38.879458,
+        "p95_ms": 44.07744374999999,
+        "p99_ms": 47.23658875,
+        "mean_ms": 39.38955541666667,
+        "max_ms": 48.026375,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "cua-200": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 25.633979,
+        "p95_ms": 30.291160199999997,
+        "p99_ms": 33.354165640000005,
+        "mean_ms": 26.031229083333333,
+        "max_ms": 34.119917,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "cua-2800": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 48.181854,
+        "p95_ms": 58.5285689,
+        "p99_ms": 59.774447380000005,
+        "mean_ms": 49.99522575,
+        "max_ms": 60.085917,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "cua-600": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 31.5677705,
+        "p95_ms": 33.522883150000006,
+        "p99_ms": 33.74317663,
+        "mean_ms": 31.3971005,
+        "max_ms": 33.79825,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "search-1500": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 41.245771000000005,
+        "p95_ms": 46.644840249999994,
+        "p99_ms": 50.780235250000004,
+        "mean_ms": 41.435941,
+        "max_ms": 51.814084,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "search-200": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 25.937604,
+        "p95_ms": 32.571999999999996,
+        "p99_ms": 36.320800000000006,
+        "mean_ms": 26.70848266666667,
+        "max_ms": 37.258,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "search-2800": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 49.479896,
+        "p95_ms": 53.760868599999995,
+        "p99_ms": 56.14774012,
+        "mean_ms": 49.74284033333333,
+        "max_ms": 56.744458,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "search-600": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 29.738332999999997,
+        "p95_ms": 34.35734169999999,
+        "p99_ms": 36.61813474,
+        "mean_ms": 30.049375,
+        "max_ms": 37.183333,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "select-1500": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 39.0441665,
+        "p95_ms": 42.30389565,
+        "p99_ms": 43.09497913,
+        "mean_ms": 39.421,
+        "max_ms": 43.29275,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "select-200": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 26.1663335,
+        "p95_ms": 41.73754595,
+        "p99_ms": 45.89917639000001,
+        "mean_ms": 28.371243166666666,
+        "max_ms": 46.939584,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "select-2800": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 49.6407705,
+        "p95_ms": 52.09438545,
+        "p99_ms": 53.13874349,
+        "mean_ms": 49.279329833333335,
+        "max_ms": 53.399833,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      },
+      "select-600": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 31.112187499999997,
+        "p95_ms": 37.862762499999995,
+        "p99_ms": 38.9175525,
+        "mean_ms": 31.739545333333332,
+        "max_ms": 39.18125,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": null,
+        "non_server_p50_ms": null
+      }
+    },
+    "hosted": {
+      "cua-1500": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 111.590229,
+        "p95_ms": 119.3508773,
+        "p99_ms": 122.13184186000001,
+        "mean_ms": 111.75534716666667,
+        "max_ms": 122.827083,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 26.68,
+        "non_server_p50_ms": 84.910229
+      },
+      "cua-200": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 117.0468955,
+        "p95_ms": 161.8036208,
+        "p99_ms": 165.01675776000002,
+        "mean_ms": 121.95243058333334,
+        "max_ms": 165.820042,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 18.369999999999997,
+        "non_server_p50_ms": 91.5298755
+      },
+      "cua-2800": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 112.096146,
+        "p95_ms": 157.83929824999998,
+        "p99_ms": 172.19149325,
+        "mean_ms": 123.2377675,
+        "max_ms": 175.779542,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 27.335,
+        "non_server_p50_ms": 86.980313
+      },
+      "cua-600": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 120.0097085,
+        "p95_ms": 168.79826684999995,
+        "p99_ms": 194.56965337000003,
+        "mean_ms": 126.16612841666667,
+        "max_ms": 201.0125,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 19.455,
+        "non_server_p50_ms": 90.2591045
+      },
+      "search-1500": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 122.8741045,
+        "p95_ms": 149.71792895,
+        "p99_ms": 150.70121939,
+        "mean_ms": 125.56281941666667,
+        "max_ms": 150.947042,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 27.55,
+        "non_server_p50_ms": 98.3891045
+      },
+      "search-200": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 113.6947295,
+        "p95_ms": 144.13139619999998,
+        "p99_ms": 162.79747924000003,
+        "mean_ms": 117.67377091666667,
+        "max_ms": 167.464,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 25.78,
+        "non_server_p50_ms": 90.1335625
+      },
+      "search-2800": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 112.23991649999999,
+        "p95_ms": 209.6407503,
+        "p99_ms": 211.79491726,
+        "mean_ms": 137.20391316666667,
+        "max_ms": 212.333459,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 25.775,
+        "non_server_p50_ms": 87.07691650000001
+      },
+      "search-600": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 120.196687,
+        "p95_ms": 191.44207904999996,
+        "p99_ms": 209.41244861000004,
+        "mean_ms": 129.53882975,
+        "max_ms": 213.905041,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 28.284999999999997,
+        "non_server_p50_ms": 89.641563
+      },
+      "select-1500": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 111.482812,
+        "p95_ms": 131.37776494999997,
+        "p99_ms": 144.66655299,
+        "mean_ms": 113.02982983333334,
+        "max_ms": 147.98875,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 25.865000000000002,
+        "non_server_p50_ms": 84.46281200000001
+      },
+      "select-200": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 110.350375,
+        "p95_ms": 161.30971889999995,
+        "p99_ms": 184.32327738,
+        "mean_ms": 119.04959025,
+        "max_ms": 190.076667,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 26.705,
+        "non_server_p50_ms": 84.946729
+      },
+      "select-2800": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 114.44354200000001,
+        "p95_ms": 143.16415435,
+        "p99_ms": 144.85423086999998,
+        "mean_ms": 118.84007291666666,
+        "max_ms": 145.27675,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 27.155,
+        "non_server_p50_ms": 92.833542
+      },
+      "select-600": {
+        "n": 12,
+        "ok": 12,
+        "errors": 0,
+        "successful_requests_per_active_second": null,
+        "expected_matches": 12,
+        "status_counts": {
+          "200": 12
+        },
+        "p50_ms": 115.8111245,
+        "p95_ms": 148.17377499999998,
+        "p99_ms": 152.616455,
+        "mean_ms": 118.78633675,
+        "max_ms": 153.727125,
+        "over_500ms": 0,
+        "over_3000ms": 0,
+        "server_p50_ms": 22.03,
+        "non_server_p50_ms": 88.84643700000001
+      }
+    }
+  }
+}

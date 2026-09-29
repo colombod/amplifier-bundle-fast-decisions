@@ -1,0 +1,17 @@
+{
+  "pod_id": "772szw7680zjyh",
+  "created_at": "2026-09-29T15:12:04.163Z",
+  "hourly_gpu_usd": 0.59,
+  "region": "US-NE-1",
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb",
+  "image": "ghcr.io/michaeljabbour/amplifier-laya@sha256:05e611850d6c819993214aa2f6d4547249189694de0463d41e7954a89e83dc92",
+  "code_commit": "027bf0aaec31e480dedafba5adc92624604b483d",
+  "endpoint": "https://772szw7680zjyh-8090.proxy.runpod.net",
+  "max_test_spend_usd": 20,
+  "teardown_required": false,
+  "deleted_at": "2026-09-29T15:19:47.276607+00:00",
+  "delete_status": 204,
+  "absence_verified_status": 404,
+  "elapsed_seconds": 463.113607,
+  "estimated_compute_usd": 0.07589917448055555
+}

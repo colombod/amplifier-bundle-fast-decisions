@@ -1,0 +1,662 @@
+[
+  {
+    "id": "select-00",
+    "tokens": 111,
+    "unbounded_tokens": 111,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-01",
+    "tokens": 108,
+    "unbounded_tokens": 108,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-02",
+    "tokens": 107,
+    "unbounded_tokens": 107,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-03",
+    "tokens": 107,
+    "unbounded_tokens": 107,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-04",
+    "tokens": 124,
+    "unbounded_tokens": 124,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-05",
+    "tokens": 121,
+    "unbounded_tokens": 121,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-06",
+    "tokens": 116,
+    "unbounded_tokens": 116,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-07",
+    "tokens": 118,
+    "unbounded_tokens": 118,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-08",
+    "tokens": 107,
+    "unbounded_tokens": 107,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-09",
+    "tokens": 115,
+    "unbounded_tokens": 115,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-10",
+    "tokens": 127,
+    "unbounded_tokens": 127,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-11",
+    "tokens": 125,
+    "unbounded_tokens": 125,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-12",
+    "tokens": 116,
+    "unbounded_tokens": 116,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-13",
+    "tokens": 125,
+    "unbounded_tokens": 125,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-14",
+    "tokens": 109,
+    "unbounded_tokens": 109,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-15",
+    "tokens": 112,
+    "unbounded_tokens": 112,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-16",
+    "tokens": 118,
+    "unbounded_tokens": 118,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-17",
+    "tokens": 112,
+    "unbounded_tokens": 112,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-18",
+    "tokens": 121,
+    "unbounded_tokens": 121,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "select-19",
+    "tokens": 123,
+    "unbounded_tokens": 123,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-00",
+    "tokens": 112,
+    "unbounded_tokens": 112,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-01",
+    "tokens": 111,
+    "unbounded_tokens": 111,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-02",
+    "tokens": 109,
+    "unbounded_tokens": 109,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-03",
+    "tokens": 109,
+    "unbounded_tokens": 109,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-04",
+    "tokens": 109,
+    "unbounded_tokens": 109,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-05",
+    "tokens": 109,
+    "unbounded_tokens": 109,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-06",
+    "tokens": 114,
+    "unbounded_tokens": 114,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-07",
+    "tokens": 108,
+    "unbounded_tokens": 108,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-08",
+    "tokens": 107,
+    "unbounded_tokens": 107,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-09",
+    "tokens": 107,
+    "unbounded_tokens": 107,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-10",
+    "tokens": 117,
+    "unbounded_tokens": 117,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-11",
+    "tokens": 113,
+    "unbounded_tokens": 113,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-12",
+    "tokens": 110,
+    "unbounded_tokens": 110,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-13",
+    "tokens": 116,
+    "unbounded_tokens": 116,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-14",
+    "tokens": 109,
+    "unbounded_tokens": 109,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-15",
+    "tokens": 116,
+    "unbounded_tokens": 116,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-16",
+    "tokens": 115,
+    "unbounded_tokens": 115,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-17",
+    "tokens": 113,
+    "unbounded_tokens": 113,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-18",
+    "tokens": 116,
+    "unbounded_tokens": 116,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "cua-19",
+    "tokens": 116,
+    "unbounded_tokens": 116,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 3,
+      "options_distinct": 3,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-00",
+    "tokens": 79,
+    "unbounded_tokens": 79,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-01",
+    "tokens": 74,
+    "unbounded_tokens": 74,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-02",
+    "tokens": 77,
+    "unbounded_tokens": 77,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-03",
+    "tokens": 69,
+    "unbounded_tokens": 69,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-04",
+    "tokens": 90,
+    "unbounded_tokens": 90,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-05",
+    "tokens": 75,
+    "unbounded_tokens": 75,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-06",
+    "tokens": 74,
+    "unbounded_tokens": 74,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-07",
+    "tokens": 70,
+    "unbounded_tokens": 70,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-08",
+    "tokens": 84,
+    "unbounded_tokens": 84,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-09",
+    "tokens": 84,
+    "unbounded_tokens": 84,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-10",
+    "tokens": 88,
+    "unbounded_tokens": 88,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-11",
+    "tokens": 92,
+    "unbounded_tokens": 92,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-12",
+    "tokens": 86,
+    "unbounded_tokens": 86,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-13",
+    "tokens": 82,
+    "unbounded_tokens": 82,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-14",
+    "tokens": 91,
+    "unbounded_tokens": 91,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-15",
+    "tokens": 91,
+    "unbounded_tokens": 91,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-16",
+    "tokens": 84,
+    "unbounded_tokens": 84,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-17",
+    "tokens": 81,
+    "unbounded_tokens": 81,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-18",
+    "tokens": 83,
+    "unbounded_tokens": 83,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  },
+  {
+    "id": "search-19",
+    "tokens": 83,
+    "unbounded_tokens": 83,
+    "unchanged_tokens": true,
+    "options": {
+      "options": 2,
+      "options_distinct": 2,
+      "tokens_per_option": null
+    }
+  }
+]

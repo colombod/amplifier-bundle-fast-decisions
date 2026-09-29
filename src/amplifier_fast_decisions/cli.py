@@ -151,7 +151,10 @@ def _laya_server_check() -> dict:
     token = os.getenv(token_env)
     state = "unreachable"
     try:
-        req = urllib.request.Request(f"{url}/health", method="GET")
+        req = urllib.request.Request(
+            f"{url}/health", method="GET",
+            headers={"User-Agent": "amplifier-fast-decisions/0.1"},
+        )
         if token:
             req.add_header("Authorization", f"Bearer {token}")
         with urllib.request.urlopen(req, timeout=1) as response:
