@@ -1,4 +1,6 @@
-# Jev computer-use selector
+# Computer-use selector
+
+The default backend is local Laya. Jev is opt-in with external-state consent.
 
 When the next UI step is selecting an observed control, use `jev_cua` with a
 sanitized, scoped snapshot from the host browser/computer tool. Snapshot fields:

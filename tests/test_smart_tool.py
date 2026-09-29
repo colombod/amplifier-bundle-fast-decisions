@@ -126,7 +126,7 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
     async def test_external_private_seam_cannot_bypass_consent(self):
         scorer = FakeJevBackend()
         with patch.dict(os.environ, {}, clear=True):
-            result = await select(request(), _backend=scorer)
+            result = await select(request(), backend='ollama', _backend=scorer)
         self.assertEqual(result.reason_code, 'external_state_not_enabled')
         self.assertEqual(scorer.calls, 0)
 
@@ -143,7 +143,7 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
     async def test_selection_is_advisory_and_metadata_only(self):
         with tempfile.TemporaryDirectory() as events:
             backend = FakeBackend()
-            result = await select(request(), events_dir=events, _backend=backend)
+            result = await select(request(), backend='ollama', events_dir=events, _backend=backend)
             self.assertTrue(result.ok)
             self.assertEqual(result.choice, 'readme')
             self.assertEqual(result.effect, 'advisory_only')
@@ -173,7 +173,7 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
         with tempfile.TemporaryDirectory() as events:
             backend = FakeBackend()
             for payload in bad:
-                result = await select(payload, events_dir=events, _backend=backend)
+                result = await select(payload, backend='ollama', events_dir=events, _backend=backend)
                 self.assertFalse(result.ok)
                 self.assertEqual(result.status, 'abstain')
                 self.assertEqual(result.reason_code, 'unsupported_request')
@@ -182,7 +182,7 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_uncertainty_abstains_normally(self):
         with tempfile.TemporaryDirectory() as events:
-            result = await select(request(), events_dir=events,
+            result = await select(request(), backend='ollama', events_dir=events,
                                   _backend=FakeBackend({'readme': .6, 'license': .2, 'reason': .2}))
             self.assertTrue(result.ok)
             self.assertIsNone(result.choice)
@@ -192,7 +192,7 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
         with tempfile.TemporaryDirectory() as events:
             for backend in [FakeBackend(error=RuntimeError('PRIVATE_BACKEND_ERROR')),
                             FakeBackend({'rogue': 1.0})]:
-                result = await select(request(), events_dir=events, _backend=backend)
+                result = await select(request(), backend='ollama', events_dir=events, _backend=backend)
                 self.assertFalse(result.ok)
                 self.assertEqual(result.status, 'abstain')
                 self.assertNotIn('PRIVATE_BACKEND_ERROR', json.dumps(result.to_dict()))
@@ -200,10 +200,10 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_deadline_and_cancellation(self):
         with tempfile.TemporaryDirectory() as events:
-            result = await select(request(), events_dir=events, timeout_ms=10,
+            result = await select(request(), backend='ollama', events_dir=events, timeout_ms=10,
                                   _backend=FakeBackend(delay=1))
             self.assertFalse(result.ok)
-            task = asyncio.create_task(select(request(), events_dir=events, _backend=FakeBackend(delay=1)))
+            task = asyncio.create_task(select(request(), backend='ollama', events_dir=events, _backend=FakeBackend(delay=1)))
             await asyncio.sleep(.01)
             task.cancel()
             with self.assertRaises(asyncio.CancelledError):
@@ -215,7 +215,7 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
         with tempfile.TemporaryDirectory() as tmp:
             blocked = Path(tmp) / 'file'; blocked.write_text('occupied')
             backend = FakeBackend()
-            result = await select(request(), events_dir=blocked, _backend=backend)
+            result = await select(request(), backend='ollama', events_dir=blocked, _backend=backend)
             self.assertFalse(result.ok)
             self.assertEqual(result.reason_code, 'telemetry_unavailable')
             self.assertEqual(backend.calls, 0)
@@ -234,7 +234,7 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
             release.set()
         with tempfile.TemporaryDirectory() as events, patch.object(JsonlRecorder, 'close', close):
             result, _ = await asyncio.gather(
-                select(request(), events_dir=events, _backend=FakeBackend()), heartbeat())
+                select(request(), backend='ollama', events_dir=events, _backend=FakeBackend()), heartbeat())
             self.assertTrue(result.ok)
             self.assertFalse(blocked_loop)
 
@@ -259,8 +259,8 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
     def test_install_skill_all_and_idempotence(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = install_skill('all', home=tmp)
-            self.assertEqual(result['installed'], 3)
-            self.assertEqual({r['hosts'][0] for r in result['skills']}, {'codex', 'claude', 'amplifier'})
+            self.assertEqual(result['installed'], 4)
+            self.assertEqual({r['hosts'][0] for r in result['skills']}, {'codex', 'claude', 'amplifier', 'opencode'})
             for row in result['skills']:
                 self.assertEqual(Path(row['path']).read_text(), agent_skill())
             second = install_skill('all', home=tmp)
@@ -288,7 +288,7 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
             except OSError as exc:
                 self.skipTest(f'Symlink creation unavailable: {exc}')
             result = install_skill('all', home=tmp)
-            self.assertEqual(result['installed'], 2)
+            self.assertEqual(result['installed'], 3)
             self.assertIn(['codex', 'claude'], [row['hosts'] for row in result['skills']])
 
 

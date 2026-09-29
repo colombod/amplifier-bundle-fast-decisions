@@ -1,3 +1,8 @@
+> The selector now defaults to local Laya with external state disabled. Use
+> `backend: jev` plus consent to reproduce the historical Jev measurements below.
+> The portable CLI is `amplifier-fast-decisions cua --input ui.json`.
+> Laya snapshots exceeding its state bound abstain instead of silently truncating controls.
+
 # Jev computer-use decisions
 
 Experimental, opt-in. Jev selects an operation and a compatible observed control

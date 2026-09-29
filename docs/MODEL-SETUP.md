@@ -483,8 +483,8 @@ comparing the recorded results. No external key is needed for loopback Laya.
 The HTTP server serializes predictions against its shared model; simultaneous
 GPU predictions previously aborted the process during the live experiment.
 
-Laya remains opt-in. The [decision and task comparison](evidence/2026-09-28-decisions/REPORT.md)
+Laya is now the primary behavior and portable-tool default. The [decision and task comparison](evidence/2026-09-28-decisions/REPORT.md)
 records both latency and incorrect decisions; faster scoring alone is not a
-reason to replace the default Jev judge. The standalone advisory smart tool's
-`select` command still exposes local Ollama and Jev; this Laya integration is
-for the Amplifier backend selected by `backend: laya`.
+evidence of equal task quality. The standalone smart tool exposes Laya through
+`select`, `search`, and `cua`. Use `--backend jev` or `--backend ollama` where supported
+for an explicit alternative. Uncertain selections retain their existing thresholds.

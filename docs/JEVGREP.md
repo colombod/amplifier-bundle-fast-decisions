@@ -1,3 +1,9 @@
+> The bundle now defaults to local Laya relevance search behind the `jevgrep` tool.
+> This is a separate bounded implementation, not an upstream Jevgrep Laya provider.
+> To run the upstream CLI described below, set `backend: jev` and
+> `allow_external_state: true`. The portable equivalent is `amplifier-fast-decisions
+> search --backend jev --allow-external-state --input query.json --root WORKSPACE`.
+
 # Jevgrep source retrieval
 
 The bundle mounts `jevgrep` by default through its main behavior for questions such as “where

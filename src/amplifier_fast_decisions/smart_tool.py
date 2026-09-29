@@ -1,9 +1,9 @@
-"""Portable, advisory workspace-action scoring. No specific coding-agent
+"""Portable advisory selection, bounded source retrieval, and UI proposals. No specific coding-agent
 harness (Claude Code, Codex, OpenCode, Amplifier, ...) is required.
 
 The caller supplies bounded task/context data and eligible read/list targets.
-This module consults the existing local model, returns a typed selection or
-abstention, and records metadata. It never executes or reads a target.
+Selection never reads or executes a target. Search reads bounded eligible source;
+CUA proposes actions and leaves all UI execution to the host.
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from uuid import uuid4
 
 from .contracts import Candidate, DecisionRequest, SLOW
 from .backends import JevBackend
-from .local_backend import OllamaBackend, PROBABILITY_KIND
+from .local_backend import LayaBackend, OllamaBackend, PROBABILITY_KIND
 from .privacy import scrub
 from .telemetry import Emitter, JsonlRecorder
 
@@ -34,10 +34,12 @@ CAPABILITIES = {
     'measure': ('deterministic', 'Count observed provider and tool executions across a session tree.'),
     'compare': ('deterministic', 'Compare matched baseline/enabled runs with explicit outcome checks.'),
     'select': ('model-backed', 'Suggest one caller-supplied read/list target, or abstain.'),
+    'search': ('model-backed', 'Retrieve bounded source windows using local Laya (or opt-in upstream Jevgrep).'),
+    'cua': ('model-backed', 'Propose an action on observed UI controls; the host owns all execution.'),
 }
 
 HARNESSES = frozenset({'amplifier', 'claude', 'codex', 'copilot', 'cursor', 'gemini', 'grok', 'opencode', 'other'})
-SKILL_HOSTS = {'codex': '.agents', 'claude': '.claude', 'amplifier': '.amplifier'}
+SKILL_HOSTS = {'codex': '.agents', 'claude': '.claude', 'amplifier': '.amplifier', 'opencode': '.config/opencode'}
 
 
 def agent_skill() -> str:
@@ -59,7 +61,7 @@ def install_skill(host: str, *, home: str | Path | None = None) -> dict[str, Any
     No host configuration, approvals, or model services are modified.
     """
     if host not in {*SKILL_HOSTS, 'all'}:
-        raise ValueError('Choose codex, claude, amplifier, or all.')
+        raise ValueError('Choose codex, claude, amplifier, opencode, or all.')
     base = Path(home).expanduser() if home is not None else Path.home()
     selected = list(SKILL_HOSTS) if host == 'all' else [host]
     name, content = manifest()['name'], agent_skill()
@@ -191,9 +193,9 @@ def skill(capability: str | None = None) -> str:
     elif capability == 'install-skill':
         lines += [
             'Deterministic installation of a minimal discovery skill; no model is used.',
-            'Required argument: --host codex|claude|amplifier|all.',
+            'Required argument: --host codex|claude|amplifier|opencode|all.',
             'Example: amplifier-fast-decisions install-skill --host all',
-            'Writes SKILL.md below ~/.agents/skills, ~/.claude/skills, or ~/.amplifier/skills.',
+            'Writes SKILL.md below ~/.agents/skills, ~/.claude/skills, ~/.amplifier/skills, or ~/.config/opencode/skills.',
             'All destinations are checked first. Identical files are unchanged; modified existing files',
             'cause failure before any writes. Symlink aliases resolving to the same destination are deduplicated.',
             'Result: JSON paths, host names, and installed/unchanged status. Exit 0 on success,',
@@ -201,12 +203,30 @@ def skill(capability: str | None = None) -> str:
             'The library equivalent is install_skill(host, home=None). Set home to isolate tests.',
             'No host settings, permissions, or provider pipelines are changed. Refresh skill discovery if needed.',
         ]
+    elif capability in {'search', 'cua'}:
+        lines += [CAPABILITIES[capability][1],
+            '--input FILE (or - for stdin) supplies JSON. --backend laya|jev defaults to laya.',
+            '--laya-url URL optionally overrides the Laya endpoint; loopback is the default.',
+            '--allow-external-state is required for remote judges and upstream Jevgrep.',
+            'search: input {"query":"where is retry logic?","path":"."}; --root DIRECTORY bounds reads.',
+            'search: --timeout-ms defaults to 60000; at most 32 KiB eligible source, ignore rules enforced.',
+            'Laya retrieval is a bounded local relevance implementation, not the upstream Jevgrep algorithm.',
+            'cua: input {"goal":"open Reports","snapshot":{"surface_id":"demo","revision":"1",',
+            '"text":"Home","elements":[{"id":"reports","label":"Reports","operations":["CLICK"]}]}}.',
+            'cua: --timeout-ms defaults to 3000; --min-probability defaults to .75.',
+            'CUA only proposes. Reobserve and validate freshness, obtain native approval, execute with host tools,',
+            'then verify the result. DONE never proves completion by itself. Low scores yield reason.',
+            'No images, invented targets, input text generation, or autonomous desktop access.',
+            'Exit 0: result produced; 1: backend failure/disabled; 2: invalid input. Inspect status for abstention.',
+            'Library: await search(payload, root=...) or await cua(payload) from smart_tool.',
+        ]
     else:
         lines += [
             'Model-backed advisory selection. Use only for an already bounded read/list choice.',
             'Arguments: --input FILE reads a UTF-8 JSON object; --input - reads stdin.',
             'Without --input, stdin must be piped; an interactive terminal fails without prompting.',
-            '--backend local|ollama|jev overrides FAST_DECISIONS_JUDGE (default local).',
+            '--backend laya|local|ollama|jev overrides FAST_DECISIONS_JUDGE (default laya).',
+            '--laya-url URL overrides FAST_DECISIONS_LAYA_URL (default http://127.0.0.1:8090).',
             '--model NAME defaults to qwen3:0.6b locally, or TYPESAFE_DEFAULT_MODEL / jev-latest for Jev.',
             '--ollama-url ORIGIN overrides FAST_DECISIONS_OLLAMA_URL (default http://127.0.0.1:11434).',
             '--allow-external-state / --no-allow-external-state overrides FAST_DECISIONS_ALLOW_EXTERNAL_STATE.',
@@ -295,22 +315,22 @@ def _validated(payload: Any) -> tuple[DecisionRequest, str, str | None, str]:
 
 async def select(payload: dict[str, Any], *, model: str | None = None,
                  backend: str | None = None, allow_external_state: bool | None = None,
-                 ollama_url: str | None = None, timeout_ms: int = 500,
+                 ollama_url: str | None = None, laya_url: str | None = None, timeout_ms: int = 500,
                  events_dir: str | Path | None = None, _backend: Any = None) -> Selection:
     """Score bounded caller data without reading/executing targets.
 
     Uses native token probabilities, score >= .90 and margin >= .20. Optional
     context is content in payload, never a file reference. Missing model or bad
     output produces a failed typed abstention. Cancellation propagates normally.
-    ``_backend`` is a private test seam; callers select local/ollama or jev.
+    ``_backend`` is a private test seam; callers select laya, local/ollama or jev.
     Explicit arguments override environment defaults. Consent is checked before
     constructing any external backend, including an external test seam.
     """
     session, parent, decision_id = 'portable-' + uuid4().hex, None, uuid4().hex
     try:
         request, session, parent, harness = _validated(payload)
-        backend_name = backend if backend is not None else os.getenv('FAST_DECISIONS_JUDGE', 'local')
-        if backend_name not in ('local', 'ollama', 'jev'):
+        backend_name = backend if backend is not None else os.getenv('FAST_DECISIONS_JUDGE', 'laya')
+        if backend_name not in ('local', 'ollama', 'jev', 'laya'):
             raise ValueError('Unsupported backend')
         backend_name = 'ollama' if backend_name == 'local' else backend_name
         if allow_external_state is None:
@@ -335,7 +355,13 @@ async def select(payload: dict[str, Any], *, model: str | None = None,
             raise ValueError('Invalid model name')
         scorer = _backend if _backend is not None else (
             JevBackend(model=model, timeout_ms=timeout_ms) if backend_name == 'jev' else
+            LayaBackend(url=laya_url, timeout_ms=timeout_ms) if backend_name == 'laya' else
             OllamaBackend(model=model, url=ollama_url or os.getenv('FAST_DECISIONS_OLLAMA_URL', 'http://127.0.0.1:11434'), timeout_ms=timeout_ms))
+        if getattr(scorer, 'external', False) and not allow_external_state:
+            if _backend is None:
+                await scorer.close()
+            return Selection(False, 'abstain', 'external_state_not_enabled', session, parent, decision_id,
+                             backend=backend_name, remediation='Use loopback Laya or explicitly permit external state.')
     except (ValueError, TypeError, OverflowError):
         return Selection(False, 'abstain', 'unsupported_request', session, parent, decision_id,
                          remediation='Check describe and select --help for bounded input, backend, consent and endpoint settings.')
@@ -360,6 +386,11 @@ async def select(payload: dict[str, Any], *, model: str | None = None,
             if backend_name == 'ollama':
                 if decision.model != model or decision.probability_kind != PROBABILITY_KIND:
                     raise ValueError('Unexpected local model evidence')
+            elif backend_name == 'laya':
+                if (scorer.name != 'laya' or not isinstance(decision.model, str)
+                    or not decision.model.strip() or decision.model == 'unknown'
+                    or response.model != decision.model or decision.probability_kind != 'model_reported'):
+                    raise ValueError('Unexpected Laya model evidence')
             elif (scorer.name != 'jev' or not isinstance(decision.model, str)
                   or not decision.model.strip() or decision.model == 'unknown'
                   or response.model != decision.model or decision.probability_kind != 'backend_reported'):
@@ -388,6 +419,7 @@ async def select(payload: dict[str, Any], *, model: str | None = None,
             result = Selection(False, 'abstain', 'model_unavailable_or_invalid', session, parent, decision_id,
                 backend=backend_name, duration_ms=duration,
                 remediation=('Check Jev reachability, credentials and model; no alternate backend was used.' if backend_name == 'jev' else
+                             'Start the Laya decide server and verify its health and queue latency.' if backend_name == 'laya' else
                              'Start Ollama, pull and warm the configured model; verify native token-log-probability support and input bounds.'))
         await emitter.emit('health', {**common, 'phase': 'advisory_result', 'status': result.status,
             'reason_code': result.reason_code, 'success': result.ok, 'duration_ms': duration}, decision_id=decision_id)
@@ -403,3 +435,25 @@ async def select(payload: dict[str, Any], *, model: str | None = None,
         return Selection(False, 'abstain', 'telemetry_unavailable', session, parent, decision_id,
                          duration_ms=duration, remediation='Check events storage and retry after recording is healthy.')
     return result
+
+
+async def search(payload, *, root=".", backend="laya", laya_url=None,
+                 allow_external_state=False, timeout_ms=60000):
+    from .jevgrep import JevgrepTool
+    return await JevgrepTool(root=root, backend=backend, laya_url=laya_url,
+                            allow_external_state=allow_external_state,
+                            timeout_ms=timeout_ms).search(payload)
+
+
+async def cua(payload, *, backend="laya", laya_url=None,
+              allow_external_state=False, timeout_ms=3000, min_probability=.75):
+    from .jev_cua import CuaSelector
+    if not isinstance(payload, dict) or set(payload) != {"goal", "snapshot"}:
+        raise ValueError("Expected goal and snapshot")
+    selector = CuaSelector(backend=backend, laya_url=laya_url,
+                           allow_external_state=allow_external_state,
+                           timeout_ms=timeout_ms, min_probability=min_probability)
+    try:
+        return await selector.choose(payload["goal"], payload["snapshot"])
+    finally:
+        await selector.close()

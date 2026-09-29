@@ -100,8 +100,8 @@ class OrchestratorPrimaryBehaviorOfflineTests(unittest.TestCase):
         self.assertEqual(orchestrator["module"], "loop-fast-decisions")
         config = orchestrator["config"]
         self.assertEqual(config["mode"], "active")
-        self.assertEqual(config["backend"], "jev")
-        self.assertIs(config["allow_external_state"], True)
+        self.assertEqual(config["backend"], "laya")
+        self.assertIs(config["allow_external_state"], False)
         self.assertEqual(config["model_routing"]["provider_match"], "anthropic")
         self.assertEqual(config["model_routing"]["start_policy"], "judge")
         self.assertEqual(config["model_routing"]["cheap_max_workspace_files"], 300)
@@ -133,7 +133,8 @@ class YamlSourceTests(unittest.TestCase):
         self.assertIn({'bundle': 'fast-decisions:behaviors/jevgrep'}, behavior['includes'])
         retrieval = _load_frontmatter(ROOT / 'behaviors/jevgrep.yaml')
         tool = next(t for t in retrieval['tools'] if t['module'] == 'tool-jevgrep')
-        self.assertTrue(tool['config']['allow_external_state'])
+        self.assertFalse(tool['config']['allow_external_state'])
+        self.assertEqual(tool['config']['backend'], 'laya')
 
     def test_module_sources_use_supported_form_and_resolve(self):
         checked_any = False
@@ -316,7 +317,7 @@ class BundleLoadTests(unittest.TestCase):
         self.assertIn("tool-fast-workspace", tool_modules)
         self.assertIn("tool-jevgrep", tool_modules)
         retrieval = next(t for t in mount_plan["tools"] if t["module"] == "tool-jevgrep")
-        self.assertTrue(retrieval["config"]["allow_external_state"])
+        self.assertFalse(retrieval["config"]["allow_external_state"])
         self.assertIn("hooks-fast-decisions", hook_modules)
 
     def _assert_decision_bundle(

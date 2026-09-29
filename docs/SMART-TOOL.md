@@ -1,3 +1,9 @@
+> Current default: local Laya. `select`, `search`, and `cua` are callable from
+> Codex, Claude Code, Amplifier and OpenCode. See the
+> [live checks and limitations](evidence/2026-09-29-laya/VERIFICATION.md).
+> `search` is bounded local relevance scoring, not upstream Jevgrep on Laya.
+> `cua` is proposal-only; host observation, approval and execution are still required.
+
 # Portable Fast Decisions Smart Tool
 
 The portable surface is a Python library plus CLI that any coding-agent
@@ -29,7 +35,7 @@ After this revision is published, the equivalent git installation is:
 uv tool install 'amplifier-fast-decisions[local] @ git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main'
 ```
 
-The installer supports `--host codex`, `claude`, `amplifier`, or `all`. It writes
+The installer supports `--host codex`, `claude`, `amplifier`, `opencode`, or `all`. It writes
 the minimal skill to `~/.agents/skills`, `~/.claude/skills`, or
 `~/.amplifier/skills` respectively, beneath `amplifier-fast-decisions/`.
 All destinations are checked before writing; changed existing skills cause a
@@ -84,7 +90,7 @@ Forge terminal polling) are in the harness-smoke evidence directory.
 ## A bounded call
 
 The public `select` interface supports `--backend local` (alias `ollama`) and
-`--backend jev`. The default comes from `FAST_DECISIONS_JUDGE`, otherwise local.
+`--backend jev`. The default comes from `FAST_DECISIONS_JUDGE`, otherwise Laya.
 Jev requires `--allow-external-state` or `FAST_DECISIONS_ALLOW_EXTERNAL_STATE=true`
 and `TYPESAFE_API_KEY` in the environment. Explicit flags override environment
 defaults; `--no-allow-external-state` denies an external call even when the

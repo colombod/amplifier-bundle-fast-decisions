@@ -2,15 +2,12 @@
 
 ## Three different data paths
 
-**Orchestrator default (`behaviors/fast-decisions.yaml`).** The turn-start difficulty router ships with
-`backend: jev` and `allow_external_state: true`: when `TYPESAFE_API_KEY` is set, each top-level and
-delegated turn sends one typed question with the first 2,500 characters of the turn's user request to the
-Jev endpoint. Without the key, or on any Jev error or timeout, the turn falls back to the local length rule
-and nothing is sent. In workspaces over `cheap_max_workspace_files` the turn starts on the host model
-without asking. To keep everything local, set `backend: none` (or a local Ollama judge) with
-`allow_external_state: false` in `overrides.loop-fast-decisions.config`. `afast rubric` sends the input
-and output text you give it to the same endpoint. The observer-only behavior
-(`behaviors/fast-decisions-shadow.yaml`) keeps the external path off, as described below.
+**Orchestrator default (`behaviors/fast-decisions.yaml`).** The turn-start judge uses
+`backend: laya` and `allow_external_state: false`. The local server receives bounded
+state on loopback port 8090. A remote Laya URL requires explicit external-state consent.
+Routing retains the local rule fallback on judge failure; the portable smart tool
+reports an unavailable result. Large-workspace and native approval gates are unchanged.
+Jev routing and `afast rubric` remain explicitly configured external paths.
 
 1. **TypeSafe:** external requests are disabled by default. Opt-in sends the bounded current task snapshot, prepared candidate descriptions, and any contributed judgment questions (`fast_decisions.questions`) -- all batched into a single request. The state projection excludes system/developer messages, private thinking blocks, images and executable argument objects. Public user/tool/assistant text can contain confidential information. Labels, rationales and question instructions can also contain sensitive details. This applies identically to shadow measurement running in `hooks-fast-decisions`: with `allow_external_state: false` (the shipped default) no TypeSafe/Jev client is ever constructed for shadow scoring; the snapshot it reads comes from the mounted context manager, bounded by `shadow_max_messages` and `max_state_chars`, same bounds and same opt-in gate as the active path. The shadow-only model-role router (`role_router`, on by default in `behaviors/fast-decisions.yaml`) sends no additional state to TypeSafe -- it reads the `model_role_resolver` capability locally to enumerate live roles and never contacts an external backend itself.
 2. **Local observatory:** stores allowlisted metadata, probability distributions, model/tool names, hashes, IDs and timing. It excludes raw prompts, arguments, tool outputs, exception messages and private reasoning. Metadata can still be sensitive. Review it before exporting.
@@ -22,16 +19,11 @@ Scrubbing masks common key, bearer, secret-assignment and private-key patterns. 
 
 ## Actions and authority
 
-**Default Jevgrep retrieval:** the main behavior includes `behaviors/jevgrep.yaml`
-with `tool-jevgrep.allow_external_state: true`. Searches send eligible source
-under the configured workspace root to the provider saved by `jg auth`, or to
-TypeSafe using `TYPESAFE_API_KEY` if no saved provider exists. Set the tool setting
-to false to disable source sharing. Environment credentials use an owner-only
-temporary CLI configuration deleted after execution; saved credentials are unchanged. The router's external-state setting does not enable source retrieval.
-The wrapper disables retrieval caching, retains default source exclusions,
-bounds output and stops child processes on timeout/cancellation. Retrieved source
-is a normal host tool result and may appear in host transcripts. Returned-source
-limits do not cap upload bytes or provider charges. See [Jevgrep](JEVGREP.md).
+**Default source retrieval:** the `jevgrep` tool uses local Laya relevance scoring.
+Eligible source stays on loopback. The optional `backend: jev` implementation invokes
+upstream Jevgrep and requires `allow_external_state: true`; it sends source to its saved
+provider or TypeSafe using the inherited key. Neither backend changes ignore/exclusion
+rules in response to retrieved instructions.
 
 **Optional AnyJev judge:** `backend: anyjev` sends bounded, scrubbed state and
 typed questions only to its literal loopback server. That server loads an

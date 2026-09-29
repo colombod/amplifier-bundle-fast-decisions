@@ -15,7 +15,7 @@ import time
 from uuid import uuid4
 
 from .backends import JevBackend
-from .contracts import Candidate, Decision, DecisionRequest, Question
+from .contracts import Candidate, Decision, DecisionRequest, Question, canonical
 
 OPS = {"CLICK", "TYPE_TEXT", "SELECT"}
 
@@ -126,6 +126,7 @@ class CuaSelector:
         self,
         *,
         backend=None,
+        laya_url=None,
         allow_external_state=False,
         timeout_ms=3000,
         min_probability=0.75,
@@ -138,7 +139,16 @@ class CuaSelector:
             raise ValueError("Invalid CUA consent or timeout")
         if type(min_probability) not in (int, float) or not 0 <= min_probability <= 1:
             raise ValueError("Invalid CUA probability gate")
-        self.backend = backend or JevBackend(model="jev-1.13.0", timeout_ms=timeout_ms)
+        from .local_backend import LayaBackend
+
+        if backend is None or backend == "laya":
+            backend = LayaBackend(url=laya_url, timeout_ms=timeout_ms)
+        elif backend == "jev":
+            backend = JevBackend(model="jev-1.13.0", timeout_ms=timeout_ms)
+        elif isinstance(backend, str):
+            raise ValueError("CUA backend must be laya or jev")
+        self.backend = backend
+        self.backend_name = getattr(backend, "name", "jev")
         self.allow_external_state = allow_external_state
         self.timeout_ms = timeout_ms
         self.min_probability = min_probability
@@ -155,8 +165,9 @@ class CuaSelector:
             "surface_id": observed["surface_id"],
             "expires_at": time.time() + 15,
             "judge_calls": 0,
+            "backend": self.backend_name,
         }
-        if not self.allow_external_state:
+        if getattr(self.backend, "external", True) and not self.allow_external_state:
             return {**receipt, "reason": "external_state_not_enabled"}
         groups = heads(observed)
         operations = {
@@ -202,10 +213,29 @@ class CuaSelector:
             candidates=candidates,
             questions=tuple(questions),
         )
+        if self.backend_name == "laya":
+            if len(canonical(request.state)) > 3000:
+                return {**receipt, "reason": "narrow_laya_snapshot"}
+            # Laya's prepared-action API deliberately rejects arbitrary CUA actions.
+            # Ask operation and targets as native typed questions in ONE prediction.
+            request = DecisionRequest(
+                state=request.state, candidates=(),
+                questions=(Question("cua_operation", "choice", rules, operations), *questions),
+            )
         started = time.perf_counter()
         try:
             async with asyncio.timeout(self.timeout_ms / 1000):
                 result = await self.backend.ask_many(request)
+            if self.backend_name == "laya":
+                from dataclasses import replace
+
+                if result.synthetic or result.action.synthetic:
+                    raise ValueError("Unexpected synthetic judge")
+                probabilities = result.answers["cua_operation"].probabilities
+                result = replace(result, action=Decision(
+                    max(probabilities, key=probabilities.get), probabilities,
+                    model=result.model, probability_kind="model_reported",
+                ))
             receipt.update(
                 judge_calls=1,
                 model=result.model,
@@ -223,7 +253,9 @@ class CuaSelector:
             if (
                 result.synthetic
                 or result.action.synthetic
-                or result.model != "jev-1.13.0"
+                or not isinstance(result.model, str) or not result.model.strip()
+                or result.model == "unknown"
+                or (self.backend_name == "jev" and result.model != "jev-1.13.0")
             ):
                 raise ValueError("Unexpected judge provenance")
             result.action.validate(set(operations))
@@ -356,6 +388,7 @@ def metadata(receipt):
         "usage_unknown",
         "error_type",
         "executed_by",
+        "backend",
     }
     return {key: value for key, value in receipt.items() if key in keys}
 
@@ -363,7 +396,7 @@ def metadata(receipt):
 class JevCuaTool:
     name = "jev_cua"
     description = (
-        "Choose the next computer-use operation and observed target in one Jev request. "
+        "Choose the next computer-use operation and observed target with the configured judge (Laya by default). "
         "Supply a sanitized, scoped UI snapshot. Returns a proposal only; host computer tools "
         "must revalidate targets, preserve approvals, and verify DONE. No screenshots or guessed coordinates."
     )
@@ -407,7 +440,7 @@ async def mount(coordinator, config):
     from pathlib import Path
     import os
 
-    if set(config) - {"allow_external_state", "timeout_ms", "min_probability"}:
+    if set(config) - {"backend", "laya_url", "allow_external_state", "timeout_ms", "min_probability"}:
         raise ValueError("Unknown Jev-CUA configuration")
     tool = JevCuaTool(**config)
     session, parent = session_identity(coordinator)
@@ -425,7 +458,7 @@ async def mount(coordinator, config):
             "cua_decided",
             {
                 "event_source": "jev-cua",
-                "backend": "jev",
+                "backend": receipt["backend"],
                 "mode": "advisory",
                 "status": receipt["status"],
                 "state_hash": receipt["snapshot_hash"],
