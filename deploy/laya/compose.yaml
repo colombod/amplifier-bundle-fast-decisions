@@ -5,6 +5,8 @@ services:
       dockerfile: deploy/laya/Dockerfile
     ports:
       - "127.0.0.1:8090:8090"
+    environment:
+      LAYA_CLIENTS_FILE: /run/laya/clients.json
     volumes:
       - "${LAYA_AUTH_DIR:?Set a directory containing clients.json}:/run/laya:ro"
       - "laya-weights:/workspace/huggingface"

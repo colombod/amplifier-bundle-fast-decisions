@@ -7,8 +7,9 @@ from pathlib import Path
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 
-from amplifier_fast_decisions.laya_hosted import create_app, validate
+from amplifier_fast_decisions.laya_hosted import create_app, read_clients, validate
 
 READY = importlib.util.find_spec('fastapi') and importlib.util.find_spec('httpx')
 PAYLOAD = {'state': 'public fixture', 'questions': {'relevant': {'type': 'noul', 'instructions': 'Relevant?'}}}
@@ -162,6 +163,13 @@ class HostedTests(unittest.IsolatedAsyncioTestCase):
 
 
 class BoundsTests(unittest.TestCase):
+    def test_runpod_hash_environment_and_explicit_file_precedence(self):
+        clients = {'alice': hashlib.sha256(b'alice').hexdigest()}
+        with patch.dict('os.environ', {'LAYA_CLIENT_HASHES_JSON': json.dumps(clients)}):
+            self.assertEqual(read_clients(None), clients)
+            with self.assertRaises(FileNotFoundError):
+                read_clients('/nonexistent/no-keys')
+
     def test_question_bounds(self):
         for questions in [{}, {'q': {'type':'choice','instructions':'Pick','criteria':{'one':'Only'}}},
                           {'q':{'type':'noul','instructions':'x'*513}},

@@ -17,9 +17,16 @@ Hosted access does not establish decision quality or savings; see the
 - Build `deploy/laya/Dockerfile` for Linux amd64 and deploy an immutable image
   digest. The Dockerfile pins the upstream Laya SDK commit, Torch version and
   model checkpoint revision. CUDA inference must actually stay on CUDA.
-- Mount the hash-store directory at `/run/laya` read-only and a writable model
+- Mount the hash-store directory at `/run/laya` read-only, set
+  `LAYA_CLIENTS_FILE=/run/laya/clients.json`, and mount a writable model
   cache at `/workspace/huggingface`. Container UID/GID is 10001; ensure both mounts
   have appropriate ownership. Do not mount plaintext client keys into the pod.
+- For RunPod without a file-provisioning channel, set `LAYA_CLIENT_HASHES_JSON` to
+  the contents of the hash store and omit `LAYA_CLIENTS_FILE`. This contains
+  hashes only, never plaintext keys. Rotating this environment-based configuration
+  requires replacing the pod environment and restarting; file-based revocation
+  takes effect on the next request. An explicit file setting always takes precedence
+  and a missing file never falls back to older environment hashes.
 - Run **one process / one worker**. Inference is serialized, with four in-flight
   requests including queued work. Multiple processes duplicate weights and limits.
 - Defaults: 600 requests/minute per client, 64 KiB body, 3,000 state characters,

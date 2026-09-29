@@ -23,7 +23,8 @@ MAX_BODY = 65536
 
 def read_clients(path):
     """Reload on each request so atomic replacement revokes keys immediately."""
-    clients = json.loads(Path(path).read_text())
+    raw = Path(path).read_text() if path else os.environ.get("LAYA_CLIENT_HASHES_JSON", "")
+    clients = json.loads(raw)
     if not isinstance(clients, dict) or not 1 <= len(clients) <= 1000:
         raise ValueError("Expected 1..1000 named client token hashes")
     for name, digest in clients.items():
@@ -85,8 +86,8 @@ def create_app(*, clients_file=None, device="cuda", revision=REVISION,
     from fastapi.responses import JSONResponse
 
     clients_file = clients_file or os.environ.get("LAYA_CLIENTS_FILE")
-    if not clients_file:
-        raise ValueError("LAYA_CLIENTS_FILE is required; anonymous serving is disabled")
+    if not clients_file and not os.environ.get("LAYA_CLIENT_HASHES_JSON"):
+        raise ValueError("Client token hashes are required; anonymous serving is disabled")
     read_clients(clients_file)  # Fail before loading weights or listening.
     if device not in {"cuda", "cpu"} or not re.fullmatch(r"[a-f0-9]{40}", revision):
         raise ValueError("Require cpu/cuda and an exact checkpoint commit")
