@@ -2265,6 +2265,21 @@ class ObservedTool:
         # into the same (path, revision) identity space as candidates.
         self._workspace = workspace
 
+    def __new__(cls, tool: Any, *args, **kwargs):
+        # loop-streaming builds each tool's model-facing spec with
+        # getattr(type(tool), "native_tool_spec", None) -- a TYPE-level read,
+        # which __getattr__ (instance-level, below) never answers. A
+        # model-native tool (computer use, native web search) declares that
+        # attribute on its class so the provider sends it in its native shape;
+        # wrapping it in a plain ObservedTool made it invisible and the tool
+        # was silently downgraded to an ordinary function tool. Observe it
+        # through a subclass that exposes a delegating property at class level, so
+        # we keep both the observation and the native shape. Tools without a
+        # native spec are wrapped exactly as before.
+        if cls is ObservedTool:
+            cls = _observed_class_for(tool)
+        return super().__new__(cls)
+
     def __getattr__(self, name):
         return getattr(self._tool, name)
 
@@ -2488,6 +2503,33 @@ class ObservedTool:
         for data in guard.take_receipts():
             await service.emit("efficiency", data, decision_id)
         return _with_note(result, poll_note(polls, waited, changed))
+
+
+# One ObservedTool subclass per wrapped tool class, built on first sight and
+# reused after: the class attribute is what a type-level getattr can see.
+_OBSERVED_NATIVE_CLASSES: dict[type, type] = {}
+
+
+def _observed_class_for(tool: Any) -> type:
+    """The ObservedTool class to wrap ``tool`` in.
+
+    Plain ObservedTool for an ordinary function tool. For a model-native tool
+    -- one whose CLASS declares ``native_tool_spec`` -- a cached subclass
+    exposing a delegating property, so ``getattr(type(wrapped),
+    "native_tool_spec", None)`` still detects native support. Read the value
+    on the original tool so descriptors retain their original receiver and
+    per-instance overrides and live configuration changes remain visible.
+    See ObservedTool.__new__.
+    """
+    spec_source = getattr(type(tool), "native_tool_spec", None)
+    if spec_source is None:
+        return ObservedTool
+    cached = _OBSERVED_NATIVE_CLASSES.get(type(tool))
+    if cached is None:
+        cached = type(f"Observed{type(tool).__name__}", (ObservedTool,),
+                      {"native_tool_spec": property(lambda self: self._tool.native_tool_spec)})
+        _OBSERVED_NATIVE_CLASSES[type(tool)] = cached
+    return cached
 
 
 def _import_upstream_loop(cache_root: "Path | None" = None):
