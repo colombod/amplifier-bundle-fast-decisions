@@ -19,7 +19,7 @@ from typing import Any
 from uuid import uuid4
 
 from .contracts import Candidate, DecisionRequest, SLOW
-from .backends import JevBackend
+from .backends import DEFAULT_JEV_MODEL, JevBackend
 from .local_backend import LayaBackend, OllamaBackend, PROBABILITY_KIND
 from .privacy import scrub
 from .telemetry import Emitter, JsonlRecorder
@@ -34,7 +34,7 @@ CAPABILITIES = {
     'measure': ('deterministic', 'Count observed provider and tool executions across a session tree.'),
     'compare': ('deterministic', 'Compare matched baseline/enabled runs with explicit outcome checks.'),
     'select': ('model-backed', 'Suggest one caller-supplied read/list target, or abstain.'),
-    'search': ('model-backed', 'Retrieve bounded source windows using local Laya (or opt-in upstream Jevgrep).'),
+    'search': ('model-backed', 'Retrieve bounded source windows using upstream Jevgrep (Laya is experimental).'),
     'cua': ('model-backed', 'Propose an action on observed UI controls; the host owns all execution.'),
 }
 
@@ -205,7 +205,7 @@ def skill(capability: str | None = None) -> str:
         ]
     elif capability in {'search', 'cua'}:
         lines += [CAPABILITIES[capability][1],
-            '--input FILE (or - for stdin) supplies JSON. --backend laya|jev defaults to laya.',
+            '--input FILE (or - for stdin) supplies JSON. --backend laya|jev defaults to jev.',
             '--laya-url URL optionally overrides the Laya endpoint; loopback is the default.',
             '--allow-external-state is required for remote judges and upstream Jevgrep.',
             'search: input {"query":"where is retry logic?","path":"."}; --root DIRECTORY bounds reads.',
@@ -225,9 +225,9 @@ def skill(capability: str | None = None) -> str:
             'Model-backed advisory selection. Use only for an already bounded read/list choice.',
             'Arguments: --input FILE reads a UTF-8 JSON object; --input - reads stdin.',
             'Without --input, stdin must be piped; an interactive terminal fails without prompting.',
-            '--backend laya|local|ollama|jev overrides FAST_DECISIONS_JUDGE (default laya).',
+            '--backend laya|local|ollama|jev overrides FAST_DECISIONS_JUDGE (default jev).',
             '--laya-url URL overrides FAST_DECISIONS_LAYA_URL (default http://127.0.0.1:8090).',
-            '--model NAME defaults to qwen3:0.6b locally, or TYPESAFE_DEFAULT_MODEL / jev-latest for Jev.',
+            '--model NAME defaults to qwen3:0.6b locally, or TYPESAFE_DEFAULT_MODEL / jev-1.13.0 for Jev.',
             '--ollama-url ORIGIN overrides FAST_DECISIONS_OLLAMA_URL (default http://127.0.0.1:11434).',
             '--allow-external-state / --no-allow-external-state overrides FAST_DECISIONS_ALLOW_EXTERNAL_STATE.',
             'Jev requires explicit external-state consent and TYPESAFE_API_KEY in the environment.',
@@ -329,7 +329,7 @@ async def select(payload: dict[str, Any], *, model: str | None = None,
     session, parent, decision_id = 'portable-' + uuid4().hex, None, uuid4().hex
     try:
         request, session, parent, harness = _validated(payload)
-        backend_name = backend if backend is not None else os.getenv('FAST_DECISIONS_JUDGE', 'laya')
+        backend_name = backend if backend is not None else os.getenv('FAST_DECISIONS_JUDGE', 'jev')
         if backend_name not in ('local', 'ollama', 'jev', 'laya'):
             raise ValueError('Unsupported backend')
         backend_name = 'ollama' if backend_name == 'local' else backend_name
@@ -348,7 +348,7 @@ async def select(payload: dict[str, Any], *, model: str | None = None,
             return Selection(False, 'abstain', 'missing_api_key', session, parent, decision_id,
                              backend=backend_name, remediation='Set TYPESAFE_API_KEY in the process environment.')
         if model is None:
-            model = (os.getenv('TYPESAFE_DEFAULT_MODEL') or 'jev-latest') if backend_name == 'jev' else (os.getenv('FAST_DECISIONS_LOCAL_MODEL') or 'qwen3:0.6b')
+            model = (os.getenv('TYPESAFE_DEFAULT_MODEL') or DEFAULT_JEV_MODEL) if backend_name == 'jev' else (os.getenv('FAST_DECISIONS_LOCAL_MODEL') or 'qwen3:0.6b')
         if isinstance(timeout_ms, bool) or not isinstance(timeout_ms, int) or not 10 <= timeout_ms <= 500:
             raise ValueError('Deadline must be 10–500 ms')
         if not isinstance(model, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}', model):
@@ -437,7 +437,7 @@ async def select(payload: dict[str, Any], *, model: str | None = None,
     return result
 
 
-async def search(payload, *, root=".", backend="laya", laya_url=None,
+async def search(payload, *, root=".", backend="jev", laya_url=None,
                  allow_external_state=False, timeout_ms=60000):
     from .jevgrep import JevgrepTool
     return await JevgrepTool(root=root, backend=backend, laya_url=laya_url,
@@ -445,7 +445,7 @@ async def search(payload, *, root=".", backend="laya", laya_url=None,
                             timeout_ms=timeout_ms).search(payload)
 
 
-async def cua(payload, *, backend="laya", laya_url=None,
+async def cua(payload, *, backend="jev", laya_url=None,
               allow_external_state=False, timeout_ms=3000, min_probability=.75):
     from .jev_cua import CuaSelector
     if not isinstance(payload, dict) or set(payload) != {"goal", "snapshot"}:

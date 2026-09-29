@@ -1,0 +1,30 @@
+{
+  "exit": 0,
+  "result": {
+    "id": "5685486afba447a7860ac7fd4dd824b9",
+    "status": "proposal",
+    "executes_actions": false,
+    "snapshot_hash": "957a4c78def028e2977f67e4403dfe0d7d84b44870ef5fb487937451a06e5ee7",
+    "surface_id": "public-fixture",
+    "expires_at": 1790696887.312573,
+    "judge_calls": 1,
+    "backend": "jev",
+    "model": "jev-1.13.0",
+    "input_tokens": 804,
+    "output_tokens": 82,
+    "operation": "CLICK",
+    "operation_probability": 1.0,
+    "operation_probabilities": {
+      "WAIT": 0.0,
+      "DONE": 0.0,
+      "reason": 0.0,
+      "CLICK": 1.0
+    },
+    "target_probability": 1.0,
+    "action": {
+      "operation": "CLICK",
+      "target": "weekly"
+    },
+    "duration_ms": 194.294
+  }
+}

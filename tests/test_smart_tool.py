@@ -65,9 +65,9 @@ def request():
 class SmartToolTests(unittest.IsolatedAsyncioTestCase):
     async def test_jev_consent_and_key_checked_before_construction(self):
         with patch.dict(os.environ, {}, clear=True), patch('amplifier_fast_decisions.smart_tool.JevBackend') as factory:
-            result = await select(request(), backend='jev')
+            result = await select(request())
             self.assertEqual(result.reason_code, 'external_state_not_enabled')
-            result = await select(request(), backend='jev', allow_external_state=True)
+            result = await select(request(), allow_external_state=True)
             self.assertEqual(result.reason_code, 'missing_api_key')
             factory.assert_not_called()
         with patch.dict(os.environ, {'FAST_DECISIONS_ALLOW_EXTERNAL_STATE': 'true', 'TYPESAFE_API_KEY': 'TEST_KEY'}):
@@ -80,8 +80,8 @@ class SmartToolTests(unittest.IsolatedAsyncioTestCase):
         scorer = FakeJevBackend()
         with tempfile.TemporaryDirectory() as events, patch.dict(os.environ, {'TYPESAFE_API_KEY': 'TEST_KEY'}):
             with patch('amplifier_fast_decisions.smart_tool.JevBackend', return_value=scorer) as factory:
-                result = await select(request(), backend='jev', allow_external_state=True, events_dir=events)
-            factory.assert_called_once_with(model='jev-latest', timeout_ms=500)
+                result = await select(request(), allow_external_state=True, events_dir=events)
+            factory.assert_called_once_with(model='jev-1.13.0', timeout_ms=500)
             self.assertTrue(result.ok)
             self.assertEqual(result.backend, 'jev')
             self.assertEqual(result.model, 'jev-1.13.0')

@@ -34,12 +34,12 @@ session:
       # turn -- simple: cheap start model at one effort; complex: the host
       # model at provider-default effort, exactly plain Amplifier. No
       # mid-turn switches, so the prompt cache is never re-written.
-      # Local Laya is the default judge. Start laya_server on loopback:8090.
+      # Jev is the default judge after the local/hosted Laya quality screen.
       # Missing/uncertain/failed decisions retain the normal routing fallback;
       # native approvals and confidence gates remain unchanged. AnyJev is opt-in
       # only and is not selected by this behavior.
-      backend: laya
-      allow_external_state: false
+      backend: jev
+      allow_external_state: true
       # The judged read shortcut stays off: it rarely fired in the studies and
       # would put a scoring call in front of every slow request.
       read_shortcut: false

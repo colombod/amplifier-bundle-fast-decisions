@@ -1,14 +1,14 @@
 bundle:
   name: fast-decisions-jev-cua
   version: 0.1.0
-  description: Opt-in observed-control computer-use selection through local Laya.
+  description: Opt-in observed-control computer-use selection through Jev; host execution remains separate.
 
 tools:
   - module: tool-jev-cua
     source: git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=modules/tool-jev-cua
     config:
-      backend: laya
-      allow_external_state: false
+      backend: jev
+      allow_external_state: true
       timeout_ms: 3000
       min_probability: 0.75
 

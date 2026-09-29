@@ -34,7 +34,7 @@ def main(argv=None) -> int:
             command.add_argument('--input', required=True, metavar='FILE')
         if name in {'search', 'cua'}:
             command.add_argument('--input', default='-', metavar='FILE')
-            command.add_argument('--backend', choices=['laya', 'jev'], default='laya')
+            command.add_argument('--backend', choices=['laya', 'jev'], default='jev')
             command.add_argument('--laya-url')
             command.add_argument('--allow-external-state', action='store_true')
             command.add_argument('--timeout-ms', type=int, default=60000 if name == 'search' else 3000)

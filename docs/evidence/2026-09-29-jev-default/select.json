@@ -1,0 +1,26 @@
+{
+  "exit": 0,
+  "result": {
+    "backend": "jev",
+    "choice": "readme",
+    "confidence_kind": "chosen_option_probability",
+    "decision_id": "953046336efb47c08fea2ff09552cde1",
+    "duration_ms": 253.22983297519386,
+    "effect": "advisory_only",
+    "input_tokens": 397,
+    "model": "jev-1.13.0",
+    "ok": true,
+    "option_set_hash": "6ffd9a4a77832df688287e12b3f165a8f734e27794b2fa3cd945f381597900d1",
+    "output_tokens": 34,
+    "parent_session_id": null,
+    "probabilities": {
+      "readme": 0.99,
+      "reason": 0.01
+    },
+    "probability_kind": "backend_reported",
+    "reason_code": "advisory_selected",
+    "remediation": null,
+    "session_id": "portable-9096780c77504b5b868dba375939b652",
+    "status": "selected"
+  }
+}

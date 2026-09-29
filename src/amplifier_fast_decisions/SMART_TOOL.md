@@ -3,7 +3,7 @@
   "smart_tool_format": 1,
   "name": "amplifier-fast-decisions",
   "version": "0.1.0",
-  "description": "Use local Laya for bounded read/list decisions, source relevance search, and proposals on observed UI controls. The host keeps execution and approval authority; uncertain decisions abstain.",
+  "description": "Use Jev for bounded read/list decisions, source relevance search, and proposals on observed UI controls. The host keeps execution and approval authority; uncertain decisions abstain.",
   "use_cases": [
     "Choose among caller-validated workspace read targets",
     "Measure a local decision scorer independently of an agent harness",
@@ -18,16 +18,16 @@
   ],
   "requires": [
     {
-      "name": "Laya decide server",
-      "purpose": "Default local judge for select, search and cua. Deterministic capabilities work without it.",
+      "name": "TypeSafe Jev",
+      "purpose": "Default remote judge; TYPESAFE_API_KEY and external-state consent required. Search also requires jg.",
       "optional": true,
       "install": "https://github.com/michaeljabbour/amplifier-bundle-fast-decisions/blob/main/docs/MODEL-SETUP.md"
     },
     {
-      "name": "ripgrep",
-      "purpose": "Enumerates eligible source files for local search.",
+      "name": "Jevgrep 0.4.0 (jg)",
+      "purpose": "Default bounded source retrieval; experimental Laya retrieval separately requires ripgrep.",
       "optional": true,
-      "install": "https://github.com/BurntSushi/ripgrep"
+      "install": "https://github.com/dzhng/jevgrep"
     }
   ]
 }
@@ -51,7 +51,7 @@ Install the local dependency with the tool:
 
 ```bash
 uv tool install 'amplifier-fast-decisions[local] @ git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main'
-# Start the Laya server separately on http://127.0.0.1:8090.
+# Set TYPESAFE_API_KEY privately in the harness environment.
 amplifier-fast-decisions manifest
 amplifier-fast-decisions install-skill --host all
 amplifier-fast-decisions select --help
@@ -60,7 +60,7 @@ amplifier-fast-decisions select --help
 During development use `uv tool install --editable '.[local]'` from this checkout.
 `install-skill --host codex|claude|amplifier|opencode|all` adds a minimal discovery skill
 to the selected user catalogs, with no overwrite of modified existing files.
-Start Laya separately and warm it before latency-sensitive calls. The optional
+Laya is experimental and requires explicit --backend laya and a separately started server. The optional
 Ollama backend requires native token log probabilities. Loopback calls need no API key;
 remote Laya requires HTTPS and explicit external-state consent. A missing model is an explicit
 failure, never a scripted substitute. No web server starts as a side effect.
@@ -79,12 +79,12 @@ amplifier-fast-decisions select --backend jev --allow-external-state --input req
 ```
 
 `--backend` overrides `FAST_DECISIONS_JUDGE` (`laya`, `local`/`ollama` or `jev`; default
-laya). `--allow-external-state` and `--no-allow-external-state` override
+jev). `--allow-external-state` and `--no-allow-external-state` override
 `FAST_DECISIONS_ALLOW_EXTERNAL_STATE` (default false). Jev sends the bounded task,
 context and candidate descriptions to TypeSafe; without consent no external
 backend is constructed. The key is used only by the backend's authorization
 header. `--model` defaults to `qwen3:0.6b` locally, or `TYPESAFE_DEFAULT_MODEL` /
-`jev-latest` for Jev. Actual returned model identity is preserved, including when
+`jev-1.13.0` for Jev. Actual returned model identity is preserved, including when
 the requested name is an alias. Backend failures never switch to another model.
 
 ## Calling from any harness
@@ -96,7 +96,7 @@ Ask for `describe` to obtain the full input contract. For example, `request.json
 ```
 
 ```bash
-amplifier-fast-decisions select --input request.json
+amplifier-fast-decisions select --allow-external-state --input request.json
 ```
 
 `select` returns JSON with `status: selected` and an offered `choice`, or
@@ -111,7 +111,7 @@ For library composition, pass data directly:
 from amplifier_fast_decisions.smart_tool import select
 result = await select({"task": "Read README.md", "candidates": [
     {"id": "readme", "operation": "read", "path": "README.md"}
-]})
+]}, allow_external_state=True)
 ```
 
 Optional `context` is a bounded string containing caller-provided material.
@@ -120,7 +120,7 @@ file permission, or symlink claim is established by this advisory tool.
 
 ## Evidence and limits
 
-The default judge is Laya at loopback port 8090. Selection uses a 500 ms scoring deadline,
+The default judge is Jev 1.13.0 with explicit external-state consent. Selection uses a 500 ms scoring deadline,
 score threshold 0.90 and margin 0.20. Results preserve each backend's
 `probability_kind` and `confidence_kind`; the numbers are not calibrated
 correctness probabilities or necessarily comparable statistics across backends.
@@ -158,12 +158,13 @@ its results establish. A successful command exit alone does not prove improvemen
 
 ## Local retrieval and computer-use decisions
 
-`search --input query.json --root PUBLIC_WORKSPACE` uses local Laya relevance
-scoring over bounded source windows. This is distinct from upstream Jevgrep, which
-requires `--backend jev --allow-external-state`. Ignore rules, source/output limits,
-hidden/sensitive-path exclusions and containment checks apply. It requires `rg`.
+`search --allow-external-state --input query.json --root PUBLIC_WORKSPACE` uses
+upstream Jevgrep (`jg`) with bounded source sharing. Ignore rules, source/output
+limits, hidden/sensitive-path exclusions and containment checks apply. Install
+`jg` as described in docs/JEVGREP.md. Experimental `--backend laya` uses a
+separate local relevance implementation and requires `rg`.
 
-`cua --input ui.json` batches operation and target selection through local Laya.
+`cua --allow-external-state --input ui.json` batches operation and target selection through Jev.
 It returns a proposal or a reason to hand back to the host; it never clicks, types,
 or verifies completion itself. Fresh state and native approvals remain mandatory.
 Use `search --help` and `cua --help` for exact inputs and bounds.
