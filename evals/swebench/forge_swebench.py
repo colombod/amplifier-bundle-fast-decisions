@@ -48,6 +48,7 @@ import threading
 import time
 from types import SimpleNamespace
 import yaml
+import budget_accounting
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT/'scripts'))
@@ -524,6 +525,27 @@ def cmd_agent(args):
     _dump(run_dir/'result.json', result)
 
 
+def _launch_worker(forge, command, run_dir):
+    """Heal one proven pre-spawn failure; never replay an ambiguous/live worker."""
+    for attempt in range(2):
+        try:
+            obs = forge.call('run_command', {'command': '/bin/zsh', 'args': ['-lc', command],
+                'cwd': str(run_dir/'workspace'), 'timeoutMs': 60000})
+        except SystemExit as exc:
+            text = str(exc).removeprefix('forge: ')
+            try: obs = json.loads(text)
+            except ValueError: obs = {'launch_error': text[:500]}
+        if (attempt == 0 and isinstance(obs, dict) and set(obs) == {'launch_error'}
+                and obs['launch_error'] == 'Error: posix_spawnp failed.'
+                and not any((run_dir/p).exists() for p in
+                            ('amplifier-output.json','amplifier-stderr.txt','result.json','events'))):
+            _dump(run_dir/'pre-spawn-repair.json', {'at':_now(),'observation':obs,
+                'reason':'No worker spawned; one bounded Forge doctor repair', 'retry_limit':1})
+            if forge_e2e.forge_self_heal({'forge_py':str(forge_e2e.FORGE)}):
+                continue
+        return obs
+
+
 def _run_one(root, manifest, name, forge):
     run_dir = root/'runs'/name
     for filename, key in [('profile.md', 'profile_sha256'), ('prompt.txt', 'prompt_sha256')]:
@@ -552,15 +574,7 @@ def _run_one(root, manifest, name, forge):
     cmd = 'set -a; . ~/.amplifier/keys.env 2>/dev/null; set +a; ' + cmd
     with _launch_lock:  # same spacing discipline as forge_e2e launches
         forge_e2e._wait_for_launch_spacing(time.sleep, time.monotonic)
-    try:
-        obs = forge.call('run_command', {'command': '/bin/zsh', 'args': ['-lc', cmd],
-                                         'cwd': str(run_dir/'workspace'), 'timeoutMs': 60000})
-    except SystemExit as exc:  # the ~60 s observation deadline: the worker keeps running
-        text = str(exc).removeprefix('forge: ')
-        try:
-            obs = json.loads(text)
-        except ValueError:
-            obs = {'launch_error': text[:500]}
+    obs = _launch_worker(forge, cmd, run_dir)
     _dump(run_dir/'forge-observation.json', {k: v for k, v in (obs or {}).items() if k != 'output'})
     deadline = time.monotonic() + manifest['deadline_seconds'] + 180
     while not (run_dir/'result.json').exists() and time.monotonic() < deadline:
@@ -615,6 +629,9 @@ def cmd_run(args):
 
 def _run_campaign(args, root):
     manifest = json.loads((root/'manifest.json').read_text())
+    for filename, expected in manifest.get('harness_file_sha256', {}).items():
+        if Path(filename).name != filename or hashlib.sha256(Path(__file__).with_name(filename).read_bytes()).hexdigest() != expected:
+            raise SystemExit('Frozen accounting harness changed')
     sys.path.insert(0, str(forge_e2e.FORGE.parent))
     import forge  # type: ignore  # the Forge skill's stdlib helper (same one battery.py loads)
     forge_e2e.forge_self_heal({'forge_py': str(forge_e2e.FORGE)})
@@ -633,32 +650,40 @@ def _run_campaign(args, root):
             raise SystemExit('Budgeted runs require a positive finite cap and --parallel 1')
         for index, name in enumerate(pending):
             settled = [json.loads(p.read_text()) for p in (root/'runs').glob('*/result.json')]
-            if any(r.get('cost_usd') is None for r in settled):
-                raise SystemExit('Unknown prior cost; reconcile receipts before continuing')
+            try:
+                accounting = budget_accounting.ledger(root, manifest, settled)
+            except ValueError as exc:
+                raise SystemExit(str(exc)) from None
+            _dump(root/'budget-ledger.json', accounting)
             if any(r.get('infrastructure_failure') for r in settled):
                 raise SystemExit('Infrastructure failure; repair before continuing paid runs')
-            spent = sum(r['cost_usd'] for r in settled) + manifest.get('prior_cost_usd', 0.0)
+            spent = accounting['budget_accounted_usd']
+            balances = {k:v for k,v in accounting.items() if k != 'runs'}
             reserve = getattr(args, 'reserve_per_run_usd', 10.0)
             if not math.isfinite(reserve) or reserve <= 0:
                 raise SystemExit('Per-run reservation must be positive and finite')
             if spent + reserve > budget:
-                _dump(root/'campaign-status.json', {'status': 'budget_exhausted', 'spent_usd': spent,
+                _dump(root/'campaign-status.json', {'status': 'budget_exhausted', **balances,
                     'cap_usd': budget, 'next_run': name, 'pending': len(pending) - index})
                 return
-            _dump(root/'campaign-status.json', {'status': 'running', 'spent_usd': spent,
+            _dump(root/'campaign-status.json', {'status': 'running', **balances,
                 'cap_usd': budget, 'current_run': name, 'pending': len(pending) - index})
             result = _run_one(root, manifest, name, forge)
             print(json.dumps({'name': name, 'cost_usd': result.get('cost_usd'),
                               'infrastructure_failure': result.get('infrastructure_failure')}), flush=True)
-            if result.get('infrastructure_failure') or result.get('cost_usd') is None:
+            entry = budget_accounting.account(root, manifest, result)
+            if result.get('infrastructure_failure') or entry is None:
                 _dump(root/'campaign-status.json', {'status': 'needs_reconciliation', 'run': name})
                 raise SystemExit('Run needs infrastructure/cost reconciliation before continuing')
+            accounting = budget_accounting.ledger(root, manifest, settled+[result])
+            _dump(root/'budget-ledger.json', accounting)
+            balances = {k:v for k,v in accounting.items() if k != 'runs'}
             if getattr(args, 'grade_blocks', False):
                 iid = manifest['runs'][name]['instance_id']
                 block = [n for n, item in manifest['runs'].items() if item['instance_id'] == iid]
                 if all((root/'runs'/n/'result.json').exists() for n in block):
                     _dump(root/'campaign-status.json', {'status': 'grading', 'instance_id': iid,
-                        'cap_usd': budget, 'spent_usd': spent + result['cost_usd']})
+                        'cap_usd': budget, **balances})
                     cmd_grade(SimpleNamespace(root=str(root), swe_python=str(DEFAULT_SWE_PYTHON),
                         max_workers=1, timeout=1800, per_instance=True, instances=[iid]))
                     graded = [r for r in _report_rows(root, manifest) if r['instance_id'] == iid]
@@ -675,8 +700,8 @@ def _run_campaign(args, root):
         _dump(root/'campaign-status.json', {'status': 'run_limit_reached'
             if len(pending) < pending_total else 'agents_complete_grading_pending',
             'pending': pending_total - len(pending), 'cap_usd': budget,
-            'spent_usd': manifest.get('prior_cost_usd', 0.0) + sum(
-                json.loads(p.read_text()).get('cost_usd', 0) for p in (root/'runs').glob('*/result.json'))})
+            **{k:v for k,v in budget_accounting.ledger(root, manifest,
+                [json.loads(p.read_text()) for p in (root/'runs').glob('*/result.json')]).items() if k != 'runs'}})
         return
     print(json.dumps({'pending': len(pending), 'parallel': args.parallel}), flush=True)
     with ThreadPoolExecutor(max_workers=args.parallel) as pool:

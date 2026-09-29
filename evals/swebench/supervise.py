@@ -20,7 +20,7 @@ def audit(root, manifest, names):
         item = manifest['runs'][name]
         expected_mode = 'active' if manifest['arms'][item['arm']].get('active') else 'off'
         native = result.get('native') or {}
-        if result.get('infrastructure_failure') or result.get('cost_usd') is None:
+        if result.get('infrastructure_failure') or campaign.budget_accounting.account(root, manifest, result) is None:
             failures.append({'run':name,'reason':'infrastructure_or_unknown_cost'})
         if any(native.get('tool_names',{}).get(tool,0) for tool in ['delegate','task','spawn_agent','agent','recipes']):
             failures.append({'run':name,'reason':'delegation_would_escape_parent_cost_accounting'})
@@ -72,7 +72,8 @@ def main():
                 rows=campaign._report_rows(root,manifest)
                 complete=len(rows)==len(manifest['runs']) and all(r['resolved'] is not None for r in rows)
                 campaign._dump(root/'campaign-status.json',{'status':'complete' if complete else 'grading_error',
-                    'cap_usd':args.max_cost_usd,'spent_usd':manifest.get('prior_cost_usd',0)+sum(r['cost_usd'] for r in rows)})
+                    'cap_usd':args.max_cost_usd, **{k:v for k,v in
+                        campaign.budget_accounting.ledger(root,manifest,rows).items() if k != 'runs'}})
                 campaign.cmd_report(argparse.Namespace(root=str(root),quiet=True))
                 build_site.build(root,args.output)
                 return

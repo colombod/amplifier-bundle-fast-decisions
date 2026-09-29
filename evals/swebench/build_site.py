@@ -89,6 +89,9 @@ def payload(root):
                'provider_calls': finite(((result or {}).get('native') or {}).get('provider_responses')),
                'judge_scored': ((result or {}).get('mechanisms') or {}).get('judge_scored', 0),
                'fast_submissions': ((result or {}).get('mechanisms') or {}).get('fast_route_submissions', 0)}
+        entry = campaign.budget_accounting.account(root, manifest, result) if result else None
+        row['known_cost'] = entry['known_usd'] if entry else row['cost']
+        row['budget_hold'] = entry['held_usd'] if entry else 0
         if row['seconds'] is not None:
             row['seconds'] /= 1000
         issues[spec['instance_id']].setdefault(spec['arm'], []).append(row)
@@ -102,7 +105,7 @@ def payload(root):
             'completed': len(done), 'graded': sum(r['state'] in {'resolved','unresolved'} for r in rows),
             'resolved': sum(r['state'] == 'resolved' for r in rows),
             'errors': sum(r['state'] == 'error' for r in rows),
-            'known_cost': sum(c for c in costs if c is not None),
+            'known_cost': sum(r['known_cost'] for r in done if r['known_cost'] is not None),
             'unknown_cost': sum(c is None for c in costs),
             'total_cost': sum(costs) if costs and all(c is not None for c in costs) else None,
             'median_seconds': statistics.median([r['seconds'] for r in done if r['seconds'] is not None])
@@ -136,6 +139,7 @@ def payload(root):
         'updated': datetime.now(timezone.utc).isoformat(),
         'status': status.get('status', 'prepared'), 'complete': complete,
         'cap': finite(status.get('cap_usd')), 'setup_cost': finite(manifest.get('prior_cost_usd',0)),
+        'budget_hold': sum(r['budget_hold'] for rows in arm_rows.values() for r in rows),
         'comparisons': comparisons, 'dataset': manifest.get('dataset'),
         'dataset_revision': manifest.get('dataset_revision'), 'candidate': manifest.get('candidate_sha'),
         'model': next(iter(manifest.get('arms', {}).values()), {}).get('model'),
