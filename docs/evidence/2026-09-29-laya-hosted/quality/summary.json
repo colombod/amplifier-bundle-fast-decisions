@@ -1,0 +1,164 @@
+{
+  "jev": {
+    "all": {
+      "n": 60,
+      "valid": 60,
+      "correct": 56,
+      "accuracy_all_requests": 0.9333333333333333,
+      "automatic": 45,
+      "automatic_errors": 3,
+      "automatic_accuracy": 0.9333333333333333,
+      "coverage": 0.75,
+      "mean_brier": 0.05949,
+      "median_latency_ms": 155.4552705056267
+    },
+    "select": {
+      "n": 20,
+      "valid": 20,
+      "correct": 20,
+      "accuracy_all_requests": 1.0,
+      "automatic": 12,
+      "automatic_errors": 0,
+      "automatic_accuracy": 1.0,
+      "coverage": 0.6,
+      "mean_brier": 0.022065,
+      "median_latency_ms": 153.325979001238
+    },
+    "search": {
+      "n": 20,
+      "valid": 20,
+      "correct": 19,
+      "accuracy_all_requests": 0.95,
+      "automatic": 19,
+      "automatic_errors": 1,
+      "automatic_accuracy": 0.9473684210526315,
+      "coverage": 0.95,
+      "mean_brier": 0.05157,
+      "median_latency_ms": 158.64479150332045
+    },
+    "cua": {
+      "n": 20,
+      "valid": 20,
+      "correct": 17,
+      "accuracy_all_requests": 0.85,
+      "automatic": 14,
+      "automatic_errors": 2,
+      "automatic_accuracy": 0.8571428571428571,
+      "coverage": 0.7,
+      "mean_brier": 0.10483500000000001,
+      "median_latency_ms": 150.97402050741948
+    },
+    "repeat_order_check": {
+      "pairs": 60,
+      "changed_decisions": 1
+    }
+  },
+  "laya_hosted": {
+    "all": {
+      "n": 60,
+      "valid": 60,
+      "correct": 35,
+      "accuracy_all_requests": 0.5833333333333334,
+      "automatic": 21,
+      "automatic_errors": 9,
+      "automatic_accuracy": 0.5714285714285714,
+      "coverage": 0.35,
+      "mean_brier": 0.30865607483333335,
+      "median_latency_ms": 72.07489550637547
+    },
+    "select": {
+      "n": 20,
+      "valid": 20,
+      "correct": 13,
+      "accuracy_all_requests": 0.65,
+      "automatic": 2,
+      "automatic_errors": 1,
+      "automatic_accuracy": 0.5,
+      "coverage": 0.1,
+      "mean_brier": 0.27105229075,
+      "median_latency_ms": 71.67777100403327
+    },
+    "search": {
+      "n": 20,
+      "valid": 20,
+      "correct": 11,
+      "accuracy_all_requests": 0.55,
+      "automatic": 12,
+      "automatic_errors": 4,
+      "automatic_accuracy": 0.6666666666666666,
+      "coverage": 0.6,
+      "mean_brier": 0.29957166599999996,
+      "median_latency_ms": 73.70568699843716
+    },
+    "cua": {
+      "n": 20,
+      "valid": 20,
+      "correct": 11,
+      "accuracy_all_requests": 0.55,
+      "automatic": 7,
+      "automatic_errors": 4,
+      "automatic_accuracy": 0.42857142857142855,
+      "coverage": 0.35,
+      "mean_brier": 0.35534426775,
+      "median_latency_ms": 71.19908300228417
+    },
+    "repeat_order_check": {
+      "pairs": 60,
+      "changed_decisions": 9
+    }
+  },
+  "laya_local": {
+    "all": {
+      "n": 60,
+      "valid": 60,
+      "correct": 35,
+      "accuracy_all_requests": 0.5833333333333334,
+      "automatic": 21,
+      "automatic_errors": 9,
+      "automatic_accuracy": 0.5714285714285714,
+      "coverage": 0.35,
+      "mean_brier": 0.30883035258333336,
+      "median_latency_ms": 31.277124493499286
+    },
+    "select": {
+      "n": 20,
+      "valid": 20,
+      "correct": 13,
+      "accuracy_all_requests": 0.65,
+      "automatic": 2,
+      "automatic_errors": 1,
+      "automatic_accuracy": 0.5,
+      "coverage": 0.1,
+      "mean_brier": 0.27063131125,
+      "median_latency_ms": 32.56462499848567
+    },
+    "search": {
+      "n": 20,
+      "valid": 20,
+      "correct": 11,
+      "accuracy_all_requests": 0.55,
+      "automatic": 12,
+      "automatic_errors": 4,
+      "automatic_accuracy": 0.6666666666666666,
+      "coverage": 0.6,
+      "mean_brier": 0.29885881350000004,
+      "median_latency_ms": 33.47052050230559
+    },
+    "cua": {
+      "n": 20,
+      "valid": 20,
+      "correct": 11,
+      "accuracy_all_requests": 0.55,
+      "automatic": 7,
+      "automatic_errors": 4,
+      "automatic_accuracy": 0.42857142857142855,
+      "coverage": 0.35,
+      "mean_brier": 0.357000933,
+      "median_latency_ms": 29.33522898820229
+    },
+    "repeat_order_check": {
+      "pairs": 60,
+      "changed_decisions": 9
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "status": 200,
+  "response": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "decision": {
+        "type": "choice",
+        "choice": "n1",
+        "confidence": 1.0,
+        "probabilities": {
+          "general": 0.0,
+          "reason": 0.0,
+          "n1": 1.0
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 332,
+      "output_tokens": 40
+    }
+  }
+}

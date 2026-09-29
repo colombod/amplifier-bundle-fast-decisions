@@ -1,0 +1,63 @@
+{
+  "laya_typed": {
+    "all": {
+      "n": 60,
+      "valid": 60,
+      "correct": 34,
+      "accuracy_all_requests": 0.5666666666666667,
+      "automatic": 1,
+      "automatic_errors": 0,
+      "automatic_accuracy": 1.0,
+      "coverage": 0.016666666666666666,
+      "mean_brier": 0.2843783214166667,
+      "median_latency_ms": 29.91081248910632
+    },
+    "select": {
+      "n": 20,
+      "valid": 20,
+      "correct": 12,
+      "accuracy_all_requests": 0.6,
+      "automatic": 0,
+      "automatic_errors": 0,
+      "automatic_accuracy": null,
+      "coverage": 0.0,
+      "mean_brier": 0.30255290275,
+      "median_latency_ms": 33.56216700922232
+    },
+    "search": {
+      "n": 20,
+      "valid": 20,
+      "correct": 11,
+      "accuracy_all_requests": 0.55,
+      "automatic": 1,
+      "automatic_errors": 0,
+      "automatic_accuracy": 1.0,
+      "coverage": 0.05,
+      "mean_brier": 0.231583603,
+      "median_latency_ms": 34.38133299641777
+    },
+    "cua": {
+      "n": 20,
+      "valid": 20,
+      "correct": 11,
+      "accuracy_all_requests": 0.55,
+      "automatic": 0,
+      "automatic_errors": 0,
+      "automatic_accuracy": null,
+      "coverage": 0.0,
+      "mean_brier": 0.3189984585,
+      "median_latency_ms": 20.336229499662295
+    },
+    "repeat_order_check": {
+      "pairs": 60,
+      "changed_decisions": 8
+    }
+  },
+  "provenance": {
+    "revision": "1a793eb568e6718f15941d08f85432581df534e3",
+    "device": "mps",
+    "load_ms": 5016.996915976051,
+    "transport": "in-process; latency not comparable to HTTP tables",
+    "exploratory": true
+  }
+}

@@ -916,6 +916,8 @@ class LayaBackend:
         headers = {"Content-Type": "application/json"}
         # Only ever placed on the outbound request header for this one
         # call -- never logged, echoed, or stored anywhere.
+        # RunPod's proxy rejects the generic Python-urllib user agent.
+        headers["User-Agent"] = "amplifier-fast-decisions/0.1"
         token = os.getenv(self.token_env) if self.token_env else None
         if token:
             headers["Authorization"] = f"Bearer {token}"

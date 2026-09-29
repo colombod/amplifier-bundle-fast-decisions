@@ -224,6 +224,7 @@ class LayaAskTests(unittest.TestCase):
         self.assertEqual(result.action.choice, "read")
         self.assertAlmostEqual(result.action.probabilities["read"], 0.9)
         self.assertEqual(handler.request_paths, ["/v1/decide"])
+        self.assertEqual(handler.request_headers[0].get("User-Agent"), "amplifier-fast-decisions/0.1")
         body = handler.request_bodies[0]
         self.assertIn("state", body)
         self.assertIn(NEXT_ACTION, body["questions"])
@@ -661,6 +662,10 @@ class LayaDoctorCheckTests(unittest.TestCase):
         self.assertTrue(result["ok"])
         self.assertEqual(result["state"], "reachable")
         self.assertEqual(result["check"], "laya_judge")
+        self.assertEqual(
+            handler.request_headers[-1]["User-Agent"],
+            "amplifier-fast-decisions/0.1",
+        )
 
     def test_unreachable_when_nothing_listening(self):
         from amplifier_fast_decisions.cli import _laya_server_check

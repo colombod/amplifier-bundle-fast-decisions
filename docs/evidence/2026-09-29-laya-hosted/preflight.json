@@ -1,0 +1,49 @@
+[
+  {
+    "auth_case": "missing",
+    "status": 401,
+    "elapsed_ms": 252.58624998969026,
+    "result": {
+      "detail": "Invalid or missing bearer token"
+    }
+  },
+  {
+    "auth_case": "wrong",
+    "status": 401,
+    "elapsed_ms": 264.00883300811984,
+    "result": {
+      "detail": "Invalid or missing bearer token"
+    }
+  },
+  {
+    "auth_case": "valid",
+    "status": 200,
+    "elapsed_ms": 110.88904200005345,
+    "result": {
+      "model": "laya-rl-agent",
+      "answers": {
+        "decision": {
+          "type": "choice",
+          "choice": "n1",
+          "probabilities": {
+            "n1": 0.9206,
+            "general": 0.0367,
+            "reason": 0.0427
+          },
+          "confidence": 0.6978,
+          "answer_confidence": 0.9206,
+          "action": {
+            "act_probability": 1.0
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 39,
+        "output_tokens": 0
+      },
+      "checkpoint": "convaiinnovations/laya",
+      "checkpoint_revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+      "device": "cuda"
+    }
+  }
+]

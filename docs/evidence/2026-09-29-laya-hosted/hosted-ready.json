@@ -1,0 +1,15 @@
+{
+  "observed_at": "2026-09-29T15:15:22.613724+00:00",
+  "health": {
+    "status": "ok",
+    "loaded": true,
+    "model": "convaiinnovations/laya",
+    "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+    "device": "cuda",
+    "inflight": 0,
+    "completed": 0,
+    "failed": 0,
+    "busy": 0,
+    "rate_limited": 0
+  }
+}
