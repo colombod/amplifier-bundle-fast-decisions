@@ -133,6 +133,27 @@ def _schedule_backend_warmup(backend: Any) -> None:
         threading.Thread(target=lambda: asyncio.run(_run()), daemon=True).start()
 
 
+def _schedule_backend_close(backend: Any) -> None:
+    """Best-effort, non-blocking close of a backend that was replaced before
+    any turn used it. Never raises."""
+    close = getattr(backend, "close", None)
+    if close is None or not asyncio.iscoroutinefunction(close):
+        return
+
+    async def _run() -> None:
+        try:
+            await close()
+        except Exception:
+            _logger.debug(
+                "backend close failed for %s", getattr(backend, "name", backend), exc_info=True
+            )
+
+    try:
+        asyncio.get_running_loop().create_task(_run())
+    except RuntimeError:
+        threading.Thread(target=lambda: asyncio.run(_run()), daemon=True).start()
+
+
 def _env_backend_default() -> str | None:
     """Environment-level backend default, consulted only when a profile
     omits ``backend`` (profile config always wins). ``FAST_DECISIONS_JUDGE``
@@ -291,43 +312,12 @@ class Runtime:
                 await asyncio.to_thread(self.recorder.close)
 
 
-def get_runtime(coordinator: Any, config: dict[str, Any], *, owner: bool = False) -> tuple[Runtime, bool]:
-    existing = coordinator.get_capability(RUNTIME_CAPABILITY)
-    if existing is not None:
-        if not isinstance(existing, Runtime):
-            raise TypeError("fast_decisions.runtime has an incompatible implementation")
-        if owner:
-            # The orchestrator is the sole owner of decision policy (mode,
-            # thresholds, allowed_tools). Mount order across module types IS
-            # a documented, guaranteed kernel contract (@core:CONTRACTS.md
-            # Module Lifecycle; amplifier_core's _session_init.py loads
-            # orchestrator (:74) before context (:104), providers (:154),
-            # tools (:222) and hooks (:248)) -- within a session the
-            # orchestrator always builds the runtime before the hook mounts,
-            # so no race exists to solve here. This re-apply is defensive,
-            # not a race resolution: it protects out-of-session construction
-            # paths (unit tests, `afast demo`, a future non-kernel host)
-            # where a non-owning module (e.g. the observer hook, which
-            # mounts with config: {}) might build the runtime first. Backend/
-            # telemetry remain the one-per-session singleton regardless of
-            # who built them first.
-            owner_policy = Policy.from_config(config)
-            if owner_policy.mode == "active" and existing.service.backend.name == "anyjev-L0":
-                raise ValueError("AnyJev L0 is uncalibrated; use shadow evaluation or fit L1/L2 first")
-            existing.service.policy = owner_policy
-            existing.orchestrator_owned = True
-        return existing, False
-    policy = Policy.from_config(config)
-    session_id, parent = session_identity(coordinator)
-    events_dir = config.get("events_dir") or os.getenv("AFAST_EVENTS_DIR") or str(
-        Path.home() / ".amplifier" / "fast-decisions" / "events")
-    recorder = JsonlRecorder(events_dir, session_id)
-    emitter = Emitter(session_id, parent_session_id=parent, hooks=coordinator.hooks, recorder=recorder)
+def _build_backend(config: dict[str, Any], policy: Policy) -> Any:
+    """The judge backend a module's config asks for. Raises ValueError on a bad config."""
     backend_name = config.get("backend") or _env_backend_default() or "jev"
     if backend_name == "none":  # readable alias: routing-only, no judge
         backend_name = "unavailable"
     if backend_name not in {"jev", "unavailable", "deterministic", "ollama", "mlx", "hosted", "gateway", "laya", "anyjev"}:
-        recorder.close()
         raise ValueError(
             "Backend must be jev, deterministic, ollama, mlx, hosted (alias gateway), laya, anyjev, or unavailable"
         )
@@ -345,16 +335,12 @@ def get_runtime(coordinator: Any, config: dict[str, Any], *, owner: bool = False
     elif backend_name == "anyjev":
         from .anyjev_backend import AnyJevBackend, DEFAULT_URL
 
-        try:
-            level = config.get("anyjev_level", "L2")
-            if policy.mode == "active" and level == "L0":
-                raise ValueError("AnyJev L0 is uncalibrated; use shadow evaluation or fit L1/L2 first")
-            backend = AnyJevBackend(model=config.get("model"),
-                                    url=config.get("anyjev_url", DEFAULT_URL),
-                                    level=level, timeout_ms=policy.timeout_ms)
-        except Exception:
-            recorder.close()
-            raise
+        level = config.get("anyjev_level", "L2")
+        if policy.mode == "active" and level == "L0":
+            raise ValueError("AnyJev L0 is uncalibrated; use shadow evaluation or fit L1/L2 first")
+        backend = AnyJevBackend(model=config.get("model"),
+                                url=config.get("anyjev_url", DEFAULT_URL),
+                                level=level, timeout_ms=policy.timeout_ms)
     elif backend_name == "mlx":
         from .local_backend import MlxBackend, mlx_base_url
 
@@ -366,49 +352,36 @@ def get_runtime(coordinator: Any, config: dict[str, Any], *, owner: bool = False
     elif backend_name == "laya":
         from .local_backend import LayaBackend
 
-        try:
-            backend = LayaBackend(
-                url=config.get("laya_url"),
-                timeout_ms=policy.timeout_ms,
-                token_env=config.get("laya_token_env"),
-            )
-        except Exception:
-            recorder.close()
-            raise
+        backend = LayaBackend(
+            url=config.get("laya_url"),
+            timeout_ms=policy.timeout_ms,
+            token_env=config.get("laya_token_env"),
+        )
     elif backend_name in ("hosted", "gateway"):  # "gateway" is a legacy alias
         from .local_backend import HOSTED_DEFAULT_TOKEN_ENV, HostedBackend
 
         model = config.get("model") or os.getenv("FAST_DECISIONS_HOSTED_MODEL")
         if not model:
-            recorder.close()
             raise ValueError("Hosted backend requires a model in config")
         key_env = (
             config.get("hosted_token_env")
             or config.get("gateway_key_env")  # legacy alias
             or HOSTED_DEFAULT_TOKEN_ENV
         )
-        try:
-            backend = HostedBackend(
-                model=model,
-                url=config.get("hosted_url") or config.get("gateway_url"),  # "gateway_url" is a legacy alias
-                timeout_ms=policy.timeout_ms,
-                api_key=os.getenv(key_env),
-            )
-        except Exception:
-            recorder.close()
-            raise
+        backend = HostedBackend(
+            model=model,
+            url=config.get("hosted_url") or config.get("gateway_url"),  # "gateway_url" is a legacy alias
+            timeout_ms=policy.timeout_ms,
+            api_key=os.getenv(key_env),
+        )
     elif backend_name == "ollama":
         from .local_backend import OllamaBackend
 
-        try:
-            backend = OllamaBackend(
-                model=config.get("model") or os.getenv("FAST_DECISIONS_LOCAL_MODEL") or "qwen3:0.6b",
-                url=config.get("ollama_url", "http://127.0.0.1:11434"),
-                timeout_ms=policy.timeout_ms,
-            )
-        except Exception:
-            recorder.close()
-            raise
+        backend = OllamaBackend(
+            model=config.get("model") or os.getenv("FAST_DECISIONS_LOCAL_MODEL") or "qwen3:0.6b",
+            url=config.get("ollama_url", "http://127.0.0.1:11434"),
+            timeout_ms=policy.timeout_ms,
+        )
     elif backend_name == "deterministic":
         # In-process, offline scorer (external=False, never gated by
         # allow_external_state): the "shadow, external=false" rung on the
@@ -418,6 +391,56 @@ def get_runtime(coordinator: Any, config: dict[str, Any], *, owner: bool = False
         backend = ScriptedBackend()
     else:
         backend = UnavailableBackend()
+    return backend
+
+
+def get_runtime(coordinator: Any, config: dict[str, Any], *, owner: bool = False) -> tuple[Runtime, bool]:
+    existing = coordinator.get_capability(RUNTIME_CAPABILITY)
+    if existing is not None:
+        if not isinstance(existing, Runtime):
+            raise TypeError("fast_decisions.runtime has an incompatible implementation")
+        if owner:
+            # The orchestrator is the sole owner of decision policy (mode,
+            # thresholds, allowed_tools). Mount order across module types IS
+            # a documented, guaranteed kernel contract (@core:CONTRACTS.md
+            # Module Lifecycle; amplifier_core's _session_init.py loads
+            # orchestrator (:74) before context (:104), providers (:154),
+            # tools (:222) and hooks (:248)) -- within a session the
+            # orchestrator always builds the runtime before the hook mounts,
+            # so no race exists to solve here. This re-apply is defensive,
+            # not a race resolution: it protects out-of-session construction
+            # paths (unit tests, `afast demo`, a future non-kernel host)
+            # where a non-owning module (e.g. the observer hook, which
+            # mounts with config: {}) might build the runtime first. Telemetry
+            # remains the one-per-session singleton regardless of who built it.
+            #
+            # The registry owner (hooks-fast-decisions-router) is itself a
+            # hook, so hook config order CAN put the shadow observer first.
+            # Its backend (e.g. deterministic) must not decide active turns:
+            # an owner that names a backend replaces it. An owner that names
+            # none keeps the existing one (and its safety checks below).
+            owner_policy = Policy.from_config(config)
+            if not existing.orchestrator_owned and config.get("backend"):
+                previous = existing.service.backend
+                existing.service.backend = _build_backend(config, owner_policy)
+                _schedule_backend_warmup(existing.service.backend)
+                _schedule_backend_close(previous)
+            if owner_policy.mode == "active" and existing.service.backend.name == "anyjev-L0":
+                raise ValueError("AnyJev L0 is uncalibrated; use shadow evaluation or fit L1/L2 first")
+            existing.service.policy = owner_policy
+            existing.orchestrator_owned = True
+        return existing, False
+    policy = Policy.from_config(config)
+    session_id, parent = session_identity(coordinator)
+    events_dir = config.get("events_dir") or os.getenv("AFAST_EVENTS_DIR") or str(
+        Path.home() / ".amplifier" / "fast-decisions" / "events")
+    recorder = JsonlRecorder(events_dir, session_id)
+    emitter = Emitter(session_id, parent_session_id=parent, hooks=coordinator.hooks, recorder=recorder)
+    try:
+        backend = _build_backend(config, policy)
+    except Exception:
+        recorder.close()
+        raise
     _schedule_backend_warmup(backend)
     service = DecisionService(policy, backend, emitter, coordinator, config.get("candidates"))
     runtime = Runtime(service, recorder, shadow_capacity=config.get("shadow_capacity", 64),

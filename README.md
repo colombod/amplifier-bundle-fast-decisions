@@ -159,6 +159,9 @@ was cheaper on a set of all-easy tasks because it kept fewer requests on the usu
 - **Quality grader:** `afast rubric requests.jsonl` scores answers against weighted yes/no questions using Jev.
 - **Watch-only mode:** `behaviors/fast-decisions-shadow.yaml` records what would have been decided without
   changing anything.
+- **Hosts that own their loop (Amplifier Unified):** `behaviors/fast-decisions-registry.yaml` does the same
+  routing, prepared actions and waste guards without replacing the orchestrator, so it runs under Unified's
+  `loop-live` as well as `loop-streaming` ([docs/REGISTRY-MODE.md](docs/REGISTRY-MODE.md)).
 - **Other assistants:** Claude Code, Codex and OpenCode can call the same decision service as a tool; it suggests,
   it doesn't change how they run ([docs/SMART-TOOL.md](docs/SMART-TOOL.md)).
 

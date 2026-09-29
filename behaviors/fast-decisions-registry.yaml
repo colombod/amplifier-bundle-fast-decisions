@@ -1,0 +1,171 @@
+bundle:
+  name: fast-decisions-registry-behavior
+  version: 0.1.0
+  description: >-
+    Fast-decisions for hosts that own their loop (Amplifier Unified runs
+    loop-live): the same routing, prepared actions, waste guards and cache
+    keep-alive as behaviors/fast-decisions.yaml, attached to the session's
+    provider and tool registries by a hook instead of by replacing the
+    orchestrator. Works under loop-streaming and loop-live alike. See
+    docs/REGISTRY-MODE.md.
+
+# No session.orchestrator: the host's loop stays in place. The router hook
+# owns decision policy (like loop-fast-decisions does), so its config below is
+# the same block as behaviors/fast-decisions.yaml's orchestrator config --
+# tests/test_registry_mode.py keeps the two identical.
+includes:
+  - bundle: fast-decisions:behaviors/jevgrep
+
+hooks:
+  - module: hooks-fast-decisions-router
+    source: git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=modules/hooks-fast-decisions-router
+    config:
+      mode: active
+      # Turn-start difficulty router (evals/STUDY-DESIGN.md 18.7): one typed
+      # simple/complex question per turn picks model AND effort for the whole
+      # turn -- simple: cheap start model at one effort; complex: the host
+      # model at provider-default effort, exactly plain Amplifier. No
+      # mid-turn switches, so the prompt cache is never re-written.
+      # Jev is the default judge after the local/hosted Laya quality screen.
+      # Missing/uncertain/failed decisions retain the normal routing fallback;
+      # native approvals and confidence gates remain unchanged. AnyJev is opt-in
+      # only and is not selected by this behavior.
+      backend: jev
+      allow_external_state: true
+      # The judged read shortcut stays off: it rarely fired in the studies and
+      # would put a scoring call in front of every slow request.
+      read_shortcut: false
+      timeout_ms: 3000
+      allowed_tools: [fast_workspace]
+      effort_routing:
+        orient: medium
+        explore: low
+        implement: high
+        by_tier:
+          cheap: medium
+          strong: null
+        max_explore_requests: 6
+        escalate_after_provider_errors: 1
+      # Research levers (default off; see src/amplifier_fast_decisions/routing_levers.py):
+      # one knob, profile: frugal | balanced | careful (balanced = this file),
+      # or the individual model_routing keys tiers / large_repo / strong_effort.
+      # profile: balanced
+      # Per-step action set (default off; src/amplifier_fast_decisions/step_actions.py):
+      # before every model call inside a turn, classify the step from the last
+      # tool calls/results and pick a prepared read-only action (file window,
+      # whole file, git status summary -- judged by Jev next_action, asked only
+      # when the expected saving beats its ~0.15 s), a cheaper model for this
+      # step only when price- and cache-aware math says it is cheaper, or the
+      # full model. Every decision leaves a fast_decisions:efficiency receipt.
+      # step_actions:
+      #   prepared: true
+      #   cheaper_model: true      # rarely fires with an Opus 5.5 host (cheap cache reads)
+      model_routing:
+        start_model: claude-sonnet-5
+        # Only ever send the Anthropic start model to Anthropic providers.
+        provider_match: anthropic
+        start_policy: judge
+        # Quality-safe scope gate (STUDY-DESIGN.md 18.8): in a workspace with
+        # more files than this, the turn starts on the host model whatever the
+        # judge says. On SWE-bench repositories cheap-first lost quality
+        # (19/30 vs plain 23/30) and escalation did not recover a misdirected
+        # start. Raise or remove it to trade quality risk for speed on repos.
+        cheap_max_workspace_files: 300
+        # Decide once: a turn judged easy stays on the start model for the whole
+        # turn. Switching mid-turn rebuilds the provider's prompt cache (the
+        # first version was 1.2x slower and 1.4x costlier for it), and in live
+        # sessions a 6-request limit moved most easy-turn work back to the host
+        # model. Only a provider error on the start model moves the turn up.
+        max_requests_before_escalation: null
+        escalate_on_test_failure: false
+        escalate_on_provider_error: true
+        # HC12 ("easy-turn shaping", opt-in, disabled by default): on a turn
+        # judged easy, a cheap model can still burn extra provider round
+        # trips on ceremony (one `todo` call, one `python_check` call, one
+        # tool per response) where the host model batches independent tool
+        # calls into one response and verifies once. Appending guidance to
+        # the END of the system prompt keeps every call of the turn
+        # byte-identical (cache-friendly); hiding tools by name removes them
+        # from just that call's advertised tool list. Left commented out
+        # until a benchmark shows it helps -- uncomment to enable:
+        # easy_turn_guidance: >-
+        #   This request was judged small. Work directly: read what you need
+        #   in one step, make independent tool calls together in a single
+        #   response, skip planning and checklist tools, verify once, then
+        #   give a short answer.
+        # easy_turn_hide_tools: [todo]
+      # Cache keep-alive (levers.py): while a tool or helper runs past 270 s
+      # since the prompt cache was last used, re-send the last request
+      # unchanged with a 1-token output cap so the next call reads the cache
+      # instead of re-writing it. Anthropic only; skipped under manual
+      # extended thinking; at most 6 refreshes per wait; only when >= 20k
+      # unshared prefix tokens are at risk. Every wait leaves a
+      # cache_keepalive receipt. Measured (evals/levers-2026-09-25): a 330 s
+      # bash wait saved $0.16 per run, receipts within $0.0001 of measured.
+      # Turn off with cache_keepalive: {enabled: false}.
+      cache_keepalive:
+        enabled: true
+        interval_s: 270
+        max_refreshes: 6
+        min_prefix_tokens: 20000
+        max_output_tokens: 1
+      # Loop-stop nudges (loop_stop) stay off: their receipts did not reconcile with a
+      # measured A/B (evals/levers-2026-09-25). The waste guards below replace
+      # them; with both on, the nudges stand down.
+      # Waste guards (docs/WASTE-GUARDS.md; measured in docs/evidence/
+      # 2026-09-25/waste-census): deterministic per-tool-call checks, on in
+      # every session regardless of repo size (the scope gate above decides
+      # model routing only). Each firing leaves an efficiency receipt.
+      #  - repeat stop: a call whose last 3 runs returned identical output
+      #    with nothing changed is not run a fourth time (the model is told
+      #    to use the earlier result; issuing it again runs it);
+      #  - retry stop: a command that failed twice with the same error and
+      #    nothing changed is not run a third time (transient errors exempt);
+      #  - poll wait: a repeated `sleep N && <read-only check>` is run in place
+      #    until a finish word appears or progress settles, at most 240 s;
+      #  - unchanged output: a second identical read/search/command output, or
+      #    a re-read of an unchanged file range already in context, is
+      #    returned as a one-line pointer instead of a second copy.
+      # Turn all off: waste_guards: {enabled: false}; one off, e.g.
+      # waste_guards: {enabled: true, poll_wait: false}.
+      waste_guards:
+        enabled: true
+        repeat_stop: true
+        retry_stop: true
+        poll_wait: true
+        identical_results: true
+        poll_max_wait_s: 240
+      # Auto-observatory: on the top-level session's first session:start,
+      # reuse-or-spawn a detached `afast serve` and open it. Skipped for
+      # child sessions, when AFAST_OBSERVATORY=off or AMPLIFIER_NO_BROWSER=1,
+      # or without a TTY. Stop it with `afast serve --stop`.
+      observatory:
+        enabled: true
+        open_browser: always
+        port: 8765
+  - module: hooks-fast-decisions
+    source: git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=modules/hooks-fast-decisions
+    config:
+      # Native-event bridge + session presence for the dashboard. The
+      # router hook owns the decision policy; shadow scoring and the role
+      # router stand down automatically when it is mounted.
+      mode: shadow
+      backend: deterministic
+      allow_external_state: false
+      observatory:
+        enabled: true
+        open_browser: always
+        port: 8765
+
+context:
+  include:
+    # "make my amplifier faster" / "speed up amplifier" trigger: hands off to
+    # the make-amplifier-faster recipe instead of installing anything directly.
+    - fast-decisions:context/make-faster.md
+
+tools:
+  - module: tool-fast-workspace
+    source: git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=modules/tool-fast-workspace
+    config:
+      root: .
+      max_bytes: 32768

@@ -1125,6 +1125,31 @@ docs/UPSTREAM_CONTRACT.md.
         # Per-step decision point: prepared actions awaiting their receipt
         # (priced when the next model call shows what was skipped).
         self._pending_prepared: list[dict[str, Any]] = []
+        # Registry attachment (registry.py) mounts ONE facade for the whole
+        # session instead of one per execute(), so the provider also sees
+        # calls that are not loop steps. See _registry_passthrough.
+        self._registry_gate = False
+
+    def begin_turn(self, levers: Any) -> None:
+        """Registry attachment: reset what a fresh per-execute() facade would
+        start with. ``_eff`` resets itself on the turn-id change."""
+        self._levers = levers
+        self._synthetic_responses.clear()
+        self._pending_prepared.clear()
+
+    def _registry_passthrough(self, request: Any, kwargs: dict[str, Any]) -> bool:
+        """Under registry attachment, only a loop step inside a turn is routed.
+
+        No turn: a call outside the loop (session naming between turns).
+        No tools: not a loop step (naming, compaction summaries); every
+        loop-streaming step advertises its tools. A caller-supplied ``model``
+        keyword: an explicit selection (Unified's model picker) -- the user's
+        choice wins, so neither the model nor the effort is changed."""
+        if not self._registry_gate:
+            return False
+        return (self._runtime.service.turn is None
+                or not field_value(request, "tools", None)
+                or "model" in kwargs)
 
     def _user_selected_model(self, service: Any) -> str | None:
         """The model the user explicitly chose for this session, or None.
@@ -1175,6 +1200,8 @@ docs/UPSTREAM_CONTRACT.md.
         return self._provider.parse_tool_calls(response)
 
     async def complete(self, request, **kwargs):
+        if self._registry_passthrough(request, kwargs):
+            return await self._provider.complete(request, **kwargs)
         service = self._runtime.service
         step_started = time.perf_counter()
         # Per-step decision point (step_actions.py, opt-in): classify this
@@ -2228,6 +2255,10 @@ docs/UPSTREAM_CONTRACT.md.
         transport -- fail closed (defer to the real provider) rather than
         fail open (drop a prepared action silently).
         """
+        if self._registry_passthrough(request, kwargs):
+            async for chunk in self._provider.stream(request, **kwargs):
+                yield chunk
+            return
         service = self._runtime.service
         await service.emit("routed", {"route": "slow", "destination": self._provider_key,
             "reason_code": "fast_path_unavailable_on_transport",
@@ -2282,6 +2313,10 @@ class ObservedTool:
 
     def __getattr__(self, name):
         return getattr(self._tool, name)
+
+    def begin_turn(self, levers: Any, workspace: Any) -> None:
+        """Registry attachment: this turn's levers and raw workspace tool."""
+        self._levers, self._workspace = levers, workspace
 
     def _completed_read_identity(self, input: dict[str, Any]) -> tuple[str, str] | None:
         """HC02a: ``(normalized path, revision)`` for a successful read/list
