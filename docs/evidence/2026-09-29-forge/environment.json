@@ -1,0 +1,35 @@
+{
+  "python": "3.12.11",
+  "os": "Darwin",
+  "architecture": "arm64",
+  "host_fingerprint": {
+    "amplifier-app-cli": {
+      "version": "0.1.1",
+      "source_hash": "7f3636e6d8631cad8950f74c3932134a1855993a7d905c61a2e31613ad0ef7f2"
+    },
+    "amplifier-core": {
+      "version": "2.0.1",
+      "source_hash": "f6c716e8ee69778bf25ac95f6559224909ff43f91b3621370bbf9db8288ce5a2"
+    },
+    "amplifier-foundation": {
+      "version": "1.0.0",
+      "source_hash": "80b39f69a99d58ad52d6a94a8230101f1c01bfbc37e434b26ed94fd9ea8e75d7"
+    },
+    "amplifier-module-provider-anthropic": {
+      "version": "1.0.0",
+      "source_hash": "24f4f092074b28fd36e14a6328f47d3712d4273b2fdc6cf28c8e190145003e8d"
+    },
+    "amplifier-module-loop-streaming": {
+      "version": "1.0.0",
+      "source_hash": "9df4251dbb77d9103dfbac63f3627524782995e2743e2705e8c7592f9a61db47"
+    }
+  },
+  "matches_campaign_host_fingerprint": true,
+  "playwright": "1.63.0",
+  "frozen_browser_harness": {
+    "forge_cua_acceptance.py": "09dda7101319ae4bd8e12b1eec66baa4fc2b75e930d26731c4f67e2aa3c25af7",
+    "fixtures/forge_cua/pyproject.toml": "8fb8a369020e856f31c452234a6c70051339a062725afffdd9b9f2b6fe02e733",
+    "fixtures/forge_cua/amplifier_module_tool_forge_cua_fixture/__init__.py": "1ca89a30d904ffc1aaa6ea9de60f044499e1c30c8b11ed7085cef3212bf8f934",
+    "fixtures/forge_cua/amplifier_module_tool_forge_cua_fixture/workflow.html": "c0aec9306ee51c02b67577dcb23f86280f7037559f1fc39445b5e6ad5b7304d0"
+  }
+}

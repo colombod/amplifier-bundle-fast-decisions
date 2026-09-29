@@ -103,11 +103,21 @@ after dashboard refresh. The check was corrected to use full observations and
 resolve stable observed DOM IDs to fresh native references. Those extra calls are
 validation overhead, not claimed savings.
 
-This is a live selector/browser integration check, not an autonomous browser speed
-benchmark. Unit tests cover the bounded driver and trycua interface with controlled
-hosts. A real trycua VM, a complete Amplifier Foundation browser session, and a
-paired browser-task speed/cost campaign are not yet validated. Jev-CUA is not added
-to the already-frozen four-arm SWE-bench campaign.
+That first check has now been followed by [real Amplifier sessions through
+Forge](evidence/2026-09-29-forge/VERIFICATION.md). A bounded three-click Chromium
+workflow used 3 generative calls versus 9, with correct outcomes in two repetitions
+per arm. Its measured mean wall time was 23.82 s versus 28.96 s. Native approval,
+staleness, timeout, repeated-action and verification-failure paths were exercised.
+
+The full Foundation selector session also exposed a limitation: relaying the
+proposal through another reasoning turn exceeded its 15-second expiry. The host
+correctly refused execution. Prefer the bounded host driver for sequences;
+do not lengthen the validity window to accommodate unnecessary reasoning delays.
+
+The acceptance host used real Playwright Chromium through `TryCuaHost`'s interface,
+not a trycua VM. A real trycua VM and general desktop workflows remain unverified.
+Jev charges were not available, so lower generative-provider estimates are not a
+total-dollar savings claim. Jev-CUA is not added to the frozen SWE-bench campaign.
 
 ## Patterns adopted
 

@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Public report fixture</title>
+<style>body{font:20px system-ui;background:#101725;color:#f4f7fb;padding:60px}button{font:inherit;margin:15px;padding:18px;border-radius:12px}p{color:#8fddc7}</style>
+<main></main><script>
+const screens = {
+ home: ['Home', [['reports','Reports','reports'],['settings','Settings','settings']]],
+ reports: ['Reports', [['weekly','Weekly reports','weekly'],['monthly','Monthly reports','monthly']]],
+ weekly: ['Weekly reports', [['laya','Laya report','done'],['jev','Jev report','jev']]],
+ done: ['Weekly Laya report open', []],
+ settings: ['Settings', [['home','Home','home']]],
+ monthly: ['Monthly reports', [['home','Home','home']]],
+ jev: ['Weekly Jev report open', [['home','Home','home']]]
+};
+window.historyLog=[];
+function show(step){document.body.dataset.step=step;const [title,buttons]=screens[step];
+ document.querySelector('main').replaceChildren();const h=document.createElement('h1');h.textContent=title;document.querySelector('main').append(h);
+ for(const [id,label,next]of buttons){const b=document.createElement('button');b.id=id;b.textContent=label;
+ b.onclick=()=>{window.historyLog.push(id);show(next)};document.querySelector('main').append(b)}
+ if(step==='done'){const p=document.createElement('p');p.id='receipt';p.textContent='REPORT: LAYA-WEEKLY-42';document.querySelector('main').append(p)}
+}show('home');</script></html>

@@ -45,6 +45,8 @@ def main():
         task = 'answer_sqlite_import_module'
         prompt = ('Read README.md, locate the implementation needed to answer its question, and answer precisely. '
                   'Use jevgrep for unfamiliar behavior if available; use direct reads or grep for exact symbols. '
+                  'Available means already listed as a callable tool. Never search for or install tooling, load skills, '
+                  'or inspect paths outside this fixture to find a missing tool. '
                   'Work only inside this public fixture directory. Source sharing through jevgrep is authorized. '
                   'Do not edit files or delegate. Finish with ANSWER: followed by the exact answer.')
         for side in (['plain', 'retrieval'] if rep == 1 else ['retrieval', 'plain']):
@@ -57,6 +59,8 @@ def main():
                   'You may choose only the relevant files instead of following its read-every-file direction. '
                   'If jevgrep is available, use it once to locate the code responsible for constructing and storing '
                   'the checkout audit key; otherwise locate that behavior with ordinary tools. '
+                  'Available means already listed as a callable tool. Never search for or install tooling, load skills, '
+                  'or inspect paths outside this fixture to find a missing tool. '
                   'Work only in this public fixture; source sharing through jevgrep is authorized. '
                   'Do not edit or delegate. Finish with ANSWER: followed by the exact key.')
         for rep in [1, 2]:
