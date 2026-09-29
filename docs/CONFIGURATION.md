@@ -39,6 +39,7 @@ questions only; keep the read shortcut off. See [AnyJev setup](ANYJEV.md).
 | `decision_batching` | `False` | HC08, opt-in. Combine the HC05 phase-judge and escalation-judge asks into one `ask_many()` call whenever both are due for the same request. No effect when fewer than two judge mechanisms are configured. |
 | `confidence_gates` | `None` | HC09, opt-in. See below. |
 | `tool_risk_shadow` | `False` | HC11, opt-in. Ask a batched destructive/touches_production/category classification BEFORE each tool call and record a `fast_decisions:tool_risk` receipt. Never blocks, modifies, or approves anything -- native approvals remain authoritative. |
+| `delegation_routing` | `None` | Per-delegation model routing (opt-in). See below. |
 | `version` | `"policy-v1"` | Recorded verbatim on every receipt (`policy_version`). Not validated against a known set. |
 
 ## `effort_routing` (HC03/HC05, opt-in; `None`/`{}` = off)
@@ -63,6 +64,19 @@ questions only; keep the read shortcut off. See [AnyJev setup](ANYJEV.md).
 | `escalation_judge` | `"rules"` | `"rules"` (deterministic triggers only), `"judge"` (HC05: ask the configured backend a single Choice question past the turn's first slow request, while not yet escalated by a deterministic trigger), or `"decomposed"` (HC10: ask five atomic yes/no signals in one batched call and combine them in code via a weighted sum -- see below). |
 | `escalate_min_probability` | `0.7` | Legacy alias for `confidence_gates["escalation"]` (HC09) -- still the default source when that key is absent. Also the gate HC10's weighted score is compared against. |
 | `escalation_weights` | `DEFAULT_ESCALATION_WEIGHTS` (see below) | HC10, opt-in. Per-signal weight override, merged over the defaults (a partial dict only overrides the signals it names). Unknown signal names or out-of-range values (`[0, 1]`) raise `ValueError`. |
+
+## `delegation_routing` (per-delegation model routing, opt-in; `None` or `{}` = off)
+
+One decision per `delegate` tool call, before the child session exists. Unlike
+`model_routing`, an explicit `{}` is valid and simply off (`mode` defaults to
+`"off"`): there is no required key, because the shipped policy is the default.
+Full design, evidence and limits: [DELEGATION-ROUTING.md](DELEGATION-ROUTING.md).
+
+| Key | Default | Meaning |
+|---|---|---|
+| `mode` | `"off"` | `off` (inert: no facade, no judge call, no event) / `shadow` (decide and record, change nothing) / `enforce` (pin `provider_preferences` on the call). |
+| `policy` | `"v3"` | A shipped policy name (`policies/delegation_<name>.json`) or a path to a JSON policy file. An unloadable policy disables the feature; it never breaks a turn. |
+| `deadline_ms` | `750` | 10..60000. Bounds the WHOLE four-question `ask_many()` call. A backend with no `ask_many` of its own (laya, ollama, mlx, hosted) is fanned out into four CONCURRENT asks -- budget for the slowest of four, not one. |
 
 ## `confidence_gates` (HC09, opt-in; `None` = every kind uses its legacy default)
 

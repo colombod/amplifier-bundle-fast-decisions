@@ -188,7 +188,9 @@ python3 -m amplifier_fast_decisions doctor   # environment check
 ```
 
 Evaluations: [evals/](evals/README.md) · metrics: [docs/BENCH.md](docs/BENCH.md) · events:
-[docs/EVENTS.md](docs/EVENTS.md) · all settings: [docs/CONFIGURATION.md](docs/CONFIGURATION.md) · earlier studies
+[docs/EVENTS.md](docs/EVENTS.md) · all settings: [docs/CONFIGURATION.md](docs/CONFIGURATION.md) ·
+per-delegation routing (opt-in, off by default):
+[docs/DELEGATION-ROUTING.md](docs/DELEGATION-ROUTING.md) · earlier studies
 of the previous design: [docs/EVIDENCE.md](docs/EVIDENCE.md) · [CONTRIBUTING.md](CONTRIBUTING.md) ·
 [SECURITY.md](SECURITY.md).
 
