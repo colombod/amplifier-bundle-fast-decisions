@@ -124,6 +124,11 @@ was cheaper on a set of all-easy tasks because it kept fewer requests on the usu
   tool for finding source by what it does. It sends eligible workspace source to Jev, reusing `TYPESAFE_API_KEY` when no CLI provider is saved. Disable with `tool-jevgrep.allow_external_state: false`;
   ordinary search remains available ([setup and limits](docs/JEVGREP.md)).
   See the [matched Jev, Laya and retrieval measurements](docs/evidence/2026-09-28-decisions/REPORT.md) for task-level benefits and regressions.
+- **Experimental Jev computer use:** opt-in `fast-decisions:behaviors/jev-cua` selects an
+  operation and observed UI control in one batched request. A bounded host driver can
+  continue between clicks without generative calls; native approvals, fresh targets,
+  and completion verification remain host-owned. Includes a trycua click/wait adapter.
+  See [setup, live evidence and current limits](docs/JEV-CUA.md).
 - **Experimental local AnyJev judge:** optional fixed-question L0 evaluation and fitted L1/L2
   routing, with exact model/question checks. Added as an alternative to evaluate; it has not
   displaced the measured default ([assessment and setup](docs/ANYJEV.md)).

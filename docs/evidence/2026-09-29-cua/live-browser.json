@@ -1,0 +1,64 @@
+{
+  "kind": "live_selector_browser_integration",
+  "model": "jev-1.13.0",
+  "surface": "Local Fast Decisions Field study website",
+  "goal": "Show the measured example about repairing with the local Laya judge.",
+  "selected_proposal": {
+    "id": "550d90d7ede34d4dbf0936c5e12af0ed",
+    "status": "proposal",
+    "executes_actions": false,
+    "snapshot_hash": "dc2811f4e735f445fffc1a5196a763a2c5ba3ef9c5bf03ff4e8902156a307fdc",
+    "surface_id": "field-study-examples",
+    "expires_at": 1790651796.037063,
+    "judge_calls": 1,
+    "model": "jev-1.13.0",
+    "input_tokens": 1009,
+    "output_tokens": 111,
+    "operation": "CLICK",
+    "operation_probability": 1.0,
+    "operation_probabilities": {
+      "CLICK": 1.0,
+      "WAIT": 0.0,
+      "DONE": 0.0,
+      "reason": 0.0
+    },
+    "target_probability": 0.97,
+    "action": {
+      "operation": "CLICK",
+      "target": "example-tab-3"
+    },
+    "duration_ms": 236.891
+  },
+  "native_execution": "CUA browser click on freshly observed native reference for example-tab-3",
+  "verified_outcome": {
+    "selected_tab": "Repair with the local Laya judge",
+    "visible_panel": "Repair with the local Laya judge",
+    "visible_description": "No Laya choice cleared the unchanged confidence gates. Zero calls were bypassed; the timing difference is not attributed to Laya."
+  },
+  "validation_calls": [
+    {
+      "id": "cacb7bcc38cf4491b411aca1c9982e17",
+      "input_tokens": 1001,
+      "output_tokens": 106,
+      "duration_ms": 176.446,
+      "executed": false,
+      "not_executed_reason": "Freshness check expected full observation from a diff; corrected observation mode."
+    },
+    {
+      "id": "fec54aa72d2848ff81ba1b2acdc9504c",
+      "input_tokens": 1001,
+      "output_tokens": 106,
+      "duration_ms": 171.307,
+      "executed": false,
+      "not_executed_reason": "Full fresh observation showed native references replaced by dashboard refresh."
+    },
+    {
+      "id": "550d90d7ede34d4dbf0936c5e12af0ed",
+      "input_tokens": 1009,
+      "output_tokens": 111,
+      "duration_ms": 236.891,
+      "executed": true
+    }
+  ],
+  "limitation": "Agent-mediated live integration check; not an autonomous performance benchmark. Two initial proposals were not executed during freshness validation. No speedup or dollar savings inferred."
+}

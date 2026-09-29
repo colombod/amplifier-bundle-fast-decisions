@@ -67,3 +67,12 @@ The configuration event carries `workspace_name`, the basename of the session's 
 **Source provenance:** the once-per-session `fast_decisions:source` event carries hashes, counts and version strings only -- a SHA-256 of the package's own source tree, an optional git commit sha, a file count, package/Python versions -- and never a filesystem path. See `provenance.describe_source` and docs/EVENTS.md.
 
 The original logs use private file permissions where supported. The queue is bounded and best-effort, not a regulatory-grade audit ledger. Offline HTML and JSONL exports are deliberately shareable files and are not encrypted. Protect or delete them according to your organization's retention policy.
+
+## Optional Jev computer use
+
+`behaviors/jev-cua.yaml` separately opts in to sending a caller-sanitized UI goal,
+summary and bounded control labels to TypeSafe. It does not capture screenshots or
+read the desktop itself. Marked sensitive controls are excluded; callers must also
+remove private text from the goal and summary. Native `cua_decided` telemetry keeps
+model, operation, status, probabilities, latency, usage and a state hash, not UI
+labels, values, coordinates, surface identifiers or goals. See [Jev-CUA](JEV-CUA.md).
