@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "amplifier-module-hooks-fast-decisions-router"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "amplifier-fast-decisions @ git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main",
+]
+[project.entry-points."amplifier.modules"]
+hooks-fast-decisions-router = "amplifier_module_hooks_fast_decisions_router:mount"
+[tool.setuptools.packages.find]
+include = ["amplifier_module_hooks_fast_decisions_router*"]

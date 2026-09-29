@@ -46,12 +46,12 @@ def observed():
 
 
 class PortableTests(unittest.IsolatedAsyncioTestCase):
-    async def test_default_selection_is_laya_with_real_identity_and_no_external_consent(self):
+    async def test_explicit_laya_selection_with_real_identity_and_no_external_consent(self):
         model = Laya()
         with tempfile.TemporaryDirectory() as root, patch.dict(os.environ, {}, clear=True), \
              patch('amplifier_fast_decisions.smart_tool.LayaBackend', return_value=model):
             result = await select({'task': 'Read README.md', 'candidates': [
-                {'id': 'readme', 'operation': 'read', 'path': 'README.md'}]}, events_dir=root)
+                {'id': 'readme', 'operation': 'read', 'path': 'README.md'}]}, events_dir=root, backend='laya')
         self.assertTrue(result.ok)
         self.assertEqual((result.backend, result.model, result.choice), ('laya', 'laya-test', 'readme'))
         self.assertTrue(model.closed)
@@ -68,7 +68,7 @@ class PortableTests(unittest.IsolatedAsyncioTestCase):
     async def test_cua_one_typed_prediction_and_local_consent(self):
         model = Laya()
         with patch('amplifier_fast_decisions.local_backend.LayaBackend', return_value=model):
-            result = await cua({'goal': 'Open Reports', 'snapshot': observed()})
+            result = await cua({'goal': 'Open Reports', 'snapshot': observed()}, backend='laya')
         self.assertEqual(result['action'], {'operation': 'CLICK', 'target': 'reports'})
         self.assertEqual(result['backend'], 'laya')
         self.assertFalse(result['executes_actions'])
@@ -81,7 +81,7 @@ class PortableTests(unittest.IsolatedAsyncioTestCase):
         snapshot = observed()
         snapshot['text'] = 'x' * 3100
         with patch('amplifier_fast_decisions.local_backend.LayaBackend', return_value=model):
-            result = await cua({'goal': 'Open Reports', 'snapshot': snapshot})
+            result = await cua({'goal': 'Open Reports', 'snapshot': snapshot}, backend='laya')
         self.assertEqual(result['reason'], 'narrow_laya_snapshot')
         self.assertFalse(model.requests)
 
@@ -96,7 +96,7 @@ class PortableTests(unittest.IsolatedAsyncioTestCase):
             listing = 'retry.py\0.env\0secrets.py\0link.py\0'
             with patch('amplifier_fast_decisions.laya_search.LayaBackend', return_value=model), \
                  patch('amplifier_fast_decisions.jevgrep._run_bounded', AsyncMock(return_value=(0, listing, False))):
-                result = await JevgrepTool(root=root).search({'query': 'retry'})
+                result = await JevgrepTool(backend="laya", root=root).search({'query': 'retry'})
             self.assertEqual(result['backend'], 'laya')
             self.assertEqual([r['path'] for r in result['matches']], ['retry.py'])
             self.assertNotIn('PRIVATE_VALUE', str(model.requests))
@@ -104,7 +104,7 @@ class PortableTests(unittest.IsolatedAsyncioTestCase):
             (root / 'retry.py').write_text('x' * 2048)
             with patch('amplifier_fast_decisions.laya_search.LayaBackend', return_value=model), \
                  patch('amplifier_fast_decisions.jevgrep._run_bounded', AsyncMock(return_value=(0, 'retry.py\0', False))):
-                result = await JevgrepTool(root=root, max_source_bytes=1024).search({'query': 'retry'})
+                result = await JevgrepTool(backend="laya", root=root, max_source_bytes=1024).search({'query': 'retry'})
             self.assertEqual(result['status'], 'incomplete')
 
     @unittest.skipUnless(shutil.which('rg'), 'rg not installed')
@@ -119,7 +119,7 @@ class PortableTests(unittest.IsolatedAsyncioTestCase):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text('retry = True\n')
             with patch('amplifier_fast_decisions.laya_search.LayaBackend', return_value=model):
-                result = await JevgrepTool(root=root).search({'query': 'retry'})
+                result = await JevgrepTool(backend="laya", root=root).search({'query': 'retry'})
             self.assertEqual([row['path'] for row in result['matches']], ['retry.py'])
 
     async def test_escaped_source_is_never_truncated_before_scoring(self):
@@ -130,7 +130,7 @@ class PortableTests(unittest.IsolatedAsyncioTestCase):
             (root / 'escaped.py').write_text(content)
             with patch('amplifier_fast_decisions.laya_search.LayaBackend', return_value=model), \
                  patch('amplifier_fast_decisions.jevgrep._run_bounded', AsyncMock(return_value=(0, 'escaped.py\0', False))):
-                result = await JevgrepTool(root=root).search({'query': 'escaping'})
+                result = await JevgrepTool(backend="laya", root=root).search({'query': 'escaping'})
             self.assertEqual(result['status'], 'complete')
             self.assertEqual(''.join(req.state['source'] for req in model.requests), content)
             self.assertTrue(all(len(canonical(req.state)) <= 3000 for req in model.requests))

@@ -122,7 +122,7 @@ class JevgrepTool:
 
     def __init__(self, *, root=".", executable="jg", allow_external_state=False,
                  timeout_ms=60000, max_source_bytes=32768, max_output_bytes=65536, concurrency=4,
-                 backend="laya", laya_url=None):
+                 backend="jev", laya_url=None):
         self.workspace = WorkspaceTool(root)
         if not isinstance(executable, str) or not executable or "\x00" in executable:
             raise ValueError("Invalid jevgrep executable")

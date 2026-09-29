@@ -1,32 +1,24 @@
 bundle:
-  name: fast-decisions-behavior
-  version: 0.2.0
+  name: fast-decisions-registry-behavior
+  version: 0.1.0
   description: >-
-    Orchestrator-primary fast-decisions: replaces the host's orchestrator with
-    loop-fast-decisions, which wraps the same upstream loop-streaming loop
-    (steering, approvals, compaction, cancellation, provider pin all stay
-    upstream's) and decides once per turn whether it is easy (cheaper start
-    model, one effort level) or hard (the host model, unchanged).
-    Also mounts the telemetry hook and the read-only fast_workspace tool, and
-    launches the observatory dashboard on session start.
+    Fast-decisions for hosts that own their loop (Amplifier Unified runs
+    loop-live): the same routing, prepared actions, waste guards and cache
+    keep-alive as behaviors/fast-decisions.yaml, attached to the session's
+    provider and tool registries by a hook instead of by replacing the
+    orchestrator. Works under loop-streaming and loop-live alike. See
+    docs/REGISTRY-MODE.md.
 
-# Why a behavior carries session.orchestrator (deliberately, against the
-# usual "behaviors don't pick the orchestrator" convention): the only seam
-# that can change a turn is the provider call inside the orchestrator --
-# upstream never honors a hook's `modify` at tool:pre (see router.py and
-# docs/UPSTREAM_CONTRACT.md). Composed AFTER a root (bundle.md's include
-# order, or `amplifier bundle add --app`), the kernel's deep merge makes this
-# module win while the root's own loop-streaming settings (e.g. foundation's
-# extended_thinking) are forwarded to the wrapped loop. Delegated sub-sessions
-# inherit the parent's orchestrator, so routing applies to them too. Want
-# measurement without the swap? Compose behaviors/fast-decisions-shadow.yaml.
+# No session.orchestrator: the host's loop stays in place. The router hook
+# owns decision policy (like loop-fast-decisions does), so its config below is
+# the same block as behaviors/fast-decisions.yaml's orchestrator config --
+# tests/test_registry_mode.py keeps the two identical.
 includes:
   - bundle: fast-decisions:behaviors/jevgrep
 
-session:
-  orchestrator:
-    module: loop-fast-decisions
-    source: git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=modules/loop-fast-decisions
+hooks:
+  - module: hooks-fast-decisions-router
+    source: git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=modules/hooks-fast-decisions-router
     config:
       mode: active
       # Turn-start difficulty router (evals/STUDY-DESIGN.md 18.7): one typed
@@ -151,13 +143,11 @@ session:
         enabled: true
         open_browser: always
         port: 8765
-
-hooks:
   - module: hooks-fast-decisions
     source: git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=modules/hooks-fast-decisions
     config:
       # Native-event bridge + session presence for the dashboard. The
-      # orchestrator owns the decision policy; shadow scoring and the role
+      # router hook owns the decision policy; shadow scoring and the role
       # router stand down automatically when it is mounted.
       mode: shadow
       backend: deterministic

@@ -9,11 +9,11 @@ Experimental, MIT licensed. Not an official Microsoft or TypeSafe release, and n
 Approvals, permissions and tool execution are unchanged: Fast Decisions wraps Amplifier's standard loop rather
 than replacing it.
 
-**Default judge: local Laya.** Routing, source relevance search, and opt-in computer-use
-selection now use the loopback Laya server. AnyJev is disabled in the normal path;
-its optional research adapter remains available. This is an explicit backend preference,
-not evidence that Laya beats Jev at task quality. See the
-[cross-harness checks](docs/evidence/2026-09-29-laya/VERIFICATION.md).
+**Default judge: Jev.** Routing and opt-in computer-use selection use Jev 1.13.0;
+source relevance search uses upstream Jevgrep. Configure `TYPESAFE_API_KEY` privately.
+The bundle behaviors explicitly permit bounded external state; standalone calls
+require `--allow-external-state`. Laya remains an explicit experimental backend.
+AnyJev remains disabled in the normal path.
 
 **Quality check, September 29:** base Laya scored 35/60 versus Jev's 56/60
 on constructed decision cases. The specialized Laya checkpoint scored 34/60;
@@ -77,7 +77,7 @@ read `~/.amplifier/settings.yaml`, and to every helper session they start:
 amplifier bundle add --app "git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=behaviors/fast-decisions.yaml"
 ```
 
-- **Decision-maker:** start the [local Laya server](docs/MODEL-SETUP.md#laya-local-classifier) on port 8090.
+- **Decision-maker:** configure `TYPESAFE_API_KEY` for Jev 1.13.0.
   If it is unavailable, routing uses its existing rule fallback; standalone tools report failure.
   Jev remains an explicit opt-in backend requiring a TypeSafe key and external-state consent.
 - **Upgrading from an earlier version:** run `amplifier update` once, and remove any older fast-decisions entry
@@ -135,12 +135,12 @@ was cheaper on a set of all-easy tasks because it kept fewer requests on the usu
 
 ## Also included
 
-- **Code discovery:** the default `jevgrep` tool now uses bounded local Laya relevance scoring.
+- **Code discovery:** the default `jevgrep` tool uses upstream Jevgrep with bounded source sharing.
   It honors ignore rules and workspace exclusions. This local implementation is distinct from upstream
   Jevgrep, which remains available with `backend: jev` and external-state consent ([details](docs/JEVGREP.md)).
   See the [matched Jev, Laya and retrieval measurements](docs/evidence/2026-09-28-decisions/REPORT.md) for task-level benefits and regressions.
 - **Experimental computer use:** opt-in `fast-decisions:behaviors/jev-cua` selects an
-  operation and observed UI control in one batched Laya request. A bounded host driver can
+  operation and observed UI control in one batched Jev request. A bounded host driver can
   continue between clicks without generative calls; native approvals, fresh targets,
   and completion verification remain host-owned. Includes a trycua click/wait adapter.
   See [setup, live evidence and current limits](docs/JEV-CUA.md).
@@ -159,6 +159,9 @@ was cheaper on a set of all-easy tasks because it kept fewer requests on the usu
 - **Quality grader:** `afast rubric requests.jsonl` scores answers against weighted yes/no questions using Jev.
 - **Watch-only mode:** `behaviors/fast-decisions-shadow.yaml` records what would have been decided without
   changing anything.
+- **Hosts that own their loop (Amplifier Unified):** `behaviors/fast-decisions-registry.yaml` does the same
+  routing, prepared actions and waste guards without replacing the orchestrator, so it runs under Unified's
+  `loop-live` as well as `loop-streaming` ([docs/REGISTRY-MODE.md](docs/REGISTRY-MODE.md)).
 - **Other assistants:** Claude Code, Codex and OpenCode can call the same decision service as a tool; it suggests,
   it doesn't change how they run ([docs/SMART-TOOL.md](docs/SMART-TOOL.md)).
 
