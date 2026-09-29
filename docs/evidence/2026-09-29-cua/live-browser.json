@@ -41,14 +41,16 @@
       "input_tokens": 1001,
       "output_tokens": 106,
       "duration_ms": 176.446,
-      "executed": false
+      "executed": false,
+      "not_executed_reason": "Freshness check expected full observation from a diff; corrected observation mode."
     },
     {
       "id": "fec54aa72d2848ff81ba1b2acdc9504c",
       "input_tokens": 1001,
       "output_tokens": 106,
       "duration_ms": 171.307,
-      "executed": false
+      "executed": false,
+      "not_executed_reason": "Full fresh observation showed native references replaced by dashboard refresh."
     },
     {
       "id": "550d90d7ede34d4dbf0936c5e12af0ed",
@@ -58,5 +60,5 @@
       "executed": true
     }
   ],
-  "limitation": "Agent-mediated live integration check; not an autonomous performance benchmark. Two initial proposals were rejected because native references changed. No speedup or dollar savings inferred."
+  "limitation": "Agent-mediated live integration check; not an autonomous performance benchmark. Two initial proposals were not executed during freshness validation. No speedup or dollar savings inferred."
 }

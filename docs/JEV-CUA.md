@@ -97,9 +97,11 @@ Live check on the Field study website: Jev 1.13.0 selected the “Repair with th
 local Laya judge” tab from four observed tabs in **236.891 ms**, using 1,009 input
 and 111 output tokens. The native browser tool executed its choice, and fresh
 accessibility state confirmed the selected tab and its visible result panel.
-Two earlier proposals were not executed because the dashboard refreshed its
-native tab references. Stable observed DOM IDs were then resolved to fresh native
-references. Those extra calls are validation overhead, not claimed savings.
+Two earlier proposals were not executed: one freshness check incorrectly expected
+a full observation from a diff, and the next detected replaced native references
+after dashboard refresh. The check was corrected to use full observations and
+resolve stable observed DOM IDs to fresh native references. Those extra calls are
+validation overhead, not claimed savings.
 
 This is a live selector/browser integration check, not an autonomous browser speed
 benchmark. Unit tests cover the bounded driver and trycua interface with controlled
