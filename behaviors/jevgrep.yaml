@@ -9,8 +9,9 @@ tools:
     config:
       root: .
       executable: jg
-      # Sends eligible workspace source to Jev. Set false to opt out.
-      allow_external_state: true
+      # Local bounded relevance search; upstream jg remains opt-in (backend: jev).
+      backend: laya
+      allow_external_state: false
       timeout_ms: 60000
       max_source_bytes: 32768
       max_output_bytes: 65536

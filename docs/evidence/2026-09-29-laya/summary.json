@@ -1,0 +1,213 @@
+{
+  "date": "2026-09-29",
+  "kind": "live invocation acceptance; not a comparative benchmark",
+  "backend": "laya",
+  "model": "laya-rl-agent",
+  "harnesses": [
+    {
+      "harness": "codex",
+      "capabilities": {
+        "select": {
+          "exit_code": 0,
+          "status": "abstain",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 83.64554100262467,
+          "process_wall_ms": 215.27
+        },
+        "search": {
+          "exit_code": 0,
+          "status": "complete",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 107.48,
+          "process_wall_ms": 176.88,
+          "matched_paths": [
+            "retry.py",
+            "README.md"
+          ]
+        },
+        "cua": {
+          "exit_code": 0,
+          "status": "reason",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 51.729,
+          "process_wall_ms": 116.29
+        }
+      },
+      "host_seconds": 18.640002727508545
+    },
+    {
+      "harness": "claude",
+      "capabilities": {
+        "select": {
+          "exit_code": 0,
+          "status": "abstain",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 74.69633300206624,
+          "process_wall_ms": 137.77
+        },
+        "search": {
+          "exit_code": 0,
+          "status": "complete",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 96.84,
+          "process_wall_ms": 156.71,
+          "matched_paths": [
+            "retry.py",
+            "README.md"
+          ]
+        },
+        "cua": {
+          "exit_code": 0,
+          "status": "reason",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 56.242,
+          "process_wall_ms": 116.71
+        }
+      },
+      "host_seconds": 14.671029806137085
+    },
+    {
+      "harness": "amplifier",
+      "capabilities": {
+        "select": {
+          "exit_code": 0,
+          "status": "abstain",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 68.33924999227747,
+          "process_wall_ms": 206.81
+        },
+        "search": {
+          "exit_code": 0,
+          "status": "complete",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 125.5,
+          "process_wall_ms": 262.5,
+          "matched_paths": [
+            "retry.py",
+            "README.md"
+          ]
+        },
+        "cua": {
+          "exit_code": 0,
+          "status": "reason",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 51.536,
+          "process_wall_ms": 189.57
+        }
+      },
+      "host_seconds": 33.10432720184326
+    },
+    {
+      "harness": "opencode",
+      "capabilities": {
+        "select": {
+          "exit_code": 0,
+          "status": "abstain",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 71.86404199455865,
+          "process_wall_ms": 217.81
+        },
+        "search": {
+          "exit_code": 0,
+          "status": "complete",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 131.64,
+          "process_wall_ms": 194.6,
+          "matched_paths": [
+            "retry.py",
+            "README.md"
+          ]
+        },
+        "cua": {
+          "exit_code": 0,
+          "status": "reason",
+          "backend": "laya",
+          "model": "laya-rl-agent",
+          "duration_ms": 88.547,
+          "process_wall_ms": 151.79
+        }
+      },
+      "host_seconds": 45.915709018707275
+    }
+  ],
+  "source_revision_before_changes": "b0630722829bb2b741d5d38fda15fe2205a93e60",
+  "evidence_hashes": {
+    "codex/select-result.json": "e1f0fa942e40cf614659818571e92e1211652693fc32da3eabfb3cec94ac1064",
+    "codex/search-result.json": "9d9b0cd35681a46ed051d3f95241405c7f8443d4e87da3245bebd73801b1d3bb",
+    "codex/cua-result.json": "de5f49c24ce36b0f47e17858fa03d3c2d0a18eab14d90e6fff64f0f7dde5c778",
+    "claude/select-result.json": "bc7731810c1ce0095ce517bdc3bcc0a3ad73d7e79c3196823cd6d4b68b379fc8",
+    "claude/search-result.json": "0dd333c77160b6339dc2ca10e6303d544dbf1c99b86856956e83cdc2273fa17e",
+    "claude/cua-result.json": "6a088f48b5a2f76a08bb1954e0d92c80532b1a3de0a5a12c571f52dc70cac609",
+    "amplifier/select-result.json": "b4bccfa54b0c83412bc3048ae9bdbe7573e16cf869fb312164565471d531edbd",
+    "amplifier/search-result.json": "082caa93dc33e8404b5a0a294b9caf95b5a27981a9a2a0a3379c4792a5aa169f",
+    "amplifier/cua-result.json": "7f4368c0872f8ef2caf4bf42a34c444241d82d21112e0fc558e4217cbf759673",
+    "opencode/select-result.json": "727358889b5c0ee69342bcf88dfb2fbf070376f71b6e9cda65e2ef209d3a5f6e",
+    "opencode/search-result.json": "87965f4768696f7d577efef5dabf9c9d8916cc52a4f14227d9b184247211d8aa",
+    "opencode/cua-result.json": "87ec7e62a62acc9f9e669858bd2331e5c1d25221997d3060b0e899ed0a05beb5",
+    "browser/home-result.json": "82b107521341c4403671b1ec2f6fbef709723692229deba7f1bde7bffe9f49ba",
+    "browser/reports-result.json": "491009ec6d85f089944b1e84a6482c213547c24345081fe398757faea0a30231",
+    "browser/weekly-result.json": "db6b1abd1d2adc832baec7121c5d878d99a95492e92673a2998550fd446b6bdf"
+  },
+  "native_amplifier": {
+    "verified_active_backend": "laya",
+    "difficulty_ms": 56.04745799791999,
+    "difficulty_choice": "cheap",
+    "provider_calls": 3,
+    "fast_actions": 0,
+    "model_switches": 0,
+    "reason": "host_already_cheaper",
+    "explicit_filesystem_source_required": true
+  },
+  "browser": {
+    "steps": 3,
+    "host_fallback_clicks": 3,
+    "laya_executed_actions": 0,
+    "verified_receipt": "LAYA-WEEKLY-42",
+    "judge_ms": [
+      122.027,
+      96.544,
+      104.135
+    ]
+  },
+  "savings": {
+    "measured_comparison": false,
+    "demonstrated_provider_calls_avoided": 0,
+    "dollars_saved": null,
+    "wall_time_saved": null
+  },
+  "validation": {
+    "host_unittest": {
+      "ran": 1526,
+      "skipped": 2,
+      "failures": 0,
+      "seconds": 115.517
+    },
+    "smart_tool_conformance": {
+      "passed": 16,
+      "failed": 0,
+      "spec_revision": "70432044f26e2094b5894516adab68aa14f88592"
+    },
+    "final_installed_smoke": {
+      "select": "abstain",
+      "search": "complete; retry.py found",
+      "cua": "reason"
+    },
+    "browser_page": "Visible matrix and expandable reproduction disclosure verified in Edge"
+  },
+  "preservation": {
+    "global_amplifier_settings_sha256": "e917364ed255f926f983f4e17c141a0ecbf6b69c3f80146f3a59eae339ad8044",
+    "swebench_status": "needs_reconciliation",
+    "swebench_restarted": false
+  }
+}

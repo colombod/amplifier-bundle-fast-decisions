@@ -98,6 +98,10 @@ over 5 minutes (~13%) and after user idle (~9%) and oversized helper context (up
 
 ## Status
 
+As of 2026-09-29, the default judge is local Laya. The historical Jev figures above
+are not Laya measurements. [Live cross-harness acceptance](evidence/2026-09-29-laya/VERIFICATION.md)
+verified invocation and retrieval but demonstrated no avoided reasoning calls.
+
 See `docs/RESULTS-2026-09-24.md` (top update) for what has been measured so far. As of 2026-09-25 the savings targets are
 **not met**: the shipped router picks one model per request and saved close to nothing on the owner's real work.
 The measurement side is in place: per-decision receipts, the Efficiency ledger by project and lever, test traffic

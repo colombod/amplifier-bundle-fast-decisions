@@ -975,7 +975,9 @@ class LayaBackend:
             raise BackendUnavailable("laya probability mass is not close to one")
         if not math.isclose(total, 1.0, abs_tol=1e-9):
             probabilities = {k: v / total for k, v in probabilities.items()}
-        model = payload.get("model") or "laya-rl-agent"
+        model = payload.get("model")
+        if not isinstance(model, str) or not model.strip() or model == "unknown":
+            raise BackendUnavailable("Laya omitted model identity")
         confidence = answer.get("confidence")
         reported_confidence = (
             confidence
@@ -1035,7 +1037,9 @@ class LayaBackend:
                 except (ValueError, TypeError):
                     raise BackendUnavailable("Invalid Laya choice probabilities") from None
                 answers[q.name] = Answer(probabilities=probabilities)
-        model = payload.get("model") or "laya-rl-agent"
+        model = payload.get("model")
+        if not isinstance(model, str) or not model.strip() or model == "unknown":
+            raise BackendUnavailable("Laya omitted model identity")
         if request.candidates:
             action_result = await self.ask(replace(request, questions=()))
             return replace(action_result, answers=answers)

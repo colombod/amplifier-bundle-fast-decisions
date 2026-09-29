@@ -1,11 +1,19 @@
+> The bundle now defaults to local Laya relevance search behind the `jevgrep` tool.
+> This is a separate bounded implementation, not an upstream Jevgrep Laya provider.
+> To run the upstream CLI described below, set `backend: jev` and
+> `allow_external_state: true`. The portable equivalent is `amplifier-fast-decisions
+> search --backend jev --allow-external-state --input query.json --root WORKSPACE`.
+
 # Jevgrep source retrieval
 
 The bundle mounts `jevgrep` by default through its main behavior for questions such as “where
-are events buffered and flushed?” It calls the actual upstream `jg` CLI and
-returns file references and source excerpts through Amplifier's ordinary tool
-path. It does not bypass the host's tool hooks or select itself as a fast-path
-action. It complements the AnyJev/Jev difficulty judge: the judge routes a
+are events buffered and flushed?” By default it scores bounded source windows
+with local Laya and returns references and excerpts through Amplifier's ordinary
+tool path. Explicit `backend: jev` calls the upstream `jg` CLI. It does not bypass the host's tool hooks or select itself as a fast-path
+action. It complements the configured difficulty judge: the judge routes a
 request; this tool locates source needed to work on it.
+
+## Optional upstream backend
 
 Reviewed upstream commit
 [`24adac80dd57b673eafd8e8c477e4800b39c6c01`](https://github.com/dzhng/jevgrep/tree/24adac80dd57b673eafd8e8c477e4800b39c6c01).
@@ -13,7 +21,7 @@ The wrapper requires the published **`@dzhng/jevgrep@0.4.0`**, checked before
 every search. A different version requires deliberate revalidation. The CLI
 is MIT licensed and is installed separately; its source is not vendored here.
 
-## Setup
+### Upstream setup
 
 Requires Node.js 22+ on macOS or Linux. Install the pinned CLI; the tool never installs software or changes saved credentials:
 
@@ -31,20 +39,20 @@ The upstream CLI uses its saved provider and credentials under
 [Upstream authentication implementation](https://github.com/dzhng/jevgrep/blob/24adac80dd57b673eafd8e8c477e4800b39c6c01/apps/cli/src/auth.ts)
 
 `behaviors/fast-decisions.yaml` includes this behavior, so both the root bundle
-and the usual app behavior mount it. Source sharing is enabled in the shipped
-Jevgrep behavior: searches send eligible source under the workspace root to the
-saved provider, or to TypeSafe when using the existing environment key.
-
-Disable retrieval source sharing for a workspace with:
+and the usual app behavior mount it. The shipped behavior uses local Laya with
+external sharing disabled. To explicitly select upstream Jevgrep and permit
+eligible source sharing with its saved provider or TypeSafe:
 
 ```yaml
 overrides:
   tool-jevgrep:
     config:
-      allow_external_state: false
+      backend: jev
+      allow_external_state: true
 ```
 
-The lower-level Python tool constructor remains off unless configured explicitly.
+The lower-level Python constructor also defaults to local Laya. Setting
+`allow_external_state: false` refuses remote Laya and disables upstream Jevgrep.
 The router's separate permission setting does not control retrieval. Update the
 bundle and start a new session to load the tool; an existing session's tool list
 is not rewritten in place.
@@ -62,18 +70,23 @@ inside Amplifier. Other assistants can use upstream's skill separately.
 
 ## Boundaries and accounting
 
+Local Laya needs `rg` and the [Laya service](MODEL-SETUP.md#laya-local-classifier),
+not the optional Node CLI. Local source reads total at most `max_source_bytes`;
+limits yield an incomplete result. Source windows are scored sequentially.
+
 | Setting | Default | Meaning |
 |---|---|---|
 | `root` | `.` | Trusted workspace directory. Tool inputs may only narrow this scope. |
-| `executable` | `jg` | Installed CLI on PATH, or trusted absolute executable path. |
-| `allow_external_state` | `true` in shipped behavior | Permission to send source content; set false to opt out. |
-| `timeout_ms` | `60000` | Deadline including version check and retrieval; range 100–120000. |
-| `max_source_bytes` | `32768` | Source excerpt allocation passed to upstream, never unlimited. |
+| `backend` | `laya` | Local relevance scorer; `jev` opts into the upstream CLI. |
+| `executable` | `jg` | Upstream backend only: installed CLI on PATH. |
+| `allow_external_state` | `false` | Required for remote Laya or upstream source sharing. |
+| `timeout_ms` | `60000` | Overall retrieval deadline; upstream includes a version check; range 100–120000. |
+| `max_source_bytes` | `32768` | Local total source-read bound; upstream returned-excerpt allocation. |
 | `max_output_bytes` | `65536` | Entire response cap; excess output stops the invocation and marks it incomplete. |
-| `concurrency` | `4` | At most this many concurrent provider requests, range 1–8. |
+| `concurrency` | `4` | Upstream only: maximum concurrent requests, range 1–8. |
 
-`max_source_bytes` limits **returned excerpts**, not source uploaded or total
-provider spend. The upstream CLI has no per-search dollar/request-budget flag.
+For the upstream `jev` backend, `max_source_bytes` limits **returned excerpts**,
+not source uploaded or total provider spend. The upstream CLI has no per-search dollar/request-budget flag.
 Timeout and concurrency bound execution, but do not constitute a spending cap.
 Provider usage/cost is unknown to this wrapper and is not included in router
 savings estimates. A future combined benchmark must count it separately.

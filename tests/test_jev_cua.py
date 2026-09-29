@@ -122,7 +122,7 @@ class CuaTests(unittest.IsolatedAsyncioTestCase):
 
         for approval, expected_calls in [("continue", 1), ("deny", 0)]:
             coordinator = MockCoordinator()
-            tool = JevCuaTool(allow_external_state=False)
+            tool = JevCuaTool(backend="jev", allow_external_state=False)
             original = tool.execute
             tool.execute = AsyncMock(side_effect=original)
 
@@ -158,7 +158,7 @@ class CuaTests(unittest.IsolatedAsyncioTestCase):
                 os.environ, {"AFAST_EVENTS_DIR": directory, "AFAST_TRAFFIC": "test"}
             ),
         ):
-            cleanup = await mount(coordinator, {"allow_external_state": False})
+            cleanup = await mount(coordinator, {"backend": "jev", "allow_external_state": False})
             try:
                 tool = coordinator.get("tools", "jev_cua")
                 result = await tool.execute(

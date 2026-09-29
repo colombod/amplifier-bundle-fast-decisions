@@ -34,21 +34,12 @@ session:
       # turn -- simple: cheap start model at one effort; complex: the host
       # model at provider-default effort, exactly plain Amplifier. No
       # mid-turn switches, so the prompt cache is never re-written.
-      # Judge: hosted Jev (TypeSafe), one typed question per turn (~0.16 s;
-      # AUC 0.83 on SWE-bench Verified difficulty vs 0.60 for the length rule).
-      # It sends the first 2,500 characters of the turn's request to the Jev
-      # endpoint, so allow_external_state is on. Without TYPESAFE_API_KEY (or on
-      # any Jev error or timeout) the turn falls back to the prompt-length rule
-      # and nothing leaves the machine. To keep everything local, override in
-      # ~/.amplifier/settings.yaml:
-      #   overrides:
-      #     loop-fast-decisions:
-      #       config: {backend: none, allow_external_state: false}   # length rule
-      #       # or: {backend: ollama, model: "qwen:latest", timeout_ms: 8000}
-      # Another Jev-compatible server: {backend: jev, jev_url_env: MY_URL_VAR,
-      # jev_key_env: MY_KEY_VAR, model: <name>, backend_label: <display name>}.
-      backend: jev
-      allow_external_state: true
+      # Local Laya is the default judge. Start laya_server on loopback:8090.
+      # Missing/uncertain/failed decisions retain the normal routing fallback;
+      # native approvals and confidence gates remain unchanged. AnyJev is opt-in
+      # only and is not selected by this behavior.
+      backend: laya
+      allow_external_state: false
       # The judged read shortcut stays off: it rarely fired in the studies and
       # would put a scoring call in front of every slow request.
       read_shortcut: false

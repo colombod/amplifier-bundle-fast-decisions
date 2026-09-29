@@ -16,14 +16,14 @@ class ToolTests(unittest.IsolatedAsyncioTestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name).resolve()
         (self.root / "src").mkdir()
-        self.tool = JevgrepTool(root=self.root, allow_external_state=True)
+        self.tool = JevgrepTool(backend="jev", root=self.root, allow_external_state=True)
 
     async def asyncTearDown(self):
         self.temp.cleanup()
 
     async def test_source_permission_is_independent_and_disabled_by_default(self):
         with patch("amplifier_fast_decisions.jevgrep._run_bounded", new_callable=AsyncMock) as run:
-            result = await JevgrepTool(root=self.root).search({"query": "Find code"})
+            result = await JevgrepTool(backend="jev", root=self.root).search({"query": "Find code"})
             self.assertEqual(result["status"], "disabled")
             run.assert_not_awaited()
 
@@ -148,7 +148,7 @@ class ToolTests(unittest.IsolatedAsyncioTestCase):
     async def test_real_pinned_cli_refuses_missing_auth_without_searching(self):
         # No key is provisioned: this exercises installed CLI flags/version and
         # the error boundary, not provider-backed retrieval.
-        tool = JevgrepTool(root=self.root, executable=os.environ["AFAST_TEST_JEVGREP"],
+        tool = JevgrepTool(backend="jev", root=self.root, executable=os.environ["AFAST_TEST_JEVGREP"],
                            allow_external_state=True)
         with patch.dict(os.environ, {"XDG_CONFIG_HOME": str(self.root / "empty-config")}):
             result = await tool.search({"query": "Where are events recorded?"})

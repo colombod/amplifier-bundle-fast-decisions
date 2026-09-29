@@ -9,6 +9,12 @@ Experimental, MIT licensed. Not an official Microsoft or TypeSafe release, and n
 Approvals, permissions and tool execution are unchanged: Fast Decisions wraps Amplifier's standard loop rather
 than replacing it.
 
+**Default judge: local Laya.** Routing, source relevance search, and opt-in computer-use
+selection now use the loopback Laya server. AnyJev is disabled in the normal path;
+its optional research adapter remains available. This is an explicit backend preference,
+not evidence that Laya beats Jev at task quality. See the
+[cross-harness checks](docs/evidence/2026-09-29-laya/VERIFICATION.md).
+
 ## What it does (measured)
 
 | Kind of work | Time | Cost | Quality |
@@ -19,7 +25,7 @@ than replacing it.
 | Multi-turn sessions (4 requests), Opus 5.5 default · screen | 0.89× | **1.34–1.41×** (costs more) | 9 of 9 vs. 9 of 9 |
 | Real bug fixes in large projects (SWE-bench Verified) | 1.00× | 0.98× | 13 of 20 fixed vs. 14 of 20 (same setup as standard) |
 
-Everyday rows: the current default (Jev deciding, one decision per request) on a fresh split of 12 tasks never run
+Everyday rows: the historical Jev configuration (one decision per request) on a fresh split of 12 tasks never run
 before (`holdout2`, 4 of them longer multi-file tasks), 3 runs each, one request per fresh session, against standard
 Amplifier with the same default model. The criteria were written down and pushed 27 s before the first run, and the
 setups ran in a shuffled order per repetition. Both results are **confirmed** under the study protocol: Fable 95%
@@ -63,8 +69,9 @@ read `~/.amplifier/settings.yaml`, and to every helper session they start:
 amplifier bundle add --app "git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=behaviors/fast-decisions.yaml"
 ```
 
-- **Decision-maker:** add `TYPESAFE_API_KEY=...` to `~/.amplifier/keys.env` and Jev decides each request.
-  Without a key, a built-in rule decides and nothing leaves your machine.
+- **Decision-maker:** start the [local Laya server](docs/MODEL-SETUP.md#laya-local-classifier) on port 8090.
+  If it is unavailable, routing uses its existing rule fallback; standalone tools report failure.
+  Jev remains an explicit opt-in backend requiring a TypeSafe key and external-state consent.
 - **Upgrading from an earlier version:** run `amplifier update` once, and remove any older fast-decisions entry
   (`amplifier bundle remove --app <old-uri>`). Keep this entry last in your app list: later entries win.
 - **Check it:** run a prompt, then
@@ -96,8 +103,8 @@ between were not included, so everyday accuracy will be lower. Re-run on 2026-09
 
 | Decision-maker | Picks the harder issue (AUC) | Time per decision | Data leaves your machine |
 |---|---|---|---|
-| **Jev** (hosted by TypeSafe) · default | 0.83 | ~0.14–0.16 s | The first 2,500 characters of your latest message (for helper sessions, of the helper's instructions) |
-| Built-in rule · used without a key or if Jev fails | 0.60 | instant | No |
+| **Jev** (hosted by TypeSafe) · historical baseline | 0.83 | ~0.14–0.16 s | The first 2,500 characters of your latest message (for helper sessions, of the helper's instructions) |
+| Built-in rule · routing fallback on unavailable judge | 0.60 | instant | No |
 | Large local Qwen model (Ollama `qwen:latest`, 27.4B parameters, 29 GB) | 0.85 | ~2.2–2.5 s | No |
 | Qwen3 8B on your Mac (Ollama `qwen3:8b`) | 0.72 | ~0.36 s | No |
 | Qwen3.8 27B on a shared hosted server (RunPod) | 0.85 | median ~0.6 s; 18–25% of calls took 5–24 s | To your server |
@@ -120,18 +127,18 @@ was cheaper on a set of all-easy tasks because it kept fewer requests on the usu
 
 ## Also included
 
-- **Code discovery with Jevgrep:** the default behavior includes a native
-  tool for finding source by what it does. It sends eligible workspace source to Jev, reusing `TYPESAFE_API_KEY` when no CLI provider is saved. Disable with `tool-jevgrep.allow_external_state: false`;
-  ordinary search remains available ([setup and limits](docs/JEVGREP.md)).
+- **Code discovery:** the default `jevgrep` tool now uses bounded local Laya relevance scoring.
+  It honors ignore rules and workspace exclusions. This local implementation is distinct from upstream
+  Jevgrep, which remains available with `backend: jev` and external-state consent ([details](docs/JEVGREP.md)).
   See the [matched Jev, Laya and retrieval measurements](docs/evidence/2026-09-28-decisions/REPORT.md) for task-level benefits and regressions.
-- **Experimental Jev computer use:** opt-in `fast-decisions:behaviors/jev-cua` selects an
-  operation and observed UI control in one batched request. A bounded host driver can
+- **Experimental computer use:** opt-in `fast-decisions:behaviors/jev-cua` selects an
+  operation and observed UI control in one batched Laya request. A bounded host driver can
   continue between clicks without generative calls; native approvals, fresh targets,
   and completion verification remain host-owned. Includes a trycua click/wait adapter.
   See [setup, live evidence and current limits](docs/JEV-CUA.md).
-- **Experimental local AnyJev judge:** optional fixed-question L0 evaluation and fitted L1/L2
+- **Paused AnyJev research adapter:** explicitly opt-in only; optional fixed-question L0 evaluation and fitted L1/L2
   routing, with exact model/question checks. Added as an alternative to evaluate; it has not
-  displaced the measured default ([assessment and setup](docs/ANYJEV.md)).
+  been selected by the normal default ([assessment and setup](docs/ANYJEV.md)).
 - **Savings estimate:** `afast savings [--since 7d] [--json]` and the dashboard's savings panel price and time each
   cheaper-model request as if your usual model had done it, assuming your usual model would already have the
   conversation cached after the first request and charging the cache rebuild when a hard request follows an easy

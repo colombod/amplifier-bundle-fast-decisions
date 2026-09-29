@@ -6,8 +6,10 @@ ordinary grep when you already know the path or symbol. Skip retrieval when
 the required context is already present.
 
 Example: `{"query":"Where are telemetry events recorded and flushed?","path":"src"}`.
-Choose the narrowest useful directory. This tool sends eligible source to its
-saved Jev provider, or TypeSafe using the existing environment key. Source sharing is enabled by the default bundle and can be disabled with tool-jevgrep.allow_external_state: false.
+Choose the narrowest useful directory. By default the tool scores source windows
+with local Laya; it is not the upstream Jevgrep implementation. Remote Jevgrep
+requires explicit `backend: jev` and source-sharing consent. Local results include
+ranked matches, line references, coverage limits, and actual judge identity.
 
 Read the status before relying on the result. `incomplete` or `truncated`
 means missing context is unknown, not absent. Use returned file/line references
