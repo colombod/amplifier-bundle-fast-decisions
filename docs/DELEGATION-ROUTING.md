@@ -214,14 +214,11 @@ divergence is the policy refusing a move the evaluation proved harmful.
 
 ## Open questions
 
-1. **Which judge should answer these questions?** Every number above was
-   measured with Jev. This repo's default judge is now local Laya
-   (`behaviors/fast-decisions.yaml`, `allow_external_state: false`). Three
-   options, none of them free: use the session's configured judge (what this
-   code does -- honest, but the evidence no longer describes the classifier);
-   pin Jev for this decision only (matches the evidence, but an external call
-   under a privacy gate that currently says no); or Laya by default with Jev
-   opt-in (needs a Laya-vs-Jev agreement study on these four questions first).
+1. **Judge applicability.** Every number above was measured with Jev. The
+   default behavior uses Jev with external-state consent enabled since #49.
+   This feature uses the session's configured judge and honors its consent
+   gate. Explicit Laya or other backend overrides need their own validation
+   on these four questions; the Jev study does not establish their quality.
 2. **Double routing.** A pin lands in the child as its session model. If the
    child also runs this orchestrator with `model_routing.start_policy`, its own
    turn-start router decides the child's start tier independently, and may route
@@ -237,3 +234,7 @@ divergence is the policy refusing a move the evaluation proved harmful.
 3. **Deadline under a fanned-out backend.** 750 ms was measured against Jev's
    single batched call. What it should be for a four-way concurrent Laya ask is
    unmeasured.
+4. **Registry attachment.** Delegation routing is attached by
+   `HybridOrchestrator` only. The registry mode introduced in #51 does not
+   install this delegation facade; enabling `delegation_routing` there does
+   not activate it. A separate integration and validation are required.

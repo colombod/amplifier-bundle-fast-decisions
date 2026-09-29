@@ -35,6 +35,7 @@ See docs/DELEGATION-ROUTING.md.
 from __future__ import annotations
 
 import asyncio
+import math
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -233,6 +234,17 @@ async def ask_delegation_judge(
         if answer is None or not answer.probabilities:
             choices[question.name] = None
             continue
+        probs = answer.probabilities
+        # Backend adapters expose raw contributed answers. Validate before
+        # argmax: NaN defeats threshold comparisons, and an unknown tier
+        # otherwise becomes "keep", which can still lower reasoning effort.
+        if (not isinstance(probs, dict)
+                or not set(probs).issubset(question.criteria)
+                or any(isinstance(p, bool) or not isinstance(p, (int, float))
+                       or not math.isfinite(p) or not 0 <= p <= 1
+                       for p in probs.values())
+                or not math.isclose(sum(probs.values()), 1.0, abs_tol=0.025)):
+            return None, "judge_malformed_probabilities", duration_ms
         choice = max(answer.probabilities, key=answer.probabilities.get)
         choices[question.name] = choice
         probabilities[question.name] = dict(answer.probabilities)

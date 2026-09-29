@@ -112,9 +112,9 @@ acceptable, B not) became a guard: effort is never lowered on a small-tier ancho
   reported.
 - **Read-only agents only** (explorers, analysts, reviewers). Nothing here covers code-writing
   delegations.
-- **Classifier:** every number was measured with **Jev**. This repo's default judge is now local
-  Laya; whether Laya answers these four questions the same way is untested (see the PR's open
-  question 1).
+- **Classifier:** every number was measured with **Jev**. The default behavior uses Jev since
+  #49. Explicit Laya or other judge overrides remain untested on these four questions; these
+  study results do not establish their quality.
 - Each round is a different policy on a different sample; do not pool them.
 - Exclusions are symmetric and listed in the report: infrastructure failures before any turn,
   pairs where both arms failed, and B runs whose pin did not take effect.

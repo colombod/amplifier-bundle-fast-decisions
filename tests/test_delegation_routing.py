@@ -535,6 +535,31 @@ class AbstainTests(unittest.IsolatedAsyncioTestCase):
         )
         await self._abstains(decider, events, reason_contains="judge_abstained")
 
+    async def test_invalid_probabilities_never_change_delegation(self):
+        invalid = [
+            {"unexpected": 1.0},
+            {"small": float("nan"), "mid": 0.05, "frontier": 0.02},
+            {"small": float("inf")},
+            {"small": 1.2, "mid": -0.2},
+            {"small": True},
+            {"small": "0.93", "mid": 0.07},
+            {"small": 0.2, "mid": 0.1},
+        ]
+        for probabilities in invalid:
+            with self.subTest(probabilities=probabilities):
+                decider, events = self._setup(backend=FakeJudgeBackend([
+                    {**DOWN_STANDARD, "min_tier": probabilities}
+                ]))
+                await self._abstains(decider, events,
+                                     reason_contains="judge_malformed_probabilities")
+
+    async def test_invalid_requirement_answer_does_not_downgrade(self):
+        decider, events = self._setup(backend=FakeJudgeBackend([
+            {**DOWN_STANDARD, "needs_computer_use": {"unknown": 1.0}}
+        ]))
+        await self._abstains(decider, events,
+                             reason_contains="judge_malformed_probabilities")
+
     async def test_caller_pinned_preferences_win(self):
         backend = FakeJudgeBackend([DOWN_STANDARD])
         decider, events = self._setup(backend=backend)
