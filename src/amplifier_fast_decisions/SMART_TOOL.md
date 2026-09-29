@@ -65,6 +65,11 @@ Ollama backend requires native token log probabilities. Loopback calls need no A
 remote Laya requires HTTPS and explicit external-state consent. A missing model is an explicit
 failure, never a scripted substitute. No web server starts as a side effect.
 
+For a shared authenticated Laya endpoint, set `FAST_DECISIONS_LAYA_URL` and
+`FAST_DECISIONS_LAYA_TOKEN` in the harness environment, and pass
+`--allow-external-state` to each operation. See
+[hosted deployment and onboarding](../../docs/HOSTED-LAYA.md).
+
 Jev uses the existing TypeSafe backend and requires explicit external-state
 consent. Set `TYPESAFE_API_KEY` in the process environment; never put it in a
 request file. The optional SDK is not required: the stdlib transport is supported.
