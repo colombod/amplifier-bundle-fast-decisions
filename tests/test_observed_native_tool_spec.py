@@ -102,9 +102,38 @@ class ObservedNativeToolSpecTests(unittest.TestCase):
         # The exact construction the orchestrator's execute() performs.
         observed = ObservedTool(tool, runtime, "computer", workspace=None, levers=None)
 
-        self.assertIs(getattr(type(observed), "native_tool_spec", None), COMPUTER_USE_SPEC)
+        self.assertIsNotNone(getattr(type(observed), "native_tool_spec", None))
         # loop-streaming reads the value off the instance after the type probe.
         self.assertIs(observed.native_tool_spec, COMPUTER_USE_SPEC)
+
+    def test_native_property_runs_on_original_instance(self):
+        class DerivedNativeTool(FakeNativeTool):
+            @property
+            def native_tool_spec(self):
+                return {**super().native_tool_spec, "display_width_px": self.width}
+
+        _, runtime, _ = setup_service()
+        tool = DerivedNativeTool()
+        tool.width = 640
+        observed = ObservedTool(tool, runtime, "computer")
+        self.assertEqual(observed.native_tool_spec, tool.native_tool_spec)
+        tool.width = 1920
+        self.assertEqual(observed.native_tool_spec["display_width_px"], 1920)
+
+    def test_instance_override_and_replaced_class_spec_stay_live(self):
+        class NativeTool(FakeNativeTool):
+            pass
+
+        _, runtime, _ = setup_service()
+        first, second = NativeTool(), NativeTool()
+        first.native_tool_spec = {**COMPUTER_USE_SPEC, "display_width_px": 800}
+        wrapped_first = ObservedTool(first, runtime, "computer")
+        wrapped_second = ObservedTool(second, runtime, "computer")
+        self.assertIs(type(wrapped_first), type(wrapped_second))
+        self.assertIs(wrapped_first.native_tool_spec, first.native_tool_spec)
+        NativeTool.native_tool_spec = {**COMPUTER_USE_SPEC, "display_width_px": 1920}
+        self.assertIs(wrapped_second.native_tool_spec, NativeTool.native_tool_spec)
+        self.assertEqual(wrapped_first.native_tool_spec["display_width_px"], 800)
 
     def test_plain_tool_still_has_no_native_spec(self):
         service, runtime, events = setup_service()

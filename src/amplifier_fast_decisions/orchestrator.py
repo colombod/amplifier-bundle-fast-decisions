@@ -2273,7 +2273,7 @@ class ObservedTool:
         # attribute on its class so the provider sends it in its native shape;
         # wrapping it in a plain ObservedTool made it invisible and the tool
         # was silently downgraded to an ordinary function tool. Observe it
-        # through a subclass that re-declares the attribute at class level, so
+        # through a subclass that exposes a delegating property at class level, so
         # we keep both the observation and the native shape. Tools without a
         # native spec are wrapped exactly as before.
         if cls is ObservedTool:
@@ -2515,9 +2515,11 @@ def _observed_class_for(tool: Any) -> type:
 
     Plain ObservedTool for an ordinary function tool. For a model-native tool
     -- one whose CLASS declares ``native_tool_spec`` -- a cached subclass
-    carrying that same declaration, so ``getattr(type(wrapped),
-    "native_tool_spec", None)`` answers exactly as it would for the unwrapped
-    tool. See ObservedTool.__new__.
+    exposing a delegating property, so ``getattr(type(wrapped),
+    "native_tool_spec", None)`` still detects native support. Read the value
+    on the original tool so descriptors retain their original receiver and
+    per-instance overrides and live configuration changes remain visible.
+    See ObservedTool.__new__.
     """
     spec_source = getattr(type(tool), "native_tool_spec", None)
     if spec_source is None:
@@ -2525,7 +2527,7 @@ def _observed_class_for(tool: Any) -> type:
     cached = _OBSERVED_NATIVE_CLASSES.get(type(tool))
     if cached is None:
         cached = type(f"Observed{type(tool).__name__}", (ObservedTool,),
-                      {"native_tool_spec": spec_source})
+                      {"native_tool_spec": property(lambda self: self._tool.native_tool_spec)})
         _OBSERVED_NATIVE_CLASSES[type(tool)] = cached
     return cached
 
