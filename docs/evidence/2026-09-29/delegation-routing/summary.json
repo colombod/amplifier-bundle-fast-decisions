@@ -1,0 +1,434 @@
+{
+  "schema": "delegation-routing-live-v1",
+  "date": "2026-09-29",
+  "what": "Live end-to-end check of per-delegation model routing (docs/DELEGATION-ROUTING.md)",
+  "harness": "scripts/delegation_routing_live.py",
+  "harness_sha256": "d7577b49349df69122c97fc4d84d6fd0ea339a7cced7dca0ab1e3ad338cf91fc",
+  "source_git_sha": "cb5fb0085bf234a48434cfbb9f936c784d68345c",
+  "source_tree_sha256": "1d692157ce9abf8f7da35a7131545c0d57110195f8ce7d3358947f5e321e6374",
+  "judge_backend": "jev",
+  "judge_note": "Laya (this repo's default judge) was unreachable on the measurement host; Jev was used for these two runs only. See VERIFICATION.md.",
+  "instruction_chars": 615,
+  "corpus": [
+    "docs/cache.md",
+    "docs/limits.md",
+    "docs/logging.md",
+    "docs/retries.md",
+    "settings.json"
+  ],
+  "runs_paid": 3,
+  "runs_reported": 2,
+  "cost_usd_reported": 0.606,
+  "cost_usd_including_discarded": 0.9501,
+  "cost_evidence": "provider_reported_estimate_not_billing",
+  "passed": true,
+  "runs": [
+    {
+      "arm": "enforce",
+      "exit_code": 0,
+      "wall_s": 41.0,
+      "cost_usd": 0.282,
+      "judge": "jev",
+      "parent_model": "claude-sonnet-5",
+      "parent_provider": "anthropic",
+      "deadline_ms": 3000,
+      "delegations": 1,
+      "child_agent": "foundation:explorer",
+      "child_model_role": "reasoning",
+      "parent_session": "62f3e129-7a1e-4089-8ec7-f46a7b5a727a",
+      "child_session": "0000000000000000-986cab9adddc49ab_foundation-explorer",
+      "delegation_routed": {
+        "mode": "enforce",
+        "delegation_policy": "v3",
+        "backend": "jev",
+        "agent": "foundation:explorer",
+        "model_role": "reasoning",
+        "role_source": "call",
+        "anchor_source": "resolver",
+        "anchor": {
+          "config": {
+            "reasoning_effort": "high"
+          },
+          "model": "claude-opus-5-5",
+          "provider": "anthropic"
+        },
+        "answers": {
+          "answer_depth": "thorough",
+          "min_tier": "mid",
+          "min_tier_p": 0.95,
+          "needs_computer_use": false,
+          "needs_vision": false
+        },
+        "probabilities": {
+          "answer_depth": {
+            "brief": 0.0,
+            "standard": 0.07,
+            "thorough": 0.93
+          },
+          "min_tier": {
+            "frontier": 0.0,
+            "mid": 0.95,
+            "small": 0.05
+          },
+          "needs_computer_use": {
+            "no": 1.0,
+            "yes": 0.0
+          },
+          "needs_vision": {
+            "no": 1.0,
+            "yes": 0.0
+          }
+        },
+        "requirements": {
+          "needs_computer_use": false,
+          "needs_vision": false
+        },
+        "instruction_chars": 615,
+        "proposed_preference": {
+          "config": {
+            "reasoning_effort": "low"
+          },
+          "model": "claude-opus-5-5",
+          "provider": "anthropic"
+        },
+        "actual_preference": {
+          "config": {
+            "reasoning_effort": "low"
+          },
+          "model": "claude-opus-5-5",
+          "provider": "anthropic"
+        },
+        "lever": "effort",
+        "nudge": "effort_low",
+        "move": "down",
+        "guard": null,
+        "capability_conflict": null,
+        "action": "adjust",
+        "reason": null,
+        "duration_ms": 297.0887655392289,
+        "latency_ms": 488.84609900414944
+      },
+      "checks": [
+        {
+          "id": "a_receipt",
+          "name": "parent emitted exactly one delegation_routed with judge answers",
+          "passed": true,
+          "evidence": {
+            "receipts": 1,
+            "session_is_parent": true,
+            "answers": {
+              "answer_depth": "thorough",
+              "min_tier": "mid",
+              "min_tier_p": 0.95,
+              "needs_computer_use": false,
+              "needs_vision": false
+            },
+            "probability_questions": [
+              "answer_depth",
+              "min_tier",
+              "needs_computer_use",
+              "needs_vision"
+            ],
+            "action": "adjust",
+            "reason": null,
+            "backend": "jev",
+            "anchor": {
+              "config": {
+                "reasoning_effort": "high"
+              },
+              "model": "claude-opus-5-5",
+              "provider": "anthropic"
+            },
+            "proposed_preference": {
+              "config": {
+                "reasoning_effort": "low"
+              },
+              "model": "claude-opus-5-5",
+              "provider": "anthropic"
+            },
+            "actual_preference": {
+              "config": {
+                "reasoning_effort": "low"
+              },
+              "model": "claude-opus-5-5",
+              "provider": "anthropic"
+            },
+            "judge_duration_ms": 297.0887655392289,
+            "decision_latency_ms": 488.84609900414944
+          }
+        },
+        {
+          "id": "c_pin_on_call",
+          "name": "enforce/adjust: agent_spawned leading preference == actual_preference",
+          "passed": true,
+          "evidence": {
+            "actual_preference": {
+              "provider": "anthropic",
+              "model": "claude-opus-5-5",
+              "config": {
+                "reasoning_effort": "low"
+              }
+            },
+            "spawned_provider_preference": {
+              "provider": "anthropic",
+              "model": "claude-opus-5-5",
+              "config": {
+                "reasoning_effort": "low"
+              }
+            }
+          }
+        },
+        {
+          "id": "c_pin_in_child",
+          "name": "enforce/adjust: child provider:resolve reports the pin",
+          "passed": true,
+          "evidence": {
+            "actual_preference": {
+              "provider": "anthropic",
+              "model": "claude-opus-5-5",
+              "config": {
+                "reasoning_effort": "low"
+              }
+            },
+            "child_provider_resolve": {
+              "provider": "anthropic",
+              "model": "claude-opus-5-5"
+            },
+            "child_session_config_present": true
+          }
+        },
+        {
+          "id": "c_effort_in_child",
+          "name": "enforce/adjust: child's own records show the pinned reasoning_effort",
+          "passed": null,
+          "evidence": {
+            "pinned_reasoning_effort": "low",
+            "observed_in_child": null,
+            "note": "child recorded no reasoning_effort; pin verified on the call, not inside the child"
+          }
+        },
+        {
+          "id": "e_source_is_checkout",
+          "name": "the orchestrator that decided is this checkout's source",
+          "passed": true,
+          "evidence": {
+            "observed": {
+              "source_git_sha": "cb5fb0085bf234a48434cfbb9f936c784d68345c",
+              "source_tree_sha256": "1d692157ce9abf8f7da35a7131545c0d57110195f8ce7d3358947f5e321e6374",
+              "source_kind": "worktree"
+            },
+            "expected": {
+              "source_git_sha": "cb5fb0085bf234a48434cfbb9f936c784d68345c",
+              "source_tree_sha256": "1d692157ce9abf8f7da35a7131545c0d57110195f8ce7d3358947f5e321e6374"
+            }
+          }
+        },
+        {
+          "id": "d_no_instruction_text",
+          "name": "no instruction text in any delegation_routed event",
+          "passed": true,
+          "evidence": {
+            "marker_present": false,
+            "instruction_chars": [
+              615
+            ],
+            "instruction_len": 615
+          }
+        }
+      ],
+      "passed": true,
+      "undetermined": [
+        "c_effort_in_child"
+      ]
+    },
+    {
+      "arm": "shadow",
+      "exit_code": 0,
+      "wall_s": 57.9,
+      "cost_usd": 0.324,
+      "judge": "jev",
+      "parent_model": "claude-sonnet-5",
+      "parent_provider": "anthropic",
+      "deadline_ms": 3000,
+      "delegations": 1,
+      "child_agent": "foundation:explorer",
+      "child_model_role": "reasoning",
+      "parent_session": "88480d18-2937-4832-9302-b2362bcce73d",
+      "child_session": "0000000000000000-25df7bd49adf4a62_foundation-explorer",
+      "delegation_routed": {
+        "mode": "shadow",
+        "delegation_policy": "v3",
+        "backend": "jev",
+        "agent": "foundation:explorer",
+        "model_role": "reasoning",
+        "role_source": "call",
+        "anchor_source": "resolver",
+        "anchor": {
+          "config": {
+            "reasoning_effort": "high"
+          },
+          "model": "claude-opus-5-5",
+          "provider": "anthropic"
+        },
+        "answers": {
+          "answer_depth": "thorough",
+          "min_tier": "mid",
+          "min_tier_p": 0.95,
+          "needs_computer_use": false,
+          "needs_vision": false
+        },
+        "probabilities": {
+          "answer_depth": {
+            "brief": 0.0,
+            "standard": 0.06,
+            "thorough": 0.94
+          },
+          "min_tier": {
+            "frontier": 0.0,
+            "mid": 0.95,
+            "small": 0.05
+          },
+          "needs_computer_use": {
+            "no": 1.0,
+            "yes": 0.0
+          },
+          "needs_vision": {
+            "no": 1.0,
+            "yes": 0.0
+          }
+        },
+        "requirements": {
+          "needs_computer_use": false,
+          "needs_vision": false
+        },
+        "instruction_chars": 615,
+        "proposed_preference": {
+          "config": {
+            "reasoning_effort": "low"
+          },
+          "model": "claude-opus-5-5",
+          "provider": "anthropic"
+        },
+        "actual_preference": null,
+        "lever": "effort",
+        "nudge": "effort_low",
+        "move": "down",
+        "guard": null,
+        "capability_conflict": null,
+        "action": "shadow",
+        "reason": null,
+        "duration_ms": 215.55564366281033,
+        "latency_ms": 402.7428925037384
+      },
+      "checks": [
+        {
+          "id": "a_receipt",
+          "name": "parent emitted exactly one delegation_routed with judge answers",
+          "passed": true,
+          "evidence": {
+            "receipts": 1,
+            "session_is_parent": true,
+            "answers": {
+              "answer_depth": "thorough",
+              "min_tier": "mid",
+              "min_tier_p": 0.95,
+              "needs_computer_use": false,
+              "needs_vision": false
+            },
+            "probability_questions": [
+              "answer_depth",
+              "min_tier",
+              "needs_computer_use",
+              "needs_vision"
+            ],
+            "action": "shadow",
+            "reason": null,
+            "backend": "jev",
+            "anchor": {
+              "config": {
+                "reasoning_effort": "high"
+              },
+              "model": "claude-opus-5-5",
+              "provider": "anthropic"
+            },
+            "proposed_preference": {
+              "config": {
+                "reasoning_effort": "low"
+              },
+              "model": "claude-opus-5-5",
+              "provider": "anthropic"
+            },
+            "actual_preference": null,
+            "judge_duration_ms": 215.55564366281033,
+            "decision_latency_ms": 402.7428925037384
+          }
+        },
+        {
+          "id": "b_shadow_records_only",
+          "name": "shadow: action=shadow and actual_preference is null",
+          "passed": true,
+          "evidence": {
+            "action": "shadow",
+            "actual_preference": null
+          }
+        },
+        {
+          "id": "b_child_unchanged",
+          "name": "shadow: child resolved to the anchor, session:config present",
+          "passed": true,
+          "evidence": {
+            "anchor": {
+              "provider": "anthropic",
+              "model": "claude-opus-5-5",
+              "config": {
+                "reasoning_effort": "high"
+              }
+            },
+            "child_provider_resolve": {
+              "provider": "anthropic",
+              "model": "claude-opus-5-5"
+            },
+            "child_session_config_present": true,
+            "spawned_provider_preference": {
+              "provider": "anthropic",
+              "model": "claude-opus-5-5",
+              "config": {
+                "reasoning_effort": "high"
+              }
+            }
+          }
+        },
+        {
+          "id": "e_source_is_checkout",
+          "name": "the orchestrator that decided is this checkout's source",
+          "passed": true,
+          "evidence": {
+            "observed": {
+              "source_git_sha": "cb5fb0085bf234a48434cfbb9f936c784d68345c",
+              "source_tree_sha256": "1d692157ce9abf8f7da35a7131545c0d57110195f8ce7d3358947f5e321e6374",
+              "source_kind": "worktree"
+            },
+            "expected": {
+              "source_git_sha": "cb5fb0085bf234a48434cfbb9f936c784d68345c",
+              "source_tree_sha256": "1d692157ce9abf8f7da35a7131545c0d57110195f8ce7d3358947f5e321e6374"
+            }
+          }
+        },
+        {
+          "id": "d_no_instruction_text",
+          "name": "no instruction text in any delegation_routed event",
+          "passed": true,
+          "evidence": {
+            "marker_present": false,
+            "instruction_chars": [
+              615
+            ],
+            "instruction_len": 615
+          }
+        }
+      ],
+      "passed": true,
+      "undetermined": []
+    }
+  ]
+}
