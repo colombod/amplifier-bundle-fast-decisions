@@ -1,0 +1,10 @@
+#!/bin/sh
+# Keep credentials in the child process; never copy them into this repository.
+set -eu
+JEV_PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+if [ -z "${TYPESAFE_API_KEY:-}" ] && [ -f "$HOME/.amplifier/keys.env" ]; then
+    set -a
+    . "$HOME/.amplifier/keys.env" >/dev/null 2>&1
+    set +a
+fi
+exec "$JEV_PROJECT_ROOT/.venv/bin/python" "$JEV_PROJECT_ROOT/scripts/jev_router.py" "$@"
