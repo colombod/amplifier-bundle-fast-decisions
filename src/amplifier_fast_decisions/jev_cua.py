@@ -141,9 +141,9 @@ class CuaSelector:
             raise ValueError("Invalid CUA probability gate")
         from .local_backend import LayaBackend
 
-        if backend is None or backend == "laya":
+        if backend == "laya":
             backend = LayaBackend(url=laya_url, timeout_ms=timeout_ms)
-        elif backend == "jev":
+        elif backend is None or backend == "jev":
             backend = JevBackend(model="jev-1.13.0", timeout_ms=timeout_ms)
         elif isinstance(backend, str):
             raise ValueError("CUA backend must be laya or jev")

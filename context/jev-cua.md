@@ -1,6 +1,8 @@
 # Computer-use selector
 
-The default backend is local Laya. Jev is opt-in with external-state consent.
+The default backend is Jev. The opt-in behavior explicitly permits sending the
+bounded snapshot to TypeSafe; standalone calls require external-state consent.
+Laya remains an explicit experimental backend.
 
 When the next UI step is selecting an observed control, use `jev_cua` with a
 sanitized, scoped snapshot from the host browser/computer tool. Snapshot fields:

@@ -122,7 +122,7 @@ class CuaTests(unittest.IsolatedAsyncioTestCase):
 
         for approval, expected_calls in [("continue", 1), ("deny", 0)]:
             coordinator = MockCoordinator()
-            tool = JevCuaTool(backend="jev", allow_external_state=False)
+            tool = JevCuaTool(allow_external_state=False)
             original = tool.execute
             tool.execute = AsyncMock(side_effect=original)
 

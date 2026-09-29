@@ -16,7 +16,7 @@ class ToolTests(unittest.IsolatedAsyncioTestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name).resolve()
         (self.root / "src").mkdir()
-        self.tool = JevgrepTool(backend="jev", root=self.root, allow_external_state=True)
+        self.tool = JevgrepTool(root=self.root, allow_external_state=True)
 
     async def asyncTearDown(self):
         self.temp.cleanup()
