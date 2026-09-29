@@ -2,14 +2,15 @@
 
 **Two real `amplifier run` sessions delegated once each through this branch's
 `delegation.py`. In `enforce`, the policy moved a `claude-opus-5-5` delegation
-from `reasoning_effort: high` to `low`, and the pin appears on the delegate call
-and in the child's own session. In `shadow`, the same judge answers produced the
+from `reasoning_effort: high` to `low`, and the pin appears on the delegate call.
+The child confirms the provider/model, but its effort is undetermined. In
+`shadow`, the same judge answers produced the
 same proposal and the child still started on the untouched anchor. The delegated
 instruction appears in no receipt. Two arms, one delegation each — this is a
 mechanism check, not a measurement of whether the policy's moves are good.**
 
 [Machine-readable evidence](summary.json) · [Environment](environment.json) ·
-Harness: [`scripts/delegation_routing_live.py`](../../../scripts/delegation_routing_live.py)
+Harness: [`scripts/delegation_routing_live.py`](../../../../scripts/delegation_routing_live.py)
 
 ## Why this exists
 
@@ -93,12 +94,12 @@ both     instruction_chars 615, instruction_len 615, marker_present false
   use, or whether its moves preserve answer quality. The quality question is
   `docs/DELEGATION-ROUTING.md`'s A/B, which failed its own pre-registered
   measure.
-- **Jev was the judge, not this repo's default.** Laya is the shipped default
-  (`behaviors/fast-decisions.yaml`, `allow_external_state: false`) but was not
+- **Jev was the judge.** The measured checkout predates #49's restoration of
+  Jev as the default. Laya was configured in that checkout but was not
   reachable on the measurement host: no `laya`/`laya_mlx`/`torch` importable,
   and nothing serving `/v1/decide` on loopback port 8090. These two runs used Jev
-  with `allow_external_state` enabled in the run-local profile only. This is
-  open question 1 in `docs/DELEGATION-ROUTING.md`, unchanged.
+  with `allow_external_state` enabled in the run-local profile only. No Laya
+  quality claim follows from these runs.
 - **One task, one role, one anchor.** `model_role="reasoning"` on the
   `anthropic` matrix, so only the effort lever was exercised. The model-down,
   provider-down, up, guard and capability-conflict paths were not.
