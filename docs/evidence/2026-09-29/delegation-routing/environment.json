@@ -1,0 +1,19 @@
+{
+  "python": "3.13.14",
+  "os": "Linux",
+  "architecture": "x86_64",
+  "cli_versions": {
+    "amplifier-app-cli": null,
+    "amplifier-core": "2.0.1",
+    "amplifier-foundation": "1.0.0"
+  },
+  "note": "Run through a throwaway venv and AMPLIFIER_HOME, not the host's own Amplifier. See VERIFICATION.md, 'Reproducing'.",
+  "harness": {
+    "scripts/delegation_routing_live.py": "d7577b49349df69122c97fc4d84d6fd0ea339a7cced7dca0ab1e3ad338cf91fc"
+  },
+  "source_observed": {
+    "source_git_sha": "cb5fb0085bf234a48434cfbb9f936c784d68345c",
+    "source_tree_sha256": "1d692157ce9abf8f7da35a7131545c0d57110195f8ce7d3358947f5e321e6374",
+    "source_kind": "worktree"
+  }
+}
