@@ -1,0 +1,17 @@
+bundle:
+  name: fast-decisions-jev-cua
+  version: 0.1.0
+  description: Opt-in observed-control computer-use selection through Jev.
+
+tools:
+  - module: tool-jev-cua
+    source: git+https://github.com/michaeljabbour/amplifier-bundle-fast-decisions@main#subdirectory=modules/tool-jev-cua
+    config:
+      # Including this behavior permits sending sanitized, scoped UI state.
+      allow_external_state: true
+      timeout_ms: 3000
+      min_probability: 0.75
+
+context:
+  include:
+    - fast-decisions:context/jev-cua.md
