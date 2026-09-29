@@ -14,6 +14,7 @@ import time
 from typing import Any
 from uuid import uuid4
 
+from . import delegation
 from . import efficiency
 from .levers import Levers
 from .contracts import (
@@ -2741,6 +2742,17 @@ class HybridOrchestrator:
                 key: ObservedTool(tool, self.runtime, key, workspace=workspace_tool, levers=levers)
                 for key, tool in tools.items()
             }
+            # Per-delegation model routing (Policy.delegation_routing, opt-in):
+            # the ONE delegate entry becomes a facade around its own
+            # ObservedTool, so the decision happens before the child session
+            # exists while tool_start/tool_end and the waste guards around the
+            # delegation stay exactly where they were. Off (the default) returns
+            # None and the mapping keeps the identical object it already had.
+            delegate_tool = wrapped_tools.get(delegation.DELEGATE_TOOL)
+            if delegate_tool is not None:
+                facade = delegation.facade_for(delegate_tool, self.runtime, self.coordinator)
+                if facade is not None:
+                    wrapped_tools[delegation.DELEGATE_TOOL] = facade
             wrapped_providers = {key: RoutedProvider(provider, self.runtime, tools,
                 self.response_factory, key, levers=levers) for key, provider in providers.items()}
             kwargs.setdefault("coordinator", self.coordinator)

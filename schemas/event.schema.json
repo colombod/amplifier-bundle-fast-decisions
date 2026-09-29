@@ -59,7 +59,8 @@
         "fast_decisions:turn_planned",
         "fast_decisions:step_decided",
         "fast_decisions:waste_guard",
-        "fast_decisions:judge_usage"
+        "fast_decisions:judge_usage",
+        "fast_decisions:delegation_routed"
       ]
     },
     "session_id": {

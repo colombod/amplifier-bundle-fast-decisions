@@ -285,6 +285,31 @@ SAFE_FIELDS = {
     # "options" (already allowlisted above), not as a separate top-level
     # field.
     "value_of_time_usd_per_hour",
+    # Per-delegation model routing (Policy.delegation_routing, opt-in): the
+    # policy name, the delegated agent's NAME and model role, where the
+    # anchor came from, the judge's four choice labels, what the policy
+    # proposed and what was ACTUALLY pinned on the call, and the LENGTH of
+    # the delegated instruction -- never the instruction itself, which is
+    # sent to the judge and nowhere else (delegation.judge_state). `mode`,
+    # `backend`, `probabilities`, `tool`, `lever`, `action`, `reason`,
+    # `duration_ms`, `latency_ms` (already listed above) are reused verbatim;
+    # this allowlist is the second, structural guarantee that no task text
+    # can reach an event even if a future field carried it.
+    "delegation_policy",
+    "agent",
+    "model_role",
+    "role_source",
+    "anchor_source",
+    "anchor",
+    "answers",
+    "requirements",
+    "instruction_chars",
+    "proposed_preference",
+    "actual_preference",
+    "nudge",
+    "move",
+    "guard",
+    "capability_conflict",
 }
 
 

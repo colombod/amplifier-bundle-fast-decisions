@@ -84,6 +84,11 @@ EVENT_NAMES = tuple(
         # Waste guards (guards.py): which guard acted on a tool call (block,
         # pointer, poll_wait) -- tool name and reason code only.
         "waste_guard",
+        # Per-delegation model routing (Policy.delegation_routing, opt-in):
+        # one receipt per `delegate` call -- the judge's four answers, the
+        # anchor, what was proposed and what was actually pinned. Never the
+        # delegated instruction. See delegation.py and docs/DELEGATION-ROUTING.md.
+        "delegation_routed",
     )
 )
 
@@ -588,6 +593,47 @@ def validate_confidence_gates(confidence_gates: Any) -> None:
             raise ValueError(f"confidence_gates.{key} must be a number in (0, 1]")
 
 
+# Per-delegation model routing (delegation.py, opt-in): the keys
+# ``Policy.delegation_routing`` accepts. ``mode`` defaults to ``"off"`` even
+# when the dict is present, so a half-written config routes nothing.
+DELEGATION_ROUTING_KEYS = frozenset({"mode", "policy", "deadline_ms"})
+DELEGATION_ROUTING_MODES = frozenset({"off", "shadow", "enforce"})
+
+
+def validate_delegation_routing(delegation_routing: Any) -> None:
+    """Fail loud on a malformed ``delegation_routing`` policy at mount time.
+
+    ``None`` (the default) is fully off: no facade is built, no judge call is
+    made, and the ``delegate`` entry of the tool mapping is left untouched.
+    An explicit ``{}`` is legal and also off (``mode`` defaults to ``"off"``),
+    unlike ``model_routing`` -- there is no required key here, because the
+    shipped policy is the meaningful default. Never silently ignores a bad
+    value. See delegation.py and docs/DELEGATION-ROUTING.md.
+    """
+    if delegation_routing is None:
+        return
+    if not isinstance(delegation_routing, dict):
+        raise ValueError("delegation_routing must be a dict")
+    unknown = set(delegation_routing) - DELEGATION_ROUTING_KEYS
+    if unknown:
+        raise ValueError(f"delegation_routing has unknown keys: {sorted(unknown)}")
+    mode = delegation_routing.get("mode", "off")
+    if mode not in DELEGATION_ROUTING_MODES:
+        raise ValueError(
+            f"delegation_routing.mode must be one of {sorted(DELEGATION_ROUTING_MODES)}"
+        )
+    policy = delegation_routing.get("policy")
+    if policy is not None and (not isinstance(policy, str) or not policy):
+        raise ValueError("delegation_routing.policy must be a non-empty string")
+    deadline_ms = delegation_routing.get("deadline_ms")
+    if deadline_ms is not None and (
+        isinstance(deadline_ms, bool)
+        or not isinstance(deadline_ms, int)
+        or not 10 <= deadline_ms <= 60000
+    ):
+        raise ValueError("delegation_routing.deadline_ms must be an int between 10 and 60000")
+
+
 def canonical(value: Any) -> str:
     return json.dumps(
         value,
@@ -948,6 +994,16 @@ class Policy:
     # authoritative. Default False -- inert, matching every other HC0x
     # seam. See orchestrator.py and docs/ARCHITECTURE.md.
     tool_risk_shadow: bool = False
+    # Per-delegation model routing (delegation.py, opt-in): None (the
+    # default) means fully off -- the orchestrator never builds a delegate
+    # facade, no judge call is made for a `delegate` call, its arguments are
+    # untouched and no fast_decisions:delegation_routed event is emitted. A
+    # dict turns it on: {"mode": "shadow"|"enforce", "policy": "v3",
+    # "deadline_ms": 750}; `mode` itself defaults to "off". Decides the model
+    # a delegated CHILD session starts on, which is a different decision point
+    # from RoutedProvider's per-turn routing inside a session. See
+    # delegation.py and docs/DELEGATION-ROUTING.md.
+    delegation_routing: dict[str, Any] | None = None
     # The judged read shortcut (DecisionService.choose). False keeps a judge
     # backend available to the routers (e.g. start_policy: judge) without
     # putting a candidate-scoring call in front of slow requests.
@@ -1004,6 +1060,7 @@ class Policy:
         validate_confidence_gates(self.confidence_gates)
         if not isinstance(self.tool_risk_shadow, bool):
             raise ValueError("tool_risk_shadow must be a bool")
+        validate_delegation_routing(self.delegation_routing)
         if not isinstance(self.read_shortcut, bool):
             raise ValueError("read_shortcut must be a bool")
         validate_cache_keepalive(self.cache_keepalive)
