@@ -34,6 +34,9 @@ not honored at `tool:pre` (docs/UPSTREAM_CONTRACT.md). This layer sits in the
 tool mapping instead of the hook chain, so it can actually pin -- and records the
 same proposed-vs-actual pair.
 
+The full study behind these numbers (method, per-lever results, rounds v1-v3, limits) is in
+[`docs/evidence/DELEGATION-ROUTING-STUDY.md`](evidence/DELEGATION-ROUTING-STUDY.md).
+
 ## How it works
 
 ```
