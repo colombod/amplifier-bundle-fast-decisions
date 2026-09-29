@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "amplifier-forge-cua-fixture"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["playwright>=1.49"]
+
+[project.entry-points."amplifier.modules"]
+tool-forge-cua-fixture = "amplifier_module_tool_forge_cua_fixture:mount"
+
+[tool.setuptools.packages.find]
+include = ["amplifier_module_tool_forge_cua_fixture*"]
+
+[tool.setuptools.package-data]
+amplifier_module_tool_forge_cua_fixture = ["*.html"]

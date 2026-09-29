@@ -450,7 +450,7 @@ def _run_scenario_turns(root, name, manifest, item, task, workspace, sessions, e
             continue
         if i > 1 and turn_gap_seconds:
             time.sleep(turn_gap_seconds)
-        command = ['amplifier', 'run', '--bundle', bundle_uri, '--mode', 'single',
+        command = [manifest.get('host_python', str(HOST_PYTHON)), '-m', 'amplifier_app_cli', 'run', '--bundle', bundle_uri, '--mode', 'single',
                    '--provider', manifest['provider'], '--model', manifest['model'],
                    '--output-format', 'json']
         if i > 1:
@@ -527,7 +527,7 @@ def _worker_scenario(root, name, manifest, item, workspace, source_root, run):
     _warm_local_scorer(manifest['sides'][item['side']])
     slug = str(workspace.resolve()).replace('/', '-').replace('\\', '-').replace(':', '')
     sessions = Path.home()/'.amplifier/projects'/slug/'sessions'
-    env = dict(os.environ, AFAST_OBSERVATORY='off')
+    env = dict(os.environ, AFAST_OBSERVATORY='off', AMPLIFIER_MEMORY_CAPTURE='off', AFAST_TRAFFIC='test')
     env['PYTHONPATH'] = str(source_root/'src')
     _assert_bundle_uri_safe(run/'profile.md')
 
@@ -1142,10 +1142,12 @@ def worker(root,name):
     # automation noise (amplifier-bundle-memory's automation_gate module
     # honors this var; a memory bundle predating that fix is a silent no-op
     # here, not an error).
-    env=dict(os.environ,AFAST_OBSERVATORY='off',AMPLIFIER_MEMORY_CAPTURE='off')
+    env=dict(os.environ,AFAST_OBSERVATORY='off',AMPLIFIER_MEMORY_CAPTURE='off',AFAST_TRAFFIC='test')
     env['PYTHONPATH'] = str(source_root/'src')
     _assert_bundle_uri_safe(run/'profile.md')
-    command=['amplifier','run','--bundle',(run/'profile.md').as_uri(),'--mode','single','--provider',manifest['provider'],'--model',manifest['model'],'--output-format','json',prompt]
+    # Forge has its own PATH. Bind the CLI itself to the frozen host Python;
+    # running a worker in that venv alone does not isolate its subprocesses.
+    command=[manifest.get('host_python',str(HOST_PYTHON)),'-m','amplifier_app_cli','run','--bundle',(run/'profile.md').as_uri(),'--mode','single','--provider',manifest['provider'],'--model',manifest['model'],'--output-format','json',prompt]
     started_at=datetime.now(timezone.utc).isoformat();started=time.perf_counter()
     process=subprocess.Popen(command,cwd=workspace,env=env)
     dump(run/'running.json',{'started_at':started_at,'name':name,'controller_pid':os.getpid(),'pid':process.pid,

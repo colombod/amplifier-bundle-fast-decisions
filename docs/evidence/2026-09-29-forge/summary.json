@@ -1,0 +1,1519 @@
+{
+  "schema": "forge-feature-acceptance-v1",
+  "source_git_sha": "60bc2adc2c8f426b2f14271fcd1d5f5c5dc82ace",
+  "traffic": "test",
+  "model": "claude-sonnet-5",
+  "total_sessions": 40,
+  "accepted_checks": 38,
+  "provider_cost_estimate_usd_all_attempts": 3.56412615,
+  "provider_cost_unknown_sessions": 0,
+  "jev_billed_cost_usd": null,
+  "jevgrep_billed_cost_usd": null,
+  "local_compute_cost_usd": null,
+  "browser_comparison": {
+    "plain": {
+      "n": 2,
+      "passed": 2,
+      "mean_calls": 9,
+      "mean_seconds": 28.964009896495554,
+      "mean_provider_usd": 0.055902900000000005
+    },
+    "driver": {
+      "n": 2,
+      "passed": 2,
+      "mean_calls": 3,
+      "mean_seconds": 23.82260027099983,
+      "mean_provider_usd": 0.0452979
+    },
+    "reduction_calls": 0.6666666666666667,
+    "reduction_seconds": 0.17751028410323122,
+    "reduction_provider_usd": 0.18970393306966193
+  },
+  "prepared_comparison": {
+    "answer_audit_log_key": {
+      "plain": {
+        "n": 2,
+        "passed": 2,
+        "mean_calls": 4.5,
+        "mean_seconds": 26.15952808349539,
+        "mean_provider_usd": 0.083246025,
+        "bypassed_calls_total": 0
+      },
+      "jev": {
+        "n": 2,
+        "passed": 2,
+        "mean_calls": 4,
+        "mean_seconds": 22.216964958504832,
+        "mean_provider_usd": 0.04897365,
+        "bypassed_calls_total": 2
+      },
+      "laya": {
+        "n": 2,
+        "passed": 2,
+        "mean_calls": 4,
+        "mean_seconds": 22.210218104002706,
+        "mean_provider_usd": 0.0575562,
+        "bypassed_calls_total": 0
+      }
+    },
+    "repair_parse_duration": {
+      "plain": {
+        "n": 2,
+        "passed": 2,
+        "mean_calls": 6.5,
+        "mean_seconds": 61.46813981250307,
+        "mean_provider_usd": 0.134479725,
+        "bypassed_calls_total": 0
+      },
+      "jev": {
+        "n": 2,
+        "passed": 2,
+        "mean_calls": 5,
+        "mean_seconds": 49.067072792000545,
+        "mean_provider_usd": 0.1168185,
+        "bypassed_calls_total": 2
+      },
+      "laya": {
+        "n": 2,
+        "passed": 2,
+        "mean_calls": 6,
+        "mean_seconds": 71.14601006199518,
+        "mean_provider_usd": 0.1557102,
+        "bypassed_calls_total": 0
+      }
+    }
+  },
+  "cua_judge_receipts": [
+    {
+      "case": "driver-1",
+      "status": "done",
+      "receipts": [
+        {
+          "id": "1444c9e94ef04f5a8afa652cde214c6d",
+          "status": "executed",
+          "executes_actions": false,
+          "snapshot_hash": "07c63ac9a8201b95149a7b0d2573ef09e8a1d728f381ac8a2cbaf8291fbff35d",
+          "surface_id": "public-report-fixture",
+          "expires_at": 1790656992.998088,
+          "judge_calls": 1,
+          "model": "jev-1.13.0",
+          "input_tokens": 904,
+          "output_tokens": 82,
+          "operation": "CLICK",
+          "operation_probability": 0.96,
+          "operation_probabilities": {
+            "DONE": 0.0,
+            "reason": 0.03,
+            "CLICK": 0.96,
+            "WAIT": 0.01
+          },
+          "target_probability": 0.95,
+          "action": {
+            "operation": "CLICK",
+            "target": "reports"
+          },
+          "duration_ms": 282.305,
+          "executed_by": "host"
+        },
+        {
+          "id": "f4b949f112064a7ab0e79aae0a4d5399",
+          "status": "executed",
+          "executes_actions": false,
+          "snapshot_hash": "50561e3abd5e68f9df596f4e802f21d544c7d2b1bee36a6f1b4003c2095fc266",
+          "surface_id": "public-report-fixture",
+          "expires_at": 1790656993.3354938,
+          "judge_calls": 1,
+          "model": "jev-1.13.0",
+          "input_tokens": 909,
+          "output_tokens": 82,
+          "operation": "CLICK",
+          "operation_probability": 0.99,
+          "operation_probabilities": {
+            "CLICK": 0.99,
+            "reason": 0.01,
+            "WAIT": 0.0,
+            "DONE": 0.0
+          },
+          "target_probability": 0.99,
+          "action": {
+            "operation": "CLICK",
+            "target": "weekly"
+          },
+          "duration_ms": 157.134,
+          "executed_by": "host"
+        },
+        {
+          "id": "ae7e9e5e9cd8474393a25e5817e64614",
+          "status": "executed",
+          "executes_actions": false,
+          "snapshot_hash": "55ee742a49a4a35d697f9d14be8edf633aea35c3b896365a1635ae0043d4461d",
+          "surface_id": "public-report-fixture",
+          "expires_at": 1790656993.518698,
+          "judge_calls": 1,
+          "model": "jev-1.13.0",
+          "input_tokens": 918,
+          "output_tokens": 84,
+          "operation": "CLICK",
+          "operation_probability": 0.96,
+          "operation_probabilities": {
+            "reason": 0.03,
+            "WAIT": 0.01,
+            "CLICK": 0.96,
+            "DONE": 0.0
+          },
+          "target_probability": 0.97,
+          "action": {
+            "operation": "CLICK",
+            "target": "laya"
+          },
+          "duration_ms": 171.572,
+          "executed_by": "host"
+        },
+        {
+          "id": "6778fbc5396c4a7bb12c5919bf1d0e53",
+          "status": "done",
+          "executes_actions": false,
+          "snapshot_hash": "c7479c4531387afbaa7ee03a4c84a79600ecc7e19545a69f465b7c973991c74e",
+          "surface_id": "public-report-fixture",
+          "expires_at": 1790656993.718775,
+          "judge_calls": 1,
+          "model": "jev-1.13.0",
+          "input_tokens": 667,
+          "output_tokens": 39,
+          "operation": "DONE",
+          "operation_probability": 0.94,
+          "operation_probabilities": {
+            "WAIT": 0.01,
+            "DONE": 0.94,
+            "reason": 0.05
+          },
+          "action": {
+            "operation": "DONE"
+          },
+          "duration_ms": 168.397
+        }
+      ]
+    },
+    {
+      "case": "driver-2",
+      "status": "done",
+      "receipts": [
+        {
+          "id": "2d7009765faf46a29cf9f2a2fba424f7",
+          "status": "executed",
+          "executes_actions": false,
+          "snapshot_hash": "07c63ac9a8201b95149a7b0d2573ef09e8a1d728f381ac8a2cbaf8291fbff35d",
+          "surface_id": "public-report-fixture",
+          "expires_at": 1790657014.7141702,
+          "judge_calls": 1,
+          "model": "jev-1.13.0",
+          "input_tokens": 904,
+          "output_tokens": 82,
+          "operation": "CLICK",
+          "operation_probability": 0.97,
+          "operation_probabilities": {
+            "WAIT": 0.01,
+            "DONE": 0.0,
+            "CLICK": 0.97,
+            "reason": 0.02
+          },
+          "target_probability": 0.97,
+          "action": {
+            "operation": "CLICK",
+            "target": "reports"
+          },
+          "duration_ms": 205.194,
+          "executed_by": "host"
+        },
+        {
+          "id": "bdc9d32590f74de192326a337ed02a35",
+          "status": "executed",
+          "executes_actions": false,
+          "snapshot_hash": "50561e3abd5e68f9df596f4e802f21d544c7d2b1bee36a6f1b4003c2095fc266",
+          "surface_id": "public-report-fixture",
+          "expires_at": 1790657014.973491,
+          "judge_calls": 1,
+          "model": "jev-1.13.0",
+          "input_tokens": 909,
+          "output_tokens": 82,
+          "operation": "CLICK",
+          "operation_probability": 0.98,
+          "operation_probabilities": {
+            "DONE": 0.0,
+            "reason": 0.02,
+            "WAIT": 0.0,
+            "CLICK": 0.98
+          },
+          "target_probability": 0.98,
+          "action": {
+            "operation": "CLICK",
+            "target": "weekly"
+          },
+          "duration_ms": 134.307,
+          "executed_by": "host"
+        },
+        {
+          "id": "49260691b7ae4236a95cedc4c4a8da4d",
+          "status": "executed",
+          "executes_actions": false,
+          "snapshot_hash": "55ee742a49a4a35d697f9d14be8edf633aea35c3b896365a1635ae0043d4461d",
+          "surface_id": "public-report-fixture",
+          "expires_at": 1790657015.134743,
+          "judge_calls": 1,
+          "model": "jev-1.13.0",
+          "input_tokens": 918,
+          "output_tokens": 84,
+          "operation": "CLICK",
+          "operation_probability": 0.96,
+          "operation_probabilities": {
+            "CLICK": 0.96,
+            "WAIT": 0.01,
+            "DONE": 0.0,
+            "reason": 0.03
+          },
+          "target_probability": 0.98,
+          "action": {
+            "operation": "CLICK",
+            "target": "laya"
+          },
+          "duration_ms": 136.523,
+          "executed_by": "host"
+        },
+        {
+          "id": "4cbc199e66c6482c9d6797c12232bbe9",
+          "status": "done",
+          "executes_actions": false,
+          "snapshot_hash": "c7479c4531387afbaa7ee03a4c84a79600ecc7e19545a69f465b7c973991c74e",
+          "surface_id": "public-report-fixture",
+          "expires_at": 1790657015.318401,
+          "judge_calls": 1,
+          "model": "jev-1.13.0",
+          "input_tokens": 667,
+          "output_tokens": 39,
+          "operation": "DONE",
+          "operation_probability": 0.95,
+          "operation_probabilities": {
+            "reason": 0.04,
+            "DONE": 0.95,
+            "WAIT": 0.01
+          },
+          "action": {
+            "operation": "DONE"
+          },
+          "duration_ms": 167.779
+        }
+      ]
+    }
+  ],
+  "production_isolation": {
+    "session_ids_checked": 19,
+    "matching_production_event_files": [],
+    "rg_exit": 1
+  },
+  "evidence_limits": [
+    "Small public fixtures, two repetitions, shared machine and warm caches; no population-level inference.",
+    "Generative-provider estimates are not billing; Jev and Jevgrep charges unknown.",
+    "First seven read/repair runs used original host; remaining runs used isolated clone.",
+    "Earlier study efficiency records mislabeled production are retained locally but excluded from production reports.",
+    "Jevgrep comparisons excluded: SQLite runs never invoked it; later baseline hunted missing tools.",
+    "Full Foundation proposal relay expired; no click executed.",
+    "First 1ms timeout fixture invalid and failed to mount; corrected 100ms timeout passed.",
+    "TryCuaHost tested with real Playwright Chromium, not an actual trycua VM."
+  ],
+  "runs": [
+    {
+      "group": "paired",
+      "case": "answer_audit_log_key-jev-1",
+      "session_id": "0cba6fd0-773a-475b-aaf6-d74401b161f5",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 21.91469474999758,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.048015,
+      "native_tools": {
+        "fast_workspace": 2,
+        "read_file": 6
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 1,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "193e8cd82f125869a6748f787d2edbc6abe7465e4b0dea405839af9c20660fe4",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "answer_audit_log_key-jev-2",
+      "session_id": "b1b0606b-8e7a-464e-9270-63c993e5151e",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 22.519235167012084,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.0499323,
+      "native_tools": {
+        "fast_workspace": 7,
+        "bash": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 1,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "4afc53cbb9ddf87702d20c84ce4dc071c5ba88e6368803222d0861532ca3ed5e",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "answer_audit_log_key-laya-1",
+      "session_id": "34389d94-7bb3-4ae3-960d-0328697b1229",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 23.935926749996725,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.059392650000000005,
+      "native_tools": {
+        "read_file": 8
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "a79f2f4d71730abfde3d0428129b8389d7149adfcc35265aef875a3227634251",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "answer_audit_log_key-laya-2",
+      "session_id": "ace47e2d-0a53-4abe-b850-2de728ccb488",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 20.484509458008688,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.05571975,
+      "native_tools": {
+        "bash": 1,
+        "read_file": 8
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "7a436654c3ddd056665a34dbe56d9e22afbd4aea816d635ecb67052d32a237d2",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "answer_audit_log_key-plain-1",
+      "session_id": "4aa68942-3ac4-4268-92ec-40afbdc75f38",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 28.493682708998676,
+      "provider_requests": 5,
+      "provider_cost_estimate_usd": 0.10571355,
+      "native_tools": {
+        "read_file": 9
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 5
+        }
+      ],
+      "raw_result_sha256": "18c82c5f7f3e39bcdbe2026c226e7939321ebc65fe6c0eed711fc09a560aecf3",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "answer_audit_log_key-plain-2",
+      "session_id": "31da7487-945e-4149-90d2-97fc463c1f6d",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 23.8253734579921,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.0607785,
+      "native_tools": {
+        "read_file": 9
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "63260d9b165939212167bddb45bded9fd77b9d3c4770c5bff5025a66f9c2650b",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "answer_sqlite_import_module-plain-1",
+      "session_id": "b7a136d9-a07d-4470-a807-12751b85f97a",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 14.653255459008506,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.03749595,
+      "native_tools": {
+        "read_file": 7
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "76308a0daebf71734c55c05c326f40102e30fb6b0bc6429b4a5631891319112d",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "answer_sqlite_import_module-plain-2",
+      "session_id": "1b6b21ce-d7b2-4696-b4e4-b2a20b30003e",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 11.262753375005559,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.0322104,
+      "native_tools": {
+        "bash": 1,
+        "read_file": 6
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "7d10fef35fe75d7651cb8a546454a948550be6a962959b6b7c5f12879339ccaa",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "answer_sqlite_import_module-retrieval-1",
+      "session_id": "e3a047d1-243d-4f9c-996f-eaa5465fb96b",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 15.712699915995472,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.08525730000000001,
+      "native_tools": {
+        "read_file": 6,
+        "bash": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "8016583974ae5625e9643d1bc1d67f57b752aab602a1c5f6c1d45c3063e5c260",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "answer_sqlite_import_module-retrieval-2",
+      "session_id": "c52f77cc-2169-45b1-b30f-2a0141137112",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 12.417459542004508,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.0340893,
+      "native_tools": {
+        "read_file": 7
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "15cf10857fa71972681f4870787752e42efb7484749284b45fcb9d771dfcc0f3",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "repair_parse_duration-jev-1",
+      "session_id": "79774d05-bec7-4d27-96c6-7e0f9a40694e",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 45.92901929200161,
+      "provider_requests": 5,
+      "provider_cost_estimate_usd": 0.12584715000000002,
+      "native_tools": {
+        "fast_workspace": 4,
+        "write_file": 1,
+        "bash": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 1,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 5
+        }
+      ],
+      "raw_result_sha256": "26b65f90f8321a8bd50d749c370093b1123ee9f039fb3e45437db52053489ddb",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "repair_parse_duration-jev-2",
+      "session_id": "e76abe0e-feec-472f-a1f4-e174eb653e8a",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 52.20512629199948,
+      "provider_requests": 5,
+      "provider_cost_estimate_usd": 0.10778984999999999,
+      "native_tools": {
+        "fast_workspace": 4,
+        "write_file": 1,
+        "bash": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 1,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 5
+        }
+      ],
+      "raw_result_sha256": "09b824d8d0f71210cf1eda3be8251cafc1e9f68c12eaec406facf8f40a05b516",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "repair_parse_duration-laya-1",
+      "session_id": "22a52261-2bae-4029-98b8-9c1233dd6190",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 69.70062845799839,
+      "provider_requests": 6,
+      "provider_cost_estimate_usd": 0.15059835,
+      "native_tools": {
+        "bash": 3,
+        "read_file": 3,
+        "write_file": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 6
+        }
+      ],
+      "raw_result_sha256": "a9e922307edc289a1489cefb296ef68b516c58fa49bb4477adf91abb7115f631",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "repair_parse_duration-laya-2",
+      "session_id": "65be1046-cbfd-47e2-8cc9-c1a5e0f2ed11",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 72.59139166599198,
+      "provider_requests": 6,
+      "provider_cost_estimate_usd": 0.16082205,
+      "native_tools": {
+        "bash": 3,
+        "read_file": 3,
+        "write_file": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 6
+        }
+      ],
+      "raw_result_sha256": "f7ff0d7024be36595eaf5486fc8e371dcace5196a6c7d0ef6db86c4af47de188",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "repair_parse_duration-plain-1",
+      "session_id": "fbb9da0d-420d-4947-8885-81d51426ac4a",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 73.1794801250071,
+      "provider_requests": 7,
+      "provider_cost_estimate_usd": 0.16102965000000002,
+      "native_tools": {
+        "bash": 4,
+        "read_file": 3,
+        "write_file": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 7
+        }
+      ],
+      "raw_result_sha256": "4864a995b234617a5c462b7fe2cf84a5839e1d9587768549bf6a4b698a4f2c15",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "paired",
+      "case": "repair_parse_duration-plain-2",
+      "session_id": "f9d6b888-c0e9-4194-b241-5996bb9fa460",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 49.75679949999903,
+      "provider_requests": 6,
+      "provider_cost_estimate_usd": 0.10792979999999999,
+      "native_tools": {
+        "read_file": 3,
+        "write_file": 1,
+        "bash": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 6
+        }
+      ],
+      "raw_result_sha256": "3a52916c2062e05924e935fdf80fb29ad2adf3f0be5b824bbb3c40aec953d0fd",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "extra",
+      "case": "anyjev-fallback",
+      "session_id": "e5ef4584-16ae-410c-9879-f4f4c5709733",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 20.084773375012446,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.046481549999999996,
+      "native_tools": {
+        "read_file": 7
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "6a1b6afdb8b4c44b52d37841120a51355ed708bee7eb27dc13ff4fc214f6cfac",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "extra",
+      "case": "anyjev-shadow",
+      "session_id": "d01b22e1-17bd-4d58-91e3-9c6def3b7878",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 23.18530733299849,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.0509643,
+      "native_tools": {
+        "read_file": 7
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "4d5590eb277b4cc12ecf2ae8631bb245d10fe26543243270d1f97c0ca563621a",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "extra",
+      "case": "default-jevgrep",
+      "session_id": "9e69bc51-915e-4446-b88c-3dc818006249",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 18.665931666997494,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.33770609999999995,
+      "native_tools": {
+        "read_file": 4,
+        "jevgrep": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "9ad57fd9b1ea299f12b81ce1cb1a8fa660c049082414dd11b43d8ba4a6dc2705",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "cua",
+      "case": "denied-driver",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 26.84993883300922,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.047813549999999996,
+      "native_tools": {
+        "fixture_browser": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "25fda9fcf3045872e053df1be4c5f8099747a3e78a32b93d0427f61d99299ceb",
+      "source_match": null,
+      "browser_state": {
+        "step": "home",
+        "history": [],
+        "text": "Home\nReportsSettings",
+        "verified": false
+      }
+    },
+    {
+      "group": "cua",
+      "case": "denied-selector",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 16.178327041998273,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.057440250000000005,
+      "native_tools": {
+        "fixture_browser": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "2e0fbd7dd64425f6ea7e30c5e532ca051f81f6cf569405ef6e01c21f276dab3f",
+      "source_match": null,
+      "browser_state": {
+        "step": "home",
+        "history": [],
+        "text": "Home\nReportsSettings",
+        "verified": false
+      }
+    },
+    {
+      "group": "cua",
+      "case": "driver-1",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 20.39578462499776,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.03756645,
+      "native_tools": {
+        "fixture_browser": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "00b521d3e619aeae03e149783a3df7a745820b9519df4726584c101c371fe1ee",
+      "source_match": null,
+      "browser_state": {
+        "step": "done",
+        "history": [
+          "reports",
+          "weekly",
+          "laya"
+        ],
+        "text": "Weekly Laya report open\n\nREPORT: LAYA-WEEKLY-42",
+        "verified": true
+      }
+    },
+    {
+      "group": "cua",
+      "case": "driver-2",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 23.115293374998146,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.0414621,
+      "native_tools": {
+        "fixture_browser": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "d18e8209f31bd12a620d3c204a7a7b7368899c2271f71358411b6a8bf7b54932",
+      "source_match": null,
+      "browser_state": {
+        "step": "done",
+        "history": [
+          "reports",
+          "weekly",
+          "laya"
+        ],
+        "text": "Weekly Laya report open\n\nREPORT: LAYA-WEEKLY-42",
+        "verified": true
+      }
+    },
+    {
+      "group": "cua",
+      "case": "native-selector",
+      "session_id": null,
+      "accepted": false,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 106.8899321249919,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.49486695,
+      "native_tools": {
+        "fixture_browser": 2,
+        "jev_cua": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "fa3f8181c2a720c86383844050deb216f4256b7035582b26b28fae51946b470c",
+      "source_match": null,
+      "browser_state": {
+        "step": "home",
+        "history": [],
+        "text": "Home\nReportsSettings",
+        "verified": false
+      }
+    },
+    {
+      "group": "cua",
+      "case": "plain-1",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 29.787817457996425,
+      "provider_requests": 9,
+      "provider_cost_estimate_usd": 0.08585685,
+      "native_tools": {
+        "fixture_browser": 8
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 9
+        }
+      ],
+      "raw_result_sha256": "c238bf9e3f2b253ff97653cf975e899320cdda4adbe2f96eb68ec040879a07a6",
+      "source_match": null,
+      "browser_state": {
+        "step": "done",
+        "history": [
+          "reports",
+          "weekly",
+          "laya"
+        ],
+        "text": "Weekly Laya report open\n\nREPORT: LAYA-WEEKLY-42",
+        "verified": true
+      }
+    },
+    {
+      "group": "cua",
+      "case": "plain-2",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 27.720048375005717,
+      "provider_requests": 9,
+      "provider_cost_estimate_usd": 0.05203995,
+      "native_tools": {
+        "fixture_browser": 8
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 9
+        }
+      ],
+      "raw_result_sha256": "51fee741c8ed7e59bf3f656ff459cf586b8fef3756400b38306fb719cbe793c0",
+      "source_match": null,
+      "browser_state": {
+        "step": "done",
+        "history": [
+          "reports",
+          "weekly",
+          "laya"
+        ],
+        "text": "Weekly Laya report open\n\nREPORT: LAYA-WEEKLY-42",
+        "verified": true
+      }
+    },
+    {
+      "group": "cua-confirm",
+      "case": "driver-1",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 27.600988542006235,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.05369985000000001,
+      "native_tools": {
+        "fixture_browser": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "d204f30a951c0295a03ff96f6186370d871103cfa5937489114c5ac3ce92b963",
+      "source_match": null,
+      "browser_state": {
+        "step": "done",
+        "history": [
+          "reports",
+          "weekly",
+          "laya"
+        ],
+        "text": "Weekly Laya report open\n\nREPORT: LAYA-WEEKLY-42",
+        "verified": true
+      }
+    },
+    {
+      "group": "cua-confirm",
+      "case": "driver-2",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 20.044211999993422,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.036895950000000004,
+      "native_tools": {
+        "fixture_browser": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "12477971dcae38d66a6d51b0fff9c5d3562aa64270fad3ad496371607ce1421e",
+      "source_match": null,
+      "browser_state": {
+        "step": "done",
+        "history": [
+          "reports",
+          "weekly",
+          "laya"
+        ],
+        "text": "Weekly Laya report open\n\nREPORT: LAYA-WEEKLY-42",
+        "verified": true
+      }
+    },
+    {
+      "group": "cua-confirm",
+      "case": "loop-driver",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 45.99761520900938,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.08392725000000001,
+      "native_tools": {
+        "fixture_browser": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "3c1600bf4e370247011b5451dd142c636c3101d7f8af2f618b61bb3710ef96ef",
+      "source_match": null,
+      "browser_state": {
+        "step": "home",
+        "history": [],
+        "text": "Home\nReportsSettings",
+        "verified": false
+      }
+    },
+    {
+      "group": "cua-confirm",
+      "case": "plain-1",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 28.286555083992425,
+      "provider_requests": 9,
+      "provider_cost_estimate_usd": 0.0513252,
+      "native_tools": {
+        "fixture_browser": 8
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 9
+        }
+      ],
+      "raw_result_sha256": "5da25c3007858ef4906b6adf8448789c31fff6f03b331c477770ffa16b061600",
+      "source_match": null,
+      "browser_state": {
+        "step": "done",
+        "history": [
+          "reports",
+          "weekly",
+          "laya"
+        ],
+        "text": "Weekly Laya report open\n\nREPORT: LAYA-WEEKLY-42",
+        "verified": true
+      }
+    },
+    {
+      "group": "cua-confirm",
+      "case": "plain-2",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 29.641464708998683,
+      "provider_requests": 9,
+      "provider_cost_estimate_usd": 0.06048060000000001,
+      "native_tools": {
+        "fixture_browser": 8
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 9
+        }
+      ],
+      "raw_result_sha256": "09f005252f25ba61e8cd4e6e062cd9766487cec608596fe65e4704ca009eea46",
+      "source_match": null,
+      "browser_state": {
+        "step": "done",
+        "history": [
+          "reports",
+          "weekly",
+          "laya"
+        ],
+        "text": "Weekly Laya report open\n\nREPORT: LAYA-WEEKLY-42",
+        "verified": true
+      }
+    },
+    {
+      "group": "cua-confirm",
+      "case": "stale-driver",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 39.35761249999632,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.06775965,
+      "native_tools": {
+        "fixture_browser": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "87db165f2e3389975be65385383a72f0bbcca9f0d8076398b3a5530d423bfdac",
+      "source_match": null,
+      "browser_state": {
+        "step": "home",
+        "history": [],
+        "text": "Home\nReportsSettings",
+        "verified": false
+      }
+    },
+    {
+      "group": "cua-confirm",
+      "case": "timeout-driver",
+      "session_id": null,
+      "accepted": false,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 31.622143125001458,
+      "provider_requests": 1,
+      "provider_cost_estimate_usd": 0.0753435,
+      "native_tools": {},
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 1
+        }
+      ],
+      "raw_result_sha256": "e1f4bb3aeb73950c03a89d23136b10f462839534bff33aeb7cc57ffdce615c49",
+      "source_match": null,
+      "browser_state": null
+    },
+    {
+      "group": "cua-confirm",
+      "case": "verify-driver",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 27.601348291995237,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.0505092,
+      "native_tools": {
+        "fixture_browser": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "c1427accfe1b28ac1a37a8b82bc3e88cec39fcb61bed05c18af48964b553b987",
+      "source_match": null,
+      "browser_state": {
+        "step": "done",
+        "history": [
+          "reports",
+          "weekly",
+          "laya"
+        ],
+        "text": "Weekly Laya report open\n\nREPORT: LAYA-WEEKLY-42",
+        "verified": false
+      }
+    },
+    {
+      "group": "cua-timeout-corrected",
+      "case": "timeout-driver",
+      "session_id": null,
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 35.83080875000451,
+      "provider_requests": 3,
+      "provider_cost_estimate_usd": 0.06365625,
+      "native_tools": {
+        "fixture_browser": 2
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": null,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 3
+        }
+      ],
+      "raw_result_sha256": "ed788610dded06aa93680bdc2e76e866eecbeb9498def4956d986d3d70c2cc0a",
+      "source_match": null,
+      "browser_state": {
+        "step": "home",
+        "history": [],
+        "text": "Home\nReportsSettings",
+        "verified": false
+      }
+    },
+    {
+      "group": "retrieval-required",
+      "case": "answer_audit_log_key-plain-1",
+      "session_id": "c780f1b8-4a0b-4072-a59f-46673f83aa05",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 127.38010524999117,
+      "provider_requests": 11,
+      "provider_cost_estimate_usd": 0.22626735,
+      "native_tools": {
+        "read_file": 11,
+        "bash": 4,
+        "load_skill": 1
+      },
+      "native_tool_failures": 1,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 11
+        }
+      ],
+      "raw_result_sha256": "5d97eb40c30df56ba45f801fe2f1bc971b8844e7593fb68582665aaa6a1eb2a7",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "retrieval-required",
+      "case": "answer_audit_log_key-plain-2",
+      "session_id": "89a00b22-3a5e-496b-aac7-ee9dfea8644f",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 19.982620458002202,
+      "provider_requests": 5,
+      "provider_cost_estimate_usd": 0.05083125,
+      "native_tools": {
+        "read_file": 5,
+        "bash": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 5
+        }
+      ],
+      "raw_result_sha256": "e3dcf6904a7a91bdb2a600c41d7bd7aff38d242e71a6f90e8861406115b869ab",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "retrieval-required",
+      "case": "answer_audit_log_key-retrieval-1",
+      "session_id": "974dde0b-4f55-4b04-b04c-879c98d12462",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 29.846291416994063,
+      "provider_requests": 6,
+      "provider_cost_estimate_usd": 0.06185385,
+      "native_tools": {
+        "read_file": 7,
+        "jevgrep": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 6
+        }
+      ],
+      "raw_result_sha256": "a732d8396601e4bb7ca06d1b8f66606632ba560a4f29671040d8fb3512c3b227",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "retrieval-required",
+      "case": "answer_audit_log_key-retrieval-2",
+      "session_id": "7de2be0f-47ab-42d8-8324-f10e98601f6e",
+      "accepted": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 20.905810083000688,
+      "provider_requests": 4,
+      "provider_cost_estimate_usd": 0.04675665,
+      "native_tools": {
+        "read_file": 4,
+        "jevgrep": 1
+      },
+      "native_tool_failures": 0,
+      "bypassed_provider_calls": 0,
+      "effort": [
+        {
+          "model": "claude-sonnet-5",
+          "thinking_enabled": true,
+          "thinking_budget": 32000,
+          "count": 4
+        }
+      ],
+      "raw_result_sha256": "1992598da591d7e8e4523b16059534190f6d9f9f3ae6c1b556a79c6d686280a2",
+      "source_match": true,
+      "browser_state": null
+    },
+    {
+      "group": "guard",
+      "case": "anyjev-active-L0-rejection",
+      "accepted": true,
+      "exit_code": 1,
+      "provider_requests": 0,
+      "provider_cost_estimate_usd": 0
+    }
+  ]
+}

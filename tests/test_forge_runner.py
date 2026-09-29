@@ -85,6 +85,7 @@ class ForgeControllerTests(unittest.TestCase):
                 'provider': 'anthropic', 'model': 'claude-fable-5-1', 'prompt': 'do it',
                 'events_dir': str(root/'events'),
                 'limits': {'timeout_seconds': 5},
+                'host_python': str(root/'isolated/bin/python'),
             }
             (root/'manifest.json').write_text(json.dumps(manifest))
 
@@ -96,6 +97,7 @@ class ForgeControllerTests(unittest.TestCase):
                     return 0
 
             def fake_popen(command, cwd=None, env=None):
+                captured['command'] = command
                 captured['env'] = env
                 captured['cwd'] = cwd
                 return FakeProcess()
@@ -108,6 +110,7 @@ class ForgeControllerTests(unittest.TestCase):
                     forge_e2e.worker(root, 'one')
 
             self.assertEqual(captured['env']['PYTHONPATH'], str(side_source/'src'))
+            self.assertEqual(captured['command'][:4], [str(root/'isolated/bin/python'), '-m', 'amplifier_app_cli', 'run'])
 
     def test_worker_sets_amplifier_memory_capture_off(self):
         """The real `amplifier run` CLI inherits os.environ (and with it
@@ -157,6 +160,7 @@ class ForgeControllerTests(unittest.TestCase):
                     forge_e2e.worker(root, 'one')
 
             self.assertEqual(captured['env']['AMPLIFIER_MEMORY_CAPTURE'], 'off')
+            self.assertEqual(captured['env']['AFAST_TRAFFIC'], 'test')
 
 
 class SideProfileModeTests(unittest.TestCase):

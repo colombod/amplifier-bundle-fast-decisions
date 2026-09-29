@@ -87,12 +87,14 @@ class ScenarioTurnSequencingTests(unittest.TestCase):
         real_popen = forge_e2e.subprocess.Popen
 
         def fake_popen(command, cwd=None, env=None, **kwargs):
-            if not (isinstance(command, list) and command[:2] == ["amplifier", "run"]):
+            if not (isinstance(command, list) and command[1:4] == ["-m", "amplifier_app_cli", "run"]):
                 # Real subprocess.run() calls elsewhere in this process (battery_tasks'
                 # evaluator snippets, pytest/unittest workspace-test runs, `amplifier bundle
                 # remove`) are implemented ON TOP of subprocess.Popen -- only the direct
                 # `amplifier run ...` launch this test is exercising gets simulated.
                 return real_popen(command, cwd=cwd, env=env, **kwargs)
+            self.assertEqual(env['AFAST_TRAFFIC'], 'test')
+            self.assertEqual(env['AMPLIFIER_MEMORY_CAPTURE'], 'off')
             captured.append(command)
             state["turn"] += 1
             t = state["turn"]
@@ -141,8 +143,7 @@ class ScenarioTurnSequencingTests(unittest.TestCase):
             self.assertEqual(len(captured), 4)  # scn_dev_1 has 4 turns
             bundle_uri = (run / "profile.md").as_uri()
             for i, argv in enumerate(captured, start=1):
-                self.assertEqual(argv[0], "amplifier")
-                self.assertEqual(argv[1], "run")
+                self.assertEqual(argv[:4], [str(forge_e2e.HOST_PYTHON), "-m", "amplifier_app_cli", "run"])
                 self.assertIn("--bundle", argv)
                 self.assertEqual(argv[argv.index("--bundle") + 1], bundle_uri)
                 self.assertIn("--provider", argv)
@@ -235,7 +236,7 @@ class BackgroundNamingCallRegressionTests(unittest.TestCase):
             real_popen = forge_e2e.subprocess.Popen
 
             def fake_popen(command, cwd=None, env=None, stdout=None, **kwargs):
-                if not (isinstance(command, list) and command[:2] == ["amplifier", "run"]):
+                if not (isinstance(command, list) and command[1:4] == ["-m", "amplifier_app_cli", "run"]):
                     return real_popen(command, cwd=cwd, env=env, stdout=stdout, **kwargs)
                 state["turn"] += 1
                 t = state["turn"]
@@ -373,7 +374,7 @@ class SingleTurnPathUnchangedTests(unittest.TestCase):
             real_popen = forge_e2e.subprocess.Popen
 
             def fake_popen(command, cwd=None, env=None, **kwargs):
-                if isinstance(command, list) and command[:2] == ["amplifier", "run"]:
+                if isinstance(command, list) and command[1:4] == ["-m", "amplifier_app_cli", "run"]:
                     return _FakeProcess(0)
                 return real_popen(command, cwd=cwd, env=env, **kwargs)
 
