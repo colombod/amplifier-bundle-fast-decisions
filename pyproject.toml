@@ -49,7 +49,7 @@ where = ["src"]
 include = ["amplifier_fast_decisions*"]
 
 [tool.setuptools.package-data]
-amplifier_fast_decisions = ["static/*", "SMART_TOOL.md"]
+amplifier_fast_decisions = ["static/*", "SMART_TOOL.md", "policies/*.json"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
