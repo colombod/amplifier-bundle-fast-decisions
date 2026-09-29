@@ -15,6 +15,14 @@ its optional research adapter remains available. This is an explicit backend pre
 not evidence that Laya beats Jev at task quality. See the
 [cross-harness checks](docs/evidence/2026-09-29-laya/VERIFICATION.md).
 
+**Quality check, September 29:** base Laya scored 35/60 versus Jev's 56/60
+on constructed decision cases. The specialized Laya checkpoint scored 34/60;
+on 30 fresh cases, base/specialized/Jev scored 19/22/29. These results do not
+support broad automatic Laya routing or inherit the savings below. Domain tuning
+and separate held-out validation are needed before promotion. See the
+[latency and quality study](docs/evidence/2026-09-29-laya-hosted/README.md)
+and its [interactive results](docs/evidence/2026-09-29-laya-hosted/index.html).
+
 ## What it does (measured)
 
 | Kind of work | Time | Cost | Quality |
